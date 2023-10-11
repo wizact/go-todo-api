@@ -19,7 +19,7 @@ type User struct {
 // NewDefaultUser creates a new user with an auto generated uuid and limited role
 func NewDefaultUser() User {
 	u := model.NewUser()
-	r := model.RoleFactory{}.CreateUserWithLimitedRole()
+	r := model.RoleFactory{}.NewLimitedRole()
 	return User{
 		user: &u,
 		role: &r,
