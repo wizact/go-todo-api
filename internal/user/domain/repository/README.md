@@ -1,0 +1,2 @@
+# Repository
+Define one repository per aggregate root to enforice business invaritants while writing the objects to the storage. The interface for the repository is defined here, so that it can be referenced and implemented in infrastructure module to be aligned with clean architecture constraints.
