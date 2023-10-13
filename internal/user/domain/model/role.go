@@ -40,7 +40,7 @@ func (r RoleType) String() string {
 type RoleFactory struct{}
 
 func (r RoleFactory) NewUndefinedRole() Role {
-	return NewRole(Limited)
+	return NewRole(NotDefined)
 }
 
 func (r RoleFactory) NewLimitedRole() Role {
@@ -52,9 +52,9 @@ func (r RoleFactory) NewStandardRole() Role {
 }
 
 func (r RoleFactory) NewAdminRole() Role {
-	return NewRole(Limited)
+	return NewRole(Admin)
 }
 
 func (r RoleFactory) NewSuperAdminRole() Role {
-	return NewRole(Limited)
+	return NewRole(SuperAdmin)
 }
