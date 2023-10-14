@@ -14,16 +14,13 @@ type UserAccountService struct {
 	emailVerificationService EmailVerificationService
 }
 
-func NewUserAccountService(cfgs ...UserAccountServiceConfigurations) (*UserAccountService, error) {
-	ua := &UserAccountService{}
-	for _, cfgs := range cfgs {
-		err := cfgs(ua)
-		if err != nil {
-			return nil, err
-		}
+func NewUserAccountService(ur repository.UserRepository, evs EmailVerificationService) *UserAccountService {
+	ua := &UserAccountService{
+		userRepository:           ur,
+		emailVerificationService: evs,
 	}
 
-	return ua, nil
+	return ua
 }
 
 func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (*aggregate.User, error) {

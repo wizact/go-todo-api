@@ -1,4 +1,0 @@
-# Aggregate
-Aggregate has one aggregate root entity, `user` in this case. All the changes to the other sub-entities (i.e. `group` and `role`) should be done through the aggregate root entity by referencing aggrgate root entity id.
-
-Aggregate Root and Repository relationship should be strictly 1:1. This is because on write, using one repository makes it possible to maintain domain variants. This can be additionally enforced by a transaction and/or unit of work implementation. One read, however, there is a possiblity to use separate means to read data since that would not change the state of data assuming read does not have any side effect.

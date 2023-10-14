@@ -9,18 +9,13 @@ import (
 type EmailVerificationService struct {
 	// repositories and other services
 	emailGatewayRepository repository.EmailGatewayRepository
+	Flag                   int
 }
 
-func NewEmailVerificationService(cfgs ...EmailVerificationServiceConfigurations) (*EmailVerificationService, error) {
-	evs := &EmailVerificationService{}
-	for _, cfgs := range cfgs {
-		err := cfgs(evs)
-		if err != nil {
-			return nil, err
-		}
-	}
+func NewEmailVerificationService(egr repository.EmailGatewayRepository) *EmailVerificationService {
+	evs := &EmailVerificationService{emailGatewayRepository: egr}
 
-	return evs, nil
+	return evs
 }
 
 func (ev *EmailVerificationService) SendEmailVerificationEmail(email string) error {

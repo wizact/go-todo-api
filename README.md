@@ -12,23 +12,3 @@
 * entity
 * valueobject
 
-
-├── internal
-│   ├── user
-│   │   ├── infrastructure
-│   │   │       ├── UserDBRepository.go
-│   │   │       └── UserMemoryRepository.go
-│   │   ├── presentation
-│   │   ├── application
-│   │   │   └── service
-│   │   │       ├── authorization.go
-│   │   │       └── registration.go
-│   │   ├── domain     
-│   │   │   ├── service    
-│   │   │   ├── factory    
-│   │   │   ├── repository
-│   │   │   │    └── user.go
-│   │   │   └── model  
-│   │   │       ├── user.go
-│   │   │       ├── group.go
-│   │   │       └── role.go
