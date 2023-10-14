@@ -9,11 +9,10 @@ import (
 type EmailVerificationService struct {
 	// repositories and other services
 	emailGatewayRepository repository.EmailGatewayRepository
-	Flag                   int
 }
 
-func NewEmailVerificationService(egr repository.EmailGatewayRepository) *EmailVerificationService {
-	evs := &EmailVerificationService{emailGatewayRepository: egr}
+func NewEmailVerificationService(egr repository.EmailGatewayRepository) EmailVerificationService {
+	evs := EmailVerificationService{emailGatewayRepository: egr}
 
 	return evs
 }

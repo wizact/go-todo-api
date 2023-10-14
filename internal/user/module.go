@@ -13,8 +13,6 @@ import (
 type UserModule struct {
 	userRepository         repository.UserRepository
 	emailGatewayRepository repository.EmailGatewayRepository
-	// userAccountService       service.UserAccountService
-	// emailVerificationService service.EmailVerificationService
 }
 
 // New UserModule is the factory method for the UserModule container
@@ -43,9 +41,9 @@ func NewUserModule(useDatabase, useEmailGateway bool) *UserModule {
 }
 
 func (u *UserModule) ResolveUserAccountService() service.UserAccountService {
-	return *service.NewUserAccountService(u.userRepository, u.ResolveEmailVerificationService())
+	return service.NewUserAccountService(u.userRepository, u.ResolveEmailVerificationService())
 }
 
 func (u *UserModule) ResolveEmailVerificationService() service.EmailVerificationService {
-	return *service.NewEmailVerificationService(u.emailGatewayRepository)
+	return service.NewEmailVerificationService(u.emailGatewayRepository)
 }

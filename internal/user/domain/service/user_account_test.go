@@ -15,7 +15,7 @@ func Test_NewUserAccountService(t *testing.T) {
 
 	ur := repository.NewUserMemoryRepository(seedUserList)
 
-	uas := NewUserAccountService(ur, *evs)
+	uas := NewUserAccountService(ur, evs)
 
 	_, err := uas.RegisterNewUser(u)
 

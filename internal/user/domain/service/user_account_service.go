@@ -14,8 +14,8 @@ type UserAccountService struct {
 	emailVerificationService EmailVerificationService
 }
 
-func NewUserAccountService(ur repository.UserRepository, evs EmailVerificationService) *UserAccountService {
-	ua := &UserAccountService{
+func NewUserAccountService(ur repository.UserRepository, evs EmailVerificationService) UserAccountService {
+	ua := UserAccountService{
 		userRepository:           ur,
 		emailVerificationService: evs,
 	}

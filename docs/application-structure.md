@@ -76,8 +76,10 @@ The business rules validated here as opposed to the validation in model layer ar
 #### interface
 interface layer is the port between outside world (API, UI, Views) and our domain (Use Cases) and vice versa. Essentially it consists of [two types of interfaces](https://crosp.net/blog/software-architecture/clean-architecture-part-2-the-clean-architecture/):
 
-* Use Case Input Ports: A button click, or API handler invocation will invoke a method that implements the input adapter (interface) to pass the control to the Use Case layer.
-* Use Case Output Ports: Use case layer, after processing the request, invokes a method of implementation of the interface to hand over the control flow to the views (i.e. html rendere view)
+* Use Case Input Ports (Controller): A button click, or API handler invocation will invoke a method that implements the input adapter (interface) to pass the control to the Use Case layer.
+* Use Case Output Ports (Presenter): Use case layer, after processing the request, invokes a method of implementation of the interface to hand over the control flow to the views (i.e. html rendere view)
+
+For simplicity, we merged the input/output ports into one `controller` folder. For bigger and more template driven applications, you may consider having a `view` output port. 
 
 ![Source: https://crosp.net/blog/software-architecture/clean-architecture-part-2-the-clean-architecture/](assets/FlowOfControl.png)
 
