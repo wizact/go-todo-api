@@ -2,29 +2,18 @@
 # Internal
 
 ## api
-`api` folder is where input and output ports leave. 
+`api` folder is where http handlers and middlewares are configured. This layer is analogous to the `Frameworks and Drivers` of Clean Architecture and is the outermost layer of the app.
+
+This layer should stay as thin as possible an utilise the input ports in the [interface/controller](#interface) layer to communicate with each domain.
 
 ### handlers
-An example of input adapter where http handlers for the api can live. Handler connects to the 
+An example of input adapter where http handlers for the api can live. Handler connects to the the domains using the inpot ports.
 
 ### middleware
 Http handler middlewares such as logging, rate limiting, error handling.
 
 ## Domain Modules
 Each domain has it's own folder in the internal folder.
-
-Following the [hexagonal architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) it has four layers (we care mostly on the first three):
-
-
-* (Frameworks & Drivers)
-* Infrastructure
-* Interface Adapters
-* Application Business Rules
-* Enterprise Business Rules
-
-The main principle is that code layers should not know about the outer layers and should only communicate with them using inversion of control. Conversly, outer layers can know and depend on the inner layers. In this way, `Entities` should not depend on any other layer while `Controllers` can depend on `Use Cases` and `Entities`.
-
-![The Clean Architecture layers](assets/CleanArchitecture.jpg)
 
 This is a snapshot of a domain strcuture as the higher level folders can have dependency on lower level folders, but not the other way around:
 ```
@@ -71,17 +60,17 @@ Define one repository per aggregate root to enforice business invaritants while 
 ##### `services`
 These are domain services responsible for applying application use cases by glueing our aggregates and repositories together. This layer should not be impacted by changes in the database layer, or external depencies.
 
-The business rules validated here as opposed to the validation in model layer are more application to the specific application business rules.
+The business rules validated here as opposed to the validation in model layer are more application to the specific application business rules and use cases.
 
 #### interface
-interface layer is the port between outside world (API, UI, Views) and our domain (Use Cases) and vice versa. Essentially it consists of [two types of interfaces](https://crosp.net/blog/software-architecture/clean-architecture-part-2-the-clean-architecture/):
+interface layer is the port between outside world (API, UI, Views, Database) and our domain (Use Cases) and vice versa. Essentially it consists of [two types of interfaces](https://crosp.net/blog/software-architecture/clean-architecture-part-2-the-clean-architecture/):
 
-* Use Case Input Ports (Controller): A button click, or API handler invocation will invoke a method that implements the input adapter (interface) to pass the control to the Use Case layer.
-* Use Case Output Ports (Presenter): Use case layer, after processing the request, invokes a method of implementation of the interface to hand over the control flow to the views (i.e. html rendere view)
+* Use Case Input Ports (e.g. Controller): A button click, or API handler invocation will invoke a method that implements the input adapter (interface) to pass the control to the Use Case layer.
+* Use Case Output Ports (e.g. Database, Presenter): Use case layer, after processing the request, invokes a method of implementation of the interface to hand over the control flow to the views (i.e. html rendere view)
 
-For simplicity, we merged the input/output ports into one `controller` folder. For bigger and more template driven applications, you may consider having a `view` output port. 
+To be pragmatic, we merged the input/output ports into one `controller` folder. Additionally, `views` can be placed here too. 
 
-![Source: https://crosp.net/blog/software-architecture/clean-architecture-part-2-the-clean-architecture/](assets/FlowOfControl.png)
+Adapters live here too. Mapping between api models / database entities to  domain entities will happen here. It means layers from use cases inwards should not know about anything from interface layer outwards.
 
 #### Infrastructure 
 Infrastructure layer is an adapter to the outer world. In our architecture the concrette implementation of repository interface defined in the Application Business Rules layer is implemented here. These repositories can be used for CRUD operations on data stores, or other external APIs. It is a common practice to have more than one implementation of the repository interface here for different scenarios (i.e. SQL vs in-memory store for testing purposes)
