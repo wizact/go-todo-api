@@ -18,11 +18,11 @@ var (
 
 type UserMemoryRepository struct {
 	Users map[uuid.UUID]ua.User
-	sync.Mutex
+	*sync.Mutex
 }
 
-func NewUserMemoryRepository(seedUserList []ua.User) *UserMemoryRepository {
-	sul := &UserMemoryRepository{
+func NewUserMemoryRepository(seedUserList []ua.User) UserMemoryRepository {
+	sul := UserMemoryRepository{
 		Users: make(map[uuid.UUID]ua.User),
 	}
 
@@ -33,23 +33,23 @@ func NewUserMemoryRepository(seedUserList []ua.User) *UserMemoryRepository {
 	return sul
 }
 
-func (r *UserMemoryRepository) FindById(ctx context.Context, id uuid.UUID) (*ua.User, error) {
+func (r UserMemoryRepository) FindById(ctx context.Context, id uuid.UUID) (ua.User, error) {
 	if user, ok := r.Users[uuid.UUID(id)]; ok {
-		return &user, nil
+		return user, nil
 	}
-	return &ua.User{}, ErrUserNotFound
+	return ua.User{}, ErrUserNotFound
 }
 
-func (r *UserMemoryRepository) FindByEmail(ctx context.Context, email string) (*ua.User, error) {
+func (r UserMemoryRepository) FindByEmail(ctx context.Context, email string) (ua.User, error) {
 	for _, v := range r.Users {
 		if v.Email() == email {
-			return &v, nil
+			return v, nil
 		}
 	}
 
-	return &ua.User{}, ErrUserNotFound
+	return ua.User{}, ErrUserNotFound
 }
-func (r *UserMemoryRepository) Create(ctx context.Context, user ua.User) (*ua.User, error) {
+func (r UserMemoryRepository) Create(ctx context.Context, user ua.User) (ua.User, error) {
 	if r.Users == nil {
 		r.Lock()
 		r.Users = make(map[uuid.UUID]ua.User)
@@ -57,16 +57,16 @@ func (r *UserMemoryRepository) Create(ctx context.Context, user ua.User) (*ua.Us
 	}
 
 	if _, ok := r.Users[uuid.UUID(user.UserId())]; ok {
-		return &ua.User{}, fmt.Errorf("user already exists: %w", ErrFailedToAddUser)
+		return ua.User{}, fmt.Errorf("user already exists: %w", ErrFailedToAddUser)
 	}
 
 	r.Lock()
 	r.Users[uuid.UUID(user.UserId())] = user
 	r.Unlock()
 
-	return &user, nil
+	return user, nil
 }
-func (r *UserMemoryRepository) Update(ctx context.Context, user ua.User) (*ua.User, error) {
+func (r UserMemoryRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
 	if r.Users == nil {
 		r.Lock()
 		r.Users = make(map[uuid.UUID]ua.User)
@@ -74,12 +74,12 @@ func (r *UserMemoryRepository) Update(ctx context.Context, user ua.User) (*ua.Us
 	}
 
 	if _, ok := r.Users[uuid.UUID(user.UserId())]; !ok {
-		return &ua.User{}, fmt.Errorf("user does not exist: %w", ErrFailedToUpdateUser)
+		return ua.User{}, fmt.Errorf("user does not exist: %w", ErrFailedToUpdateUser)
 	}
 
 	r.Lock()
 	r.Users[uuid.UUID(user.UserId())] = user
 	r.Unlock()
 
-	return &user, nil
+	return user, nil
 }

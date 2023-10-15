@@ -14,17 +14,17 @@ func NewUserSqlLiteRepository() *UserSqlLiteRepository {
 	return &UserSqlLiteRepository{}
 }
 
-func (r *UserSqlLiteRepository) FindById(ctx context.Context, id uuid.UUID) (*ua.User, error) {
-	return nil, nil
+func (r *UserSqlLiteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.User, error) {
+	return ua.User{}, nil
 }
 
-func (r *UserSqlLiteRepository) FindByEmail(ctx context.Context, email string) (*ua.User, error) {
-	return nil, nil
+func (r *UserSqlLiteRepository) FindByEmail(ctx context.Context, email string) (ua.User, error) {
+	return ua.User{}, nil
 }
 
-func (r *UserSqlLiteRepository) Create(ctx context.Context, user ua.User) (*ua.User, error) {
-	return nil, nil
+func (r *UserSqlLiteRepository) Create(ctx context.Context, user ua.User) (ua.User, error) {
+	return ua.User{}, nil
 }
-func (r *UserSqlLiteRepository) Update(ctx context.Context, user ua.User) (*ua.User, error) {
-	return nil, nil
+func (r *UserSqlLiteRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
+	return ua.User{}, nil
 }

@@ -2,9 +2,9 @@ package module
 
 import (
 	"github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	"github.com/wizact/go-todo-api/internal/user/domain/repository"
 	"github.com/wizact/go-todo-api/internal/user/domain/service"
 	infraRepository "github.com/wizact/go-todo-api/internal/user/infrastructure/repository"
+	"github.com/wizact/go-todo-api/internal/user/interfaces/repository"
 )
 
 // A UserModule is the dependency container for the User module

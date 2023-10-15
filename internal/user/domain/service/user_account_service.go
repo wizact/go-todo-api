@@ -5,8 +5,21 @@ import (
 	"errors"
 
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	repository "github.com/wizact/go-todo-api/internal/user/domain/repository"
+	repository "github.com/wizact/go-todo-api/internal/user/interfaces/repository"
 )
+
+type RegisterNewUser interface {
+	RegisterNewUser(user aggregate.User) (aggregate.User, error)
+}
+
+type AuthenticateUser interface {
+	AuthenticateUser(email, password string) (bool, error)
+}
+
+type UserAccountUseCase interface {
+	RegisterNewUser
+	AuthenticateUser
+}
 
 type UserAccountService struct {
 	// repositories and other services
@@ -23,32 +36,32 @@ func NewUserAccountService(ur repository.UserRepository, evs EmailVerificationSe
 	return ua
 }
 
-func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (*aggregate.User, error) {
+func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (aggregate.User, error) {
 	// Verify the account
 	if !user.IsValid() {
-		return nil, errors.New("user info is not valid")
+		return user, errors.New("user info is not valid")
 	}
 
 	// Check if the user does not exist
 	u, e := ua.userRepository.FindByEmail(context.Background(), user.Email())
 	if e != nil {
-		return nil, e
+		return user, e
 	}
 
-	if u != nil {
-		return nil, errors.New("email already registered")
+	if u.Email() != user.Email() {
+		return user, errors.New("email already registered")
 	}
 
 	// Create user
 	u, e = ua.userRepository.Create(context.Background(), user)
 	if e != nil {
-		return nil, e
+		return user, e
 	}
 
 	// Trigger new email message (dependency in the service layer to the infra)
 	ua.emailVerificationService.SendEmailVerificationEmail(user.Email())
 	if e != nil {
-		return nil, e
+		return user, e
 	}
 
 	return u, nil

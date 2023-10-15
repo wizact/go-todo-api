@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	repository "github.com/wizact/go-todo-api/internal/user/domain/repository"
+	repository "github.com/wizact/go-todo-api/internal/user/interfaces/repository"
 )
 
 type EmailVerificationService struct {
