@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	healthCheckRoute = "/__health-check"
+	HealthCheckRoute = "/__health-check"
+	UserRoute        = "/user"
 )
 
 // StartServer starts the http server
@@ -22,9 +23,8 @@ func StartServer(address, port string, tls bool) {
 	router := mux.NewRouter()
 	// router.Use(commonMiddleware)
 
-	// HealthCheck route setup
-	hcr := hndl.HealthCheckRoute{}
-	hcr.SetupRoutes(healthCheckRoute, router)
+	// Register all the routes
+	registerRoutes(router)
 
 	if tls {
 		log.Fatal(http.ListenAndServeTLS(serverAddress,
@@ -34,4 +34,15 @@ func StartServer(address, port string, tls bool) {
 	} else {
 		log.Fatal(http.ListenAndServe(serverAddress, router))
 	}
+}
+
+func registerRoutes(router *mux.Router) {
+	// HealthCheck route setup
+	hcr := hndl.HealthCheckRoute{}
+	hcr.SetupRoutes(HealthCheckRoute, router)
+
+	// User route setup
+	ur := hndl.UserRouteFactory{}.CreateUserRoute()
+	ur.SetupRoutes(UserRoute, router)
+
 }

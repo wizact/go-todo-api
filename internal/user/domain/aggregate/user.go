@@ -109,5 +109,5 @@ func (u *User) SetIsDeleted(b bool) {
 
 // IsValid checks if the user is valid
 func (u *User) IsValid() bool {
-	return u.user.IsValid() && u.role.IsValid()
+	return (u.user != nil && u.user.IsValid()) && (u.role != nil && u.role.IsValid())
 }

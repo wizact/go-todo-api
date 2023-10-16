@@ -6,12 +6,12 @@ import (
 )
 
 type UserController struct {
-	userAccountService usecase.UserAccountUseCase
+	userAccountUseCase usecase.UserAccountUseCase
 }
 
-func NewUserController(uauc usecase.UserAccountUseCase) UserController {
+func NewUserController(uasuc usecase.UserAccountUseCase) UserController {
 	return UserController{
-		userAccountService: uauc,
+		userAccountUseCase: uasuc,
 	}
 }
 
@@ -19,7 +19,7 @@ func (u *UserController) RegisterNewUser( /* model User */ ) {
 	// map model to aggregate
 	var ua aggregate.User
 	var err error
-	_, err = u.userAccountService.RegisterNewUser(ua)
+	_, err = u.userAccountUseCase.RegisterNewUser(ua)
 
 	if err != nil {
 		// return proper error

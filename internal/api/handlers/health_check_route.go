@@ -12,6 +12,10 @@ import (
 type HealthCheckRoute struct {
 }
 
+func NewHealthCheckRoute() HealthCheckRoute {
+	return HealthCheckRoute{}
+}
+
 func (hcr HealthCheckRoute) SetupRoutes(routePath string, router *mux.Router) {
 	router.Handle(routePath, mw.AppHandler(hcr.GetHealthCheck())).Methods("GET")
 }

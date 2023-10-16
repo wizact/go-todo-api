@@ -8,27 +8,20 @@ import (
 	repository "github.com/wizact/go-todo-api/internal/user/interfaces/repository"
 )
 
-type RegisterNewUser interface {
-	RegisterNewUser(user aggregate.User) (aggregate.User, error)
-}
-
-type AuthenticateUser interface {
-	AuthenticateUser(email, password string) (bool, error)
-}
-
 type UserAccountUseCase interface {
-	RegisterNewUser
-	AuthenticateUser
+	RegisterNewUser(user aggregate.User) (aggregate.User, error)
+	AuthenticateUser(email, password string) (bool, error)
+	ValidateNewUserEmail(u aggregate.User) error
 }
 
 type UserAccountService struct {
 	// repositories and other services
 	userRepository           repository.UserRepository
-	emailVerificationService EmailVerificationService
+	emailVerificationService EmailVerificationUseCase
 }
 
-func NewUserAccountService(ur repository.UserRepository, evs EmailVerificationService) UserAccountService {
-	ua := UserAccountService{
+func NewUserAccountService(ur repository.UserRepository, evs EmailVerificationUseCase) UserAccountUseCase {
+	ua := &UserAccountService{
 		userRepository:           ur,
 		emailVerificationService: evs,
 	}

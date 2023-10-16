@@ -40,10 +40,10 @@ func NewUserModule(useDatabase, useEmailGateway bool) *UserModule {
 	}
 }
 
-func (u *UserModule) ResolveUserAccountService() service.UserAccountService {
-	return service.NewUserAccountService(u.userRepository, u.ResolveEmailVerificationService())
+func (u *UserModule) ResolveUserAccountUseCase() service.UserAccountUseCase {
+	return service.NewUserAccountService(u.userRepository, u.ResolveEmailVerificationUseCase())
 }
 
-func (u *UserModule) ResolveEmailVerificationService() service.EmailVerificationService {
+func (u *UserModule) ResolveEmailVerificationUseCase() service.EmailVerificationUseCase {
 	return service.NewEmailVerificationService(u.emailGatewayRepository)
 }
