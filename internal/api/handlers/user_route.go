@@ -8,7 +8,8 @@ import (
 	mw "github.com/wizact/go-todo-api/internal/api/middleware"
 	um "github.com/wizact/go-todo-api/internal/user"
 	uc "github.com/wizact/go-todo-api/internal/user/interfaces/controller"
-	hm "github.com/wizact/go-todo-api/pkg/http-models"
+	httpmodel "github.com/wizact/go-todo-api/internal/user/interfaces/model"
+	hm "github.com/wizact/go-todo-api/pkg/http-model"
 )
 
 type UserRouteFactory struct {
@@ -40,8 +41,20 @@ func (ur UserRoute) SetupRoutes(routePath string, router *mux.Router) {
 // RegisterUser registers a user
 func (ur UserRoute) RegisterUser() mw.AppHandler {
 	fn := func(w http.ResponseWriter, r *http.Request) *hm.AppError {
-		ur.UserController.RegisterNewUser()
-		json.NewEncoder(w).Encode("OK")
+
+		var u httpmodel.User
+		err := json.NewDecoder(r.Body).Decode(&u)
+		if err != nil {
+			return &hm.AppError{ErrorObject: err, Message: "Bad Request", Code: http.StatusBadRequest}
+		}
+
+		u, err = ur.UserController.RegisterNewUser(u)
+
+		if e, a := err.(*hm.AppError); a {
+			return e
+		}
+
+		json.NewEncoder(w).Encode(u)
 		return nil
 	}
 

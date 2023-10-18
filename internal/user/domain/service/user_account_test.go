@@ -25,7 +25,7 @@ func Test_NewUserAccountService(t *testing.T) {
 }
 
 func init_users(t *testing.T) []aggregate.User {
-	ua := aggregate.NewDefaultUser()
+	ua := aggregate.NewUser()
 	u := ua.User()
 	u.FirstName = "John"
 	u.LastName = "Doe"

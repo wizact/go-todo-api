@@ -16,10 +16,10 @@ type User struct {
 	isDeleted        bool
 }
 
-// NewDefaultUser creates a new user with an auto generated uuid and limited role
-func NewDefaultUser() User {
+// NewUser creates a new user with an auto generated uuid and limited role
+func NewUser() User {
 	u := model.NewUser()
-	r := model.RoleFactory{}.NewLimitedRole()
+	r := model.Role{}
 	return User{
 		user: &u,
 		role: &r,

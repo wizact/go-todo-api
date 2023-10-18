@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	hm "github.com/wizact/go-todo-api/pkg/http-models"
+	hm "github.com/wizact/go-todo-api/pkg/http-model"
 )
 
 type AppHandler func(http.ResponseWriter, *http.Request) *hm.AppError

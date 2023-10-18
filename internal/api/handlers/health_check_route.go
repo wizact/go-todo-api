@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	mw "github.com/wizact/go-todo-api/internal/api/middleware"
-	hm "github.com/wizact/go-todo-api/pkg/http-models"
+	hm "github.com/wizact/go-todo-api/pkg/http-model"
 )
 
 type HealthCheckRoute struct {
