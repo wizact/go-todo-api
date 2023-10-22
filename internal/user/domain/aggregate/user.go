@@ -33,6 +33,10 @@ func (u *User) UserId() uuid.UUID {
 
 // User gets the user as aggregate root
 func (u *User) User() model.User {
+	if u.user == nil {
+		um := model.NewUser()
+		u.user = &um
+	}
 	return *u.user
 }
 
@@ -69,6 +73,11 @@ func (u *User) SetEmail(email string) error {
 
 // Role gets the user role entity
 func (u *User) Role() model.Role {
+	if u.role == nil {
+		rm := model.Role{}
+		u.role = &rm
+	}
+
 	return *u.role
 }
 

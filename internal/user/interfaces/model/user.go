@@ -1,10 +1,12 @@
 package models
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/wizact/go-todo-api/internal/user/domain/aggregate"
 	"github.com/wizact/go-todo-api/internal/user/domain/model"
+	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
 type User struct {
@@ -18,28 +20,32 @@ type User struct {
 	PhoneNumber      string `json:"phone_number"`
 }
 
-func (u *User) ToDomainModel() (aggregate.User, error) {
+func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
 	var ua aggregate.User = aggregate.NewUser()
 
-	var um model.User = model.NewUser()
+	duser := model.NewUser()
 
-	um.FirstName = u.FirstName
-	um.LastName = u.FirstName
+	duser.FirstName = u.FirstName
+	duser.LastName = u.FirstName
 
 	if t, e := time.Parse(time.RFC3339, u.DateOfBirth); e != nil {
-		um.DateOfBirth = t
+		duser.DateOfBirth = t
+	} else {
+		return ua, &hsm.AppError{Message: e.Error(), ErrorObject: e, Code: http.StatusBadRequest}
 	}
 
-	um.Email = u.Email
+	duser.Email = u.Email
 
-	um.Phone.CountryCode = u.PhoneCountryCode
-	um.Phone.AreaCode = u.PhoneAreaCode
-	um.Phone.Number = u.PhoneNumber
+	duser.Phone.CountryCode = u.PhoneCountryCode
+	duser.Phone.AreaCode = u.PhoneAreaCode
+	duser.Phone.Number = u.PhoneNumber
+
+	ua.SetUser(duser)
 
 	return ua, nil
 }
 
-func (u *User) ToApiModel(ua aggregate.User) error {
+func (u *User) ToApiModel(ua aggregate.User) *hsm.AppError {
 	u.FirstName = ua.User().FirstName
 	u.LastName = ua.User().FirstName
 	u.DateOfBirth = ua.User().DateOfBirth.String()

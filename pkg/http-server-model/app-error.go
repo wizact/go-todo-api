@@ -1,4 +1,4 @@
-package httpmodels
+package httpservermodel
 
 // AppError as app error container
 type AppError struct {
@@ -7,7 +7,16 @@ type AppError struct {
 	Code        int    `json:"code"`
 }
 
+func NewAppError(errorObject error, message string, code int) *AppError {
+	return &AppError{ErrorObject: errorObject, Message: message, Code: code}
+}
+
+// Error returns the error string, or Message string in that order or priority.
 func (a *AppError) Error() string {
+	if a.ErrorObject == nil {
+		return a.Message
+	}
+
 	return a.ErrorObject.Error()
 }
 

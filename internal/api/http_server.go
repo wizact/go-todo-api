@@ -11,7 +11,7 @@ import (
 
 const (
 	HealthCheckRoute = "/__health-check"
-	UserRoute        = "/user"
+	UserRoute        = "/users"
 )
 
 // StartServer starts the http server

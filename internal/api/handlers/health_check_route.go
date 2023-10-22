@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	mw "github.com/wizact/go-todo-api/internal/api/middleware"
-	hm "github.com/wizact/go-todo-api/pkg/http-model"
+	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
 type HealthCheckRoute struct {
@@ -22,7 +22,7 @@ func (hcr HealthCheckRoute) SetupRoutes(routePath string, router *mux.Router) {
 
 // GetHealthCheck returns OK when is called
 func (hcr HealthCheckRoute) GetHealthCheck() mw.AppHandler {
-	fn := func(w http.ResponseWriter, r *http.Request) *hm.AppError {
+	fn := func(w http.ResponseWriter, r *http.Request) *hsm.AppError {
 		json.NewEncoder(w).Encode("OK")
 		return nil
 	}

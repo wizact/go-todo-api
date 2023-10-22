@@ -6,7 +6,7 @@ import (
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
 	usecase "github.com/wizact/go-todo-api/internal/user/domain/service"
 	httpmodel "github.com/wizact/go-todo-api/internal/user/interfaces/model"
-	hm "github.com/wizact/go-todo-api/pkg/http-model"
+	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
 type UserController struct {
@@ -19,27 +19,28 @@ func NewUserController(uasuc usecase.UserAccountUseCase) UserController {
 	}
 }
 
-func (u *UserController) RegisterNewUser(user httpmodel.User) (httpmodel.User, *hm.AppError) {
+func (u *UserController) RegisterNewUser(user httpmodel.User) (httpmodel.User, *hsm.AppError) {
 	var ua aggregate.User
+	var appErr *hsm.AppError
 
 	// map model to aggregate
 	ua, err := user.ToDomainModel()
 	if err != nil {
-		return user, &hm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
 	}
 
-	ua, err = u.userAccountUseCase.RegisterNewUser(ua)
+	ua, appErr = u.userAccountUseCase.RegisterNewUser(ua)
 
-	if err != nil {
+	if appErr != nil {
 		// return proper error
-		return user, &hm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	// map aggregate to model
 	err = user.ToApiModel(ua)
 	if err != nil {
 		// return proper error
-		return user, &hm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	return user, nil
