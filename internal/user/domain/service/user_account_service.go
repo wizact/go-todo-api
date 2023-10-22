@@ -19,8 +19,8 @@ var (
 
 type UserAccountUseCase interface {
 	RegisterNewUser(user aggregate.User) (aggregate.User, *hsm.AppError)
-	AuthenticateUser(email, password string) (bool, error)
-	ValidateNewUserEmail(u aggregate.User) error
+	AuthenticateUser(email, password string) (bool, *hsm.AppError)
+	ValidateNewUserEmail(u aggregate.User) *hsm.AppError
 }
 
 type UserAccountService struct {
@@ -74,13 +74,13 @@ func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (aggregate.Us
 	return u, nil
 }
 
-func (ua *UserAccountService) ValidateNewUserEmail(u aggregate.User) error {
+func (ua *UserAccountService) ValidateNewUserEmail(u aggregate.User) *hsm.AppError {
 	// Verify the token
 	// Set the flag to enable the user
 	return nil
 }
 
-func (ua *UserAccountService) AuthenticateUser(email, password string) (bool, error) {
+func (ua *UserAccountService) AuthenticateUser(email, password string) (bool, *hsm.AppError) {
 	// Verify the token
 	// Set the flag to enable the user
 	return true, nil

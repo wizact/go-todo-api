@@ -1,7 +1,7 @@
 @baseUri= users	
     
 
-# @name registerUser
+# @name registerNewUser
 POST http://{{hostname}}/{{baseUri}} HTTP/1.1
 
 {
