@@ -12,6 +12,15 @@
             "program": "${workspaceFolder}/cmd/server",
             "args": ["start-server", "-address=localhost", "-port=9000", "-tls=false"],
             "env": {  }
+        },
+        {
+            "name": "Launch DB migration",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/db-migration",
+            "args": [],
+            "env": {  }
         }
     ]
 }
