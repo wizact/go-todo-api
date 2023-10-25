@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"path/filepath"
 
 	migration "github.com/wizact/go-todo-api/db"
 )
@@ -9,7 +10,11 @@ import (
 func main() {
 	log.Println("database migration")
 	dbm := migration.DBMigration{}
-	if err := dbm.Start(); err != nil {
+
+	dir := "../../db"
+	dbPath := filepath.Join(dir, "todo.db")
+
+	if err := dbm.Start(dbPath); err != nil {
 		log.Fatalln(err)
 	}
 }
