@@ -7,6 +7,12 @@ BUILDTAGS :=
 PREFIX?=$(shell pwd)
 OUTDIR := ${PREFIX}/out
 
+OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
+ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
+
+# Directories that we need created to build binaries.
+BUILD_DIRS := $(OUTDIR)/server/$(OS)_$(ARCH)             \
+              $(OUTDIR)/db-migration/$(OS)_$(ARCH)
 
 # VERSION := $(shell cat VERSION.txt)
 REGISTRY := "docker.pkg.github.com/wizact/go-todo-api/"
@@ -30,7 +36,7 @@ gen-db-resource:
 	./migration.sh
 
 .PHONY: build-migrate-db
-build-migrate-db:
+build-migrate-db: | $(BUILD_DIRS)
 	latestup=$$(echo `ls -r ./db/migrations/**.up.sql | head -1`) && \
 	if [ -z "$$latestup" ]; then \
 		echo 'cannot find any up script' $$latestup;  \
@@ -45,6 +51,14 @@ build-migrate-db:
 		exit 1; \
 	fi
 
+
+$(BUILD_DIRS):
+	mkdir -p $@
+
+.PHONY: clean-bin
+clean-bin:
+	echo $(OUTDIR)
+	rm -rf $(OUTDIR)
 
 # dbver=$$(echo './cmd/db-migration/2_alter_table.up.sql' | sed 's/^\([0-9]*\)_.*\.sql$$/\1/') && \
 # echo $$dbver
