@@ -34,11 +34,10 @@ else
     goldflags="-s -w"
 fi
 
-always_ldflags=""
-# always_ldflags="-X $(go list -m)/pkg/version.Version=${VERSION}"
-go install                                                      \
-    -installsuffix "static"                                     \
-    -gcflags="${gogcflags}"                                     \
-    -asmflags="${goasmflags}"                                   \
-    -ldflags="${always_ldflags} ${goldflags}"                   \
+always_ldflags="-X $(go list -m)/pkg/version.Version=${VERSION}"
+go install                                                        \
+    -installsuffix "static"                                       \
+    -gcflags="${gogcflags}"                                       \
+    -asmflags="${goasmflags}"                                     \
+    -ldflags="${always_ldflags} ${goldflags} -extldflags -static" \
     "$@"

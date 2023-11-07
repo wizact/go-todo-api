@@ -32,8 +32,6 @@ BUILD_DIRS := bin/$(OS)_$(ARCH)					  \
 REGISTRY := "docker.pkg.github.com/wizact/go-todo-api/"
  
 VERSION ?= $(shell git describe --tags --always --dirty)
-CTIMEVAR=-X $(PKG)/version.VERSION=$(VERSION)
-GO_LDFLAGS_STATIC=-ldflags "-w $(CTIMEVAR) -extldflags -static"
 
 # The binaries to build (just the basenames)
 BINS ?= server db-migration
@@ -159,8 +157,9 @@ help:
 	echo "  ARCH = $(ARCH)"
 	echo "  GO_VERSION = $(GO_VERSION)"
 	echo "  VERSION = $(VERSION)"
-	echo "  GOLDFlags = $(GO_LDFLAGS_STATIC)"
 	echo "  BUILD_IMAGE = $(BUILD_IMAGE)"
+	echo "  GOFLAGS = $(GOFLAGS)"
+	echo "  REGISTRY = $(REGISTRY)"
 	echo
 	echo "TARGETS:"
 	grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST)     \
