@@ -11,6 +11,8 @@ PREFIX?=$(shell pwd)
 # set to 1 for debugging
 DBG ?=
 
+ALL_PLATFORMS ?= darwin/amd64 linux/amd64 linux/arm linux/arm64
+
 GOFLAGS ?=
 # Because we store the module cache locally.
 GOFLAGS := $(GOFLAGS) -modcacherw
@@ -97,6 +99,15 @@ go-build:| $(BUILD_DIRS)
 
 $(BUILD_DIRS):
 	mkdir -p $@
+
+build-%:
+	$(MAKE) build                         \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+all-build: # @HELP builds binaries for all platforms
+all-build: $(addprefix build-, $(subst /,_, $(ALL_PLATFORMS)))
 
 shell: # @HELP launches a shell in the containerized build environment
 shell: | $(BUILD_DIRS)
