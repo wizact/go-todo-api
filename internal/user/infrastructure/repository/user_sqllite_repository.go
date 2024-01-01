@@ -25,6 +25,7 @@ func (r *UserSqlLiteRepository) FindByEmail(ctx context.Context, email string) (
 func (r *UserSqlLiteRepository) Create(ctx context.Context, user ua.User) (ua.User, error) {
 	return ua.User{}, nil
 }
+
 func (r *UserSqlLiteRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
 	return ua.User{}, nil
 }

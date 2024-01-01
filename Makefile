@@ -8,10 +8,11 @@ GO_VERSION := 1.19
 BUILD_IMAGE := golang:$(GO_VERSION)-alpine
 BUILDTAGS :=
 PREFIX?=$(shell pwd)
+BUILDTAGS :=
 # set to 1 for debugging
 DBG ?=
 
-ALL_PLATFORMS ?= darwin/amd64 linux/amd64 linux/arm linux/arm64
+ALL_PLATFORMS ?= linux/amd64
 
 GOFLAGS ?=
 # Because we store the module cache locally.
@@ -23,10 +24,11 @@ MAKEFLAGS += -s
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
+
+
 # Directories that we need created to build binaries.
-BUILD_DIRS := bin/$(OS)_$(ARCH)					  \
+BUILD_DIRS := out/$(OS)_$(ARCH)					  \
 			  .go/bin/$(OS)_$(ARCH)               \
-              .go/bin/$(OS)_$(ARCH)/$(OS)_$(ARCH) \
 			  .go/cache                           \
               .go/pkg
 			  
@@ -44,6 +46,41 @@ ifeq ($(OS), windows)
 endif
 
 OUTBINS = $(foreach bin,$(BINS),bin/$(OS)_$(ARCH)/$(bin)$(BIN_EXTENSION))
+
+XOUTBINS = $(foreach bin,$(BINS),$(bin)$(OS)_$(ARCH)$(BIN_EXTENSION))
+
+db-migration_cgo = 1
+server_cgo = 1
+
+$(foreach bin,$(BINS),$(eval $(strip   \
+    xbuild-$(bin): OUTBIN = $(bin)_$(OS)_$(ARCH)$(BIN_EXTENSION) \
+)))
+
+xbuild-%:| $(BUILD_DIRS) # @HELP TODO
+	echo $@
+	echo "building $(firstword $(subst _, ,$*)) for $(OS)/$(ARCH)"
+	docker run                                                  \
+		-ti                                                     \
+		--rm                                                    \
+		-v $$(pwd):/src                                         \
+		-w /src                                                 \
+		-v $$(pwd)/.go/cache:/.cache                            \
+		--env GOCACHE="/.cache/gocache"                         \
+		--env GOMODCACHE="/.cache/gomodcache"                   \
+		--env ARCH="$(ARCH)"                                    \
+		--env OS="$(OS)"                                        \
+		--env BUILDTAGS="$(BUILDTAGS)"							\
+		--env CGO=$($(firstword $(subst _, ,$*))_cgo)			\
+		--env VERSION="$(VERSION)"                              \
+		--env GOFLAGS="$(GOFLAGS)"                              \
+		--env DEBUG="$(DBG)"                                    \
+		--env OUTDIR=".go/bin/$(OS)_$(ARCH)"					\
+		--env NAME=$(firstword $(subst _, ,$*))					\
+		$(BUILD_IMAGE)                                          \
+		./build/xbuild.sh
+
+xbuild-directory:
+	mkdir -p $$(pwd)/.go/bin/$(OS)_$(ARCH)
 
 build: # @HELP builds the binaries in a container
 build: $(OUTBINS)
@@ -67,7 +104,7 @@ $(foreach outbin,$(OUTBINS),$(eval $(strip   \
 STAMPS = $(foreach outbin,$(OUTBINS),.go/$(outbin).stamp)
 .PHONY: $(STAMPS)
 $(STAMPS): go-build
-	echo -ne "binary: $(OUTBIN)  "
+	echo -ne "binary: $(OUTBIN) "
 	if ! cmp -s .go/$(OUTBIN) $(OUTBIN); then  \
 		mv .go/$(OUTBIN) $(OUTBIN);            \
 		date >$@;                              \
@@ -77,7 +114,7 @@ $(STAMPS): go-build
 	fi
 
 go-build:| $(BUILD_DIRS)
-	echo "# building for $(OS)/$(ARCH)"
+	echo "# building for $(OS)/$(ARCH)"												
 	docker run                                                  \
 		-ti                                                     \
 		--rm                                                    \
@@ -136,29 +173,11 @@ gen-db-resource:
 	rm -f ${PREFIX}/db/resourcefile.go && \
 	${PREFIX}/build/migration.sh
 
-.PHONY: build-db-migration
-build-db-migration: # @HELP gets the latest db version and creates a binary migration file
-build-db-migration: | $(BUILD_DIRS) gen-db-resource
-	latestup=$$(echo `ls -r ./db/migrations/**.up.sql | head -1`) && \
-	if [ -z "$$latestup" ]; then \
-		echo 'cannot find any up script' $$latestup;  \
-	else \
-		echo 'last up command is:' $$latestup; \
-	fi && \
-	dbver=$$(echo $$latestup | sed -n '/^\.[\\\/]db[\\\/]migrations[\\\/]/ s/[^0-9]*\([0-9]\+\)_*.*up.sql$$/\1/p') && \
-	if [ $$dbver -gt 0 ]; then \
-		echo 'lastest db version will be:' $$dbver; \
-	else \
-		echo 'error finding the latest up command version'; \
-		exit 1; \
-	fi
-
 .PHONY: clean-bins
 clean-bins: # @HELP clear all the files in the out bin folder
 clean-bins:
 	echo $@
 	rm -rf bin/
-	rm -rf .go/
 
 .PHONY: help
 help: # @HELP prints this message

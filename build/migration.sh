@@ -6,6 +6,7 @@ if [ -x "$path_to_go_bindata" ]; then
     echo "found go-bindata: $path_to_go_bindata"
 else
     echo "could not find go-bindata. installing go-bindata"
+    go get github.com/go-bindata/go-bindata/go-bindata
     go install github.com/go-bindata/go-bindata/go-bindata
 fi
 

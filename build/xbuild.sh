@@ -17,11 +17,16 @@ if [ -z "${VERSION:-}" ]; then
     exit 1
 fi
 
-# we do not need CGO for the main application. For bins require CGO, use a separate script.
-export CGO_ENABLED=0
+export CGO_ENABLED="${CGO}"
 export GOARCH="${ARCH}"
 export GOOS="${OS}"
 export GO111MODULE=on
+export BUILDTAGS="${BUILDTAGS}"
+export OUTDIR="${OUTDIR}"
+export NAME="${NAME}"
+
+apk add build-base
+
 # export CC=arm-linux-gnueabihf-gcc-5
 
 if [[ "${DEBUG:-}" == 1 ]]; then
@@ -37,10 +42,11 @@ else
 fi
 
 always_ldflags="-X $(go list -m)/pkg/version.Version=${VERSION}"
-go install                                                        \
-    -tags cgo                                                     \
-    -installsuffix "static"                                       \
-    -gcflags="${gogcflags}"                                       \
-    -asmflags="${goasmflags}"                                     \
-    -ldflags="${always_ldflags} ${goldflags} -extldflags -static" \
-    "$@"
+
+go build                                                            \
+    -installsuffix "static"                                         \
+    -gcflags="${gogcflags}"                                         \
+    -asmflags="${goasmflags}"                                       \
+    -ldflags="${always_ldflags} ${goldflags} -extldflags -static"   \
+    -tags "${BUILDTAGS} static_build"                               \
+    -o ${OUTDIR}/${NAME} ./cmd/${NAME}
