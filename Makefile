@@ -12,6 +12,10 @@ BUILDTAGS :=
 # set to 1 for debugging
 DBG ?=
 
+# build configuration in the format of <bin>_<config> = <value>
+db-migration_cgo = 1
+server_cgo = 1
+
 ALL_PLATFORMS ?= linux/amd64
 
 GOFLAGS ?=
@@ -21,12 +25,11 @@ GOFLAGS := $(GOFLAGS) -modcacherw
 # Do not echo recipes.
 MAKEFLAGS += -s
 
+# OS/ARCH can be provided using the command line, e.g. OS=linux ARCH=arm64
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-
-
-# Directories that we need created to build binaries.
+# Directories that we need created to build binaries. the final artefacts will live in out/<OS>_<ARCH>
 BUILD_DIRS := out/$(OS)_$(ARCH)					  \
 			  .go/bin/$(OS)_$(ARCH)               \
 			  .go/cache                           \
@@ -45,18 +48,14 @@ ifeq ($(OS), windows)
   BIN_EXTENSION := .exe
 endif
 
-OUTBINS = $(foreach bin,$(BINS),bin/$(OS)_$(ARCH)/$(bin)$(BIN_EXTENSION))
-
-XOUTBINS = $(foreach bin,$(BINS),$(bin)$(OS)_$(ARCH)$(BIN_EXTENSION))
-
-db-migration_cgo = 1
-server_cgo = 1
+# ARTEFACTS = $(foreach bin,$(BINS),$(bin)$(OS)_$(ARCH)$(BIN_EXTENSION))
 
 $(foreach bin,$(BINS),$(eval $(strip   \
-    xbuild-$(bin): OUTBIN = $(bin)_$(OS)_$(ARCH)$(BIN_EXTENSION) \
+    build-$(bin): OUTBIN = $(bin)_$(OS)_$(ARCH)$(BIN_EXTENSION) \
 )))
 
-xbuild-%:| $(BUILD_DIRS) # @HELP TODO
+build-%: # @HELP run the build command for each bins (BINS). usage: make build-<bin> OS=linux ARCH=arm64
+build-%:| $(BUILD_DIRS) 
 	echo $@
 	echo "building $(firstword $(subst _, ,$*)) for $(OS)/$(ARCH)"
 	docker run                                                  \
@@ -75,76 +74,34 @@ xbuild-%:| $(BUILD_DIRS) # @HELP TODO
 		--env GOFLAGS="$(GOFLAGS)"                              \
 		--env DEBUG="$(DBG)"                                    \
 		--env OUTDIR=".go/bin/$(OS)_$(ARCH)"					\
+		--env OUTNAME=$(OUTBIN)									\
 		--env NAME=$(firstword $(subst _, ,$*))					\
 		$(BUILD_IMAGE)                                          \
-		./build/xbuild.sh
+		./build/build.sh
 
-xbuild-directory:
-	mkdir -p $$(pwd)/.go/bin/$(OS)_$(ARCH)
 
-build: # @HELP builds the binaries in a container
-build: $(OUTBINS)
-	echo
-
-$(foreach outbin,$(OUTBINS),$(eval  \
-    $(outbin): .go/$(outbin).stamp  \
-))
-
-# This is the target definition for all outbins.
-$(OUTBINS):
-	true
-
-# Each stampfile target can reference an $(OUTBIN) variable.
-$(foreach outbin,$(OUTBINS),$(eval $(strip   \
-    .go/$(outbin).stamp: OUTBIN = $(outbin)  \
+$(foreach bin,$(BINS),$(eval $(strip   \
+    artefact-$(bin): OUTBIN = $(bin)_$(OS)_$(ARCH)$(BIN_EXTENSION) \
 )))
 
-# This is the target definition for all stampfiles.
-# This will build the binary under ./.go and update the real binary iff needed.
-STAMPS = $(foreach outbin,$(OUTBINS),.go/$(outbin).stamp)
-.PHONY: $(STAMPS)
-$(STAMPS): go-build
-	echo -ne "binary: $(OUTBIN) "
-	if ! cmp -s .go/$(OUTBIN) $(OUTBIN); then  \
-		mv .go/$(OUTBIN) $(OUTBIN);            \
-		date >$@;                              \
-		echo;                                  \
-	else                                       \
-		echo "(cached)";                       \
+artefact-%: # @HELP copies the artefact from .go/<OS>_<ARCH>/<bin> to out/<OS>_<ARCH>/<bin> if they are newer
+artefact-%: | $(BUILD_DIRS)
+	if ! cmp -s .go/bin/$(OS)_$(ARCH)/$(OUTBIN) ./out/$(OS)_$(ARCH)/$(OUTBIN); then  	\
+		mv .go/bin/$(OS)_$(ARCH)/$(OUTBIN) out/$(OS)_$(ARCH)/$(OUTBIN);            		\
+		date >out/$(OS)_$(ARCH)/$@;                              						\
+		echo;                                  											\
+	else                                       											\
+		echo "(cached)";                       											\
 	fi
-
-go-build:| $(BUILD_DIRS)
-	echo "# building for $(OS)/$(ARCH)"												
-	docker run                                                  \
-		-ti                                                     \
-		--rm                                                    \
-		-u $$(id -u):$$(id -g)                                  \
-		-v $$(pwd):/src                                         \
-		-w /src                                                 \
-		-v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-		-v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-		-v $$(pwd)/.go/cache:/.cache                            \
-		--env GOCACHE="/.cache/gocache"                         \
-		--env GOMODCACHE="/.cache/gomodcache"                   \
-		--env ARCH="$(ARCH)"                                    \
-		--env OS="$(OS)"                                        \
-		--env VERSION="$(VERSION)"                              \
-		--env GOFLAGS="$(GOFLAGS)"                              \
-		--env DEBUG="$(DBG)"                                    \
-		$(BUILD_IMAGE)                                          \
-		./build/build.sh ./...
 
 $(BUILD_DIRS):
 	mkdir -p $@
 
-build-%:
-	$(MAKE) build                         \
-	    --no-print-directory              \
-	    GOOS=$(firstword $(subst _, ,$*)) \
-	    GOARCH=$(lastword $(subst _, ,$*))
+all-artefact: # @HELP copies the all artefacts from .go/<OS>_<ARCH>/ to out/<OS>_<ARCH>/ if they are newer
+all-artefact: $(addprefix artefact-, $(BINS))
 
-all-build: # @HELP builds binaries for all platforms
-all-build: $(addprefix build-, $(subst /,_, $(ALL_PLATFORMS)))
+all-build: # @HELP builds binaries for bins defined in BINS var. usage: make all-build OS=linux ARCH=arm64
+all-build: $(addprefix build-, $(BINS))
 
 shell: # @HELP launches a shell in the containerized build environment
 shell: | $(BUILD_DIRS)
@@ -174,10 +131,11 @@ gen-db-resource:
 	${PREFIX}/build/migration.sh
 
 .PHONY: clean-bins
-clean-bins: # @HELP clear all the files in the out bin folder
-clean-bins:
+clean: # @HELP clear all the files in the out and .go folder
+clean:
 	echo $@
-	rm -rf bin/
+	rm -rf .go/*
+	rm -rf out/*
 
 .PHONY: help
 help: # @HELP prints this message
