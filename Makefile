@@ -109,7 +109,6 @@ shell: | $(BUILD_DIRS)
 	docker run                                                  \
 		-ti                                                     \
 		--rm                                                    \
-		-u $$(id -u):$$(id -g)                                  \
 		-v $$(pwd):/src                                         \
 		-w /src                                                 \
 		-v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
