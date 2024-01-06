@@ -1,4 +1,4 @@
-package dbmigration
+package db
 
 import (
 	"database/sql"

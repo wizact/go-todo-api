@@ -26,9 +26,8 @@ export OUTDIR="${OUTDIR}"
 export NAME="${NAME}"
 export OUTNAME="${OUTNAME}"
 
+# required for CGO builds
 apk add build-base
-
-# export CC=arm-linux-gnueabihf-gcc-5
 
 if [[ "${DEBUG:-}" == 1 ]]; then
     # Debugging - disable optimizations and inlining

@@ -1,10 +1,10 @@
-// Code generated for package dbmigration by go-bindata DO NOT EDIT. (@generated)
+// Code generated for package db by go-bindata DO NOT EDIT. (@generated)
 // sources:
 // db/migrations/1_create_table.down.sql
 // db/migrations/1_create_table.up.sql
 // db/migrations/2_alter_table.down.sql
 // db/migrations/2_alter_table.up.sql
-package dbmigration
+package db
 
 import (
 	"bytes"

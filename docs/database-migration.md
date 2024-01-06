@@ -18,6 +18,12 @@ In the `./db/migrations` create a two files for each change. The naming of the f
 `up` indicates the scripts that will be called in the migration upgrade process. `down` scripts indicates the rollback process - if necessary.
 
 ### Step 2: Create resource file
+tl;dr:
+
+```
+make gen-db-resource
+```
+
 We use `go-bindata` to embed the migration files in a go file. This enables us to build a standalone executable, deploy it to a environment, and execute the migration process remotely.
 
 In order to create the resource files, execute the following command:
@@ -31,4 +37,10 @@ You can execute the migration, or create the binrary file using the `cmd/db-migr
 
 ```
 go run ./cmd/db-migration.go
+```
+
+To generate the executable script, you can use the following command and copy the executable to the right environment:
+
+```
+make build-db-migration  OS=linux ARCH=amd64
 ```

@@ -10,4 +10,4 @@ else
     go install github.com/go-bindata/go-bindata/go-bindata
 fi
 
-go-bindata -prefix "./db/migrations/" -o ./db/resourcefile.go -pkg dbmigration ./db/migrations/**.sql
+go-bindata -prefix "./db/migrations/" -o ./db/resourcefile.go -pkg db ./db/migrations/**.sql

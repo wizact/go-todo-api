@@ -88,7 +88,7 @@ artefact-%: # @HELP copies the artefact from .go/<OS>_<ARCH>/<bin> to out/<OS>_<
 artefact-%: | $(BUILD_DIRS)
 	if ! cmp -s .go/bin/$(OS)_$(ARCH)/$(OUTBIN) ./out/$(OS)_$(ARCH)/$(OUTBIN); then  	\
 		mv .go/bin/$(OS)_$(ARCH)/$(OUTBIN) out/$(OS)_$(ARCH)/$(OUTBIN);            		\
-		date >out/$(OS)_$(ARCH)/$@;                              						\
+		date >out/$(OS)_$(ARCH)/$@.stamp;                              					\
 		echo;                                  											\
 	else                                       											\
 		echo "(cached)";                       											\
