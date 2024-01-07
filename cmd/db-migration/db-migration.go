@@ -20,6 +20,11 @@ func main() {
 	}
 
 	if err = dbm.Start(dp); err != nil {
+		if err.Error() == "no change" {
+			log.Println(err.Error())
+			return
+		}
+
 		log.Fatalln(err)
 	}
 }

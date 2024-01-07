@@ -11,11 +11,9 @@ func Test_NewUserAccountService(t *testing.T) {
 	seedUserList := init_users(t)
 	u := seedUserList[0]
 
-	evs := NewEmailVerificationService(repository.NewFakeEmailGatewayRepository())
-
 	ur := repository.NewUserMemoryRepository(seedUserList)
 
-	uas := NewUserAccountService(ur, evs)
+	uas := NewUserAccountService(ur)
 
 	_, err := uas.RegisterNewUser(u)
 

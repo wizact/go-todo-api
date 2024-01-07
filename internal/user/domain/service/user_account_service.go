@@ -25,14 +25,12 @@ type UserAccountUseCase interface {
 
 type UserAccountService struct {
 	// repositories and other services
-	userRepository           repository.UserRepository
-	emailVerificationService EmailVerificationUseCase
+	userRepository repository.UserRepository
 }
 
-func NewUserAccountService(ur repository.UserRepository, evs EmailVerificationUseCase) UserAccountUseCase {
+func NewUserAccountService(ur repository.UserRepository) UserAccountUseCase {
 	ua := &UserAccountService{
-		userRepository:           ur,
-		emailVerificationService: evs,
+		userRepository: ur,
 	}
 
 	return ua
@@ -63,12 +61,6 @@ func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (aggregate.Us
 	u, e = ua.userRepository.Create(context.Background(), user)
 	if e != nil {
 		return user, ErrFailedToRegisterUser
-	}
-
-	// Trigger new email message (dependency in the service layer to the infra)
-	ua.emailVerificationService.SendEmailVerificationEmail(user.Email())
-	if e != nil {
-		return user, hsm.NewAppError(e, "Failed to send verification email", http.StatusInternalServerError)
 	}
 
 	return u, nil

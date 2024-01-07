@@ -11,14 +11,12 @@ import (
 // and if the use* flags are set to true, then it returns the concrete
 // implementation of the interface instead of the memory or fake implementation.
 type UserModule struct {
-	userRepository         repository.UserRepository
-	emailGatewayRepository repository.EmailGatewayRepository
+	userRepository repository.UserRepository
 }
 
 // New UserModule is the factory method for the UserModule container
-func NewUserModule(useDatabase, useEmailGateway bool) *UserModule {
+func NewUserModule(useDatabase bool) *UserModule {
 	var userRepo repository.UserRepository
-	var emailGatewayRepo repository.EmailGatewayRepository
 
 	if useDatabase {
 		userRepo = infraRepository.NewUserSqlLiteRepository()
@@ -28,22 +26,11 @@ func NewUserModule(useDatabase, useEmailGateway bool) *UserModule {
 		userRepo = infraRepository.NewUserMemoryRepository(ua)
 	}
 
-	if useEmailGateway {
-		emailGatewayRepo = infraRepository.NewEmailGatewayRepository()
-	} else {
-		emailGatewayRepo = infraRepository.NewFakeEmailGatewayRepository()
-	}
-
 	return &UserModule{
-		userRepository:         userRepo,
-		emailGatewayRepository: emailGatewayRepo,
+		userRepository: userRepo,
 	}
 }
 
 func (u *UserModule) ResolveUserAccountUseCase() service.UserAccountUseCase {
-	return service.NewUserAccountService(u.userRepository, u.ResolveEmailVerificationUseCase())
-}
-
-func (u *UserModule) ResolveEmailVerificationUseCase() service.EmailVerificationUseCase {
-	return service.NewEmailVerificationService(u.emailGatewayRepository)
+	return service.NewUserAccountService(u.userRepository)
 }

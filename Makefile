@@ -123,6 +123,17 @@ shell: | $(BUILD_DIRS)
 		$(BUILD_IMAGE)                                          \
 		/bin/sh $(CMD)
 
+.PHONY: run-server
+run-server: # @HELP runs the http server on the localhost port of 9000
+run-server:
+	go run ./cmd/server/*.go start-server -address=localhost -port=9000 -tls=false
+
+.PHONY: run-db-migration
+run-db-migration: # @HELP generates the new db resources and run the migration cmd
+run-db-migration: gen-db-resource
+	TODOAPI_DBPATH=${PREFIX}/db/todo.db && \
+		go run ./cmd/db-migration/*.go
+
 .PHONY: gen-db-resource
 gen-db-resource: # @HELP creates a resourcefile and embeds migration scripts in the go file
 gen-db-resource:

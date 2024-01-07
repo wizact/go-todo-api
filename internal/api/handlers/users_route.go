@@ -19,7 +19,7 @@ func (urf UserRouteFactory) CreateUserRoute() UserRoute {
 
 	return NewUserRoute(
 		controller.NewUserController(
-			userModule.NewUserModule(true, true).ResolveUserAccountUseCase()),
+			userModule.NewUserModule(true).ResolveUserAccountUseCase()),
 	)
 
 }
