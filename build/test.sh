@@ -1,1 +1,5 @@
-echo "test"
+#!/bin/sh
+echo "Testing..."
+
+go test ./...
+

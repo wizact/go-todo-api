@@ -146,6 +146,11 @@ gen-db-resource:
 login: # @HELP configures docker to be authenticated to the defined registry
 	echo $(CR_PAT) | docker login ghcr.io -u $(CR_URN) --password-stdin
 
+.PHONY: test
+test: # @HELP tests all the go test files
+	$(MAKE) shell CMD="./build/test.sh"
+	
+
 .PHONY: clean-bins
 clean: # @HELP clear all the files in the out and .go folder
 clean:
