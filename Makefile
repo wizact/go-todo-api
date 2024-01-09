@@ -5,8 +5,10 @@ PKG := github.com/wizact/$(NAME)
 SHELL := /usr/bin/env bash -o errexit -o pipefail -o nounset
 GO := go
 GO_VERSION := 1.19
-BUILD_IMAGE := golang:$(GO_VERSION)-alpine
-BUILDTAGS :=
+
+# Image for the build environment
+BUILD_IMAGE :=  ghcr.io/wizact/todo-api-builder:c26865d
+
 PREFIX?=$(shell pwd)
 BUILDTAGS :=
 # set to 1 for debugging
@@ -139,6 +141,10 @@ gen-db-resource: # @HELP creates a resourcefile and embeds migration scripts in 
 gen-db-resource:
 	rm -f ${PREFIX}/db/resourcefile.go && \
 	${PREFIX}/build/migration.sh
+
+.PHONY: login
+login: # @HELP configures docker to be authenticated to the defined registry
+	echo $(CR_PAT) | docker login ghcr.io -u $(CR_URN) --password-stdin
 
 .PHONY: clean-bins
 clean: # @HELP clear all the files in the out and .go folder
