@@ -1,9 +1,9 @@
 package module
 
 import (
+	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	usecase "github.com/wizact/go-todo-api/internal/user/domain/services"
-	repository "github.com/wizact/go-todo-api/internal/user/infrastructure/repositories"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	repository_port "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 )

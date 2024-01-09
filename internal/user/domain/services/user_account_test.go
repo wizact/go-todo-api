@@ -3,8 +3,8 @@ package service
 import (
 	"testing"
 
+	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
-	repository "github.com/wizact/go-todo-api/internal/user/infrastructure/repositories"
 )
 
 func Test_NewUserAccountService(t *testing.T) {
