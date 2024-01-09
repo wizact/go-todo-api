@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
+	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 )
 
 var (

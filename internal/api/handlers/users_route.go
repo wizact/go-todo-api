@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/wizact/go-todo-api/internal/api/middleware"
 	userModule "github.com/wizact/go-todo-api/internal/user"
-	"github.com/wizact/go-todo-api/internal/user/interfaces/controller"
-	httpModel "github.com/wizact/go-todo-api/internal/user/interfaces/model"
+	controller "github.com/wizact/go-todo-api/internal/user/adapters/controllers"
+	httpModel "github.com/wizact/go-todo-api/internal/user/adapters/controllers/models"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 

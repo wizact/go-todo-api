@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	"github.com/wizact/go-todo-api/internal/user/domain/model"
-	repository "github.com/wizact/go-todo-api/internal/user/interfaces/repository"
+	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	model "github.com/wizact/go-todo-api/internal/user/domain/models"
+	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
@@ -17,18 +17,12 @@ var (
 	ErrEmailAlreadyExists   = hsm.NewAppError(errors.New("email already registered"), "email already registered", http.StatusBadRequest)
 )
 
-type UserAccountUseCase interface {
-	RegisterNewUser(user aggregate.User) (aggregate.User, *hsm.AppError)
-	AuthenticateUser(email, password string) (bool, *hsm.AppError)
-	ValidateNewUserEmail(u aggregate.User) *hsm.AppError
-}
-
 type UserAccountService struct {
 	// repositories and other services
 	userRepository repository.UserRepository
 }
 
-func NewUserAccountService(ur repository.UserRepository) UserAccountUseCase {
+func NewUserAccountService(ur repository.UserRepository) *UserAccountService {
 	ua := &UserAccountService{
 		userRepository: ur,
 	}

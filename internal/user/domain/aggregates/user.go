@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	model "github.com/wizact/go-todo-api/internal/user/domain/model"
+	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 )
 
 // User aggregate with User as it's root entity

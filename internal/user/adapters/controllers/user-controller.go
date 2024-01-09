@@ -3,9 +3,9 @@ package controller
 import (
 	"net/http"
 
-	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	usecase "github.com/wizact/go-todo-api/internal/user/domain/service"
-	httpmodel "github.com/wizact/go-todo-api/internal/user/interfaces/model"
+	httpmodel "github.com/wizact/go-todo-api/internal/user/adapters/controllers/models"
+	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	usecase "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 

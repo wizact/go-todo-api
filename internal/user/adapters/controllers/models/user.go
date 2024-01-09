@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	"github.com/wizact/go-todo-api/internal/user/domain/model"
+	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
