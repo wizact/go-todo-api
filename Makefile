@@ -15,7 +15,7 @@ BUILDTAGS :=
 DBG ?=
 
 # build configuration in the format of <bin>_<config> = <value>
-db-migration_cgo = 1
+db_migration_cgo = 1
 server_cgo = 1
 
 ALL_PLATFORMS ?= linux/amd64
