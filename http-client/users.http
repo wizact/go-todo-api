@@ -7,10 +7,10 @@ POST http://{{hostname}}/{{baseUri}} HTTP/1.1
 {
     "first_name": "Foo",
     "last_name": "Bar",
-    "dateOfBirth": "1983-01-02T15:04:05Z07:00",
+    "dateOfBirth": "1983-01-02T15:04:05Z",
     "email": "foo@example.com",
 
-    "phone_country_code": "",
-    "phone_area_code": "",
-    "phone_number": ""
+    "phone_country_code": "+64",
+    "phone_area_code": "023",
+    "phone_number": "123456"
 }

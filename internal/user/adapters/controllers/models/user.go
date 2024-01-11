@@ -29,9 +29,9 @@ func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
 	duser.LastName = u.FirstName
 
 	if t, e := time.Parse(time.RFC3339, u.DateOfBirth); e != nil {
-		duser.DateOfBirth = t
-	} else {
 		return ua, &hsm.AppError{Message: e.Error(), ErrorObject: e, Code: http.StatusBadRequest}
+	} else {
+		duser.DateOfBirth = t
 	}
 
 	duser.Email = u.Email
