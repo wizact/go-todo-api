@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
@@ -15,7 +16,7 @@ func Test_NewUserAccountService(t *testing.T) {
 
 	uas := NewUserAccountService(ur)
 
-	_, err := uas.RegisterNewUser(u)
+	_, err := uas.RegisterNewUser(context.Background(), u)
 
 	if err == nil {
 		t.Error(err)

@@ -20,7 +20,11 @@ func NewUserModule(useDatabase bool) *UserModule {
 	var userRepo repository_port.UserRepository
 
 	if useDatabase {
-		userRepo = repository.NewUserSqlLiteRepository()
+		repo, err := repository.NewUserSqlLiteRepository()
+		if err != nil {
+			panic(err)
+		}
+		userRepo = repo
 	} else {
 		// for testing purposes
 		ua := make([]aggregate.User, 0)

@@ -4,16 +4,14 @@ import (
 	"log"
 
 	migration "github.com/wizact/go-todo-api/db"
-	"github.com/wizact/go-todo-api/internal/infra/config"
+	infradb "github.com/wizact/go-todo-api/internal/infra/db"
 )
 
 func main() {
 	log.Println("database migration")
 	dbm := migration.DBMigration{}
 
-	dc := &config.DbConfig{}
-
-	dp, err := dc.GetDbPath()
+	dp, err := (&infradb.DbConfig{}).GetDbPath()
 
 	if err != nil {
 		log.Fatalf("error resolving db path: %v", err.Error())

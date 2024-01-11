@@ -13,7 +13,6 @@ type User struct {
 	role             *model.Role
 	hasVerifiedEmail bool
 	isActive         bool
-	isDeleted        bool
 }
 
 // NewUser creates a new user with an auto generated uuid and limited role
@@ -106,15 +105,15 @@ func (u *User) SetIsActive(b bool) {
 	u.isActive = b
 }
 
-// IsDeleted gets the user is deleted flag
-func (u *User) IsDeleted() bool {
-	return u.isDeleted
-}
+// // IsDeleted gets the user is deleted flag
+// func (u *User) IsDeleted() bool {
+// 	return u.isDeleted
+// }
 
-// SetIsDeleted sets the user is deleted flag
-func (u *User) SetIsDeleted(b bool) {
-	u.isDeleted = b
-}
+// // SetIsDeleted sets the user is deleted flag
+// func (u *User) SetIsDeleted(b bool) {
+// 	u.isDeleted = b
+// }
 
 // IsValid checks if the user is valid
 func (u *User) IsValid() bool {

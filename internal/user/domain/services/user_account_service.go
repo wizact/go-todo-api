@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
@@ -15,6 +16,8 @@ var (
 	ErrInvalidUser          = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
 	ErrFailedToRegisterUser = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
 	ErrEmailAlreadyExists   = hsm.NewAppError(errors.New("email already registered"), "email already registered", http.StatusBadRequest)
+
+	ErrFailedToGetUser = hsm.NewAppError(errors.New("cannot get user by id"), "cannot get user by id", http.StatusBadRequest)
 )
 
 type UserAccountService struct {
@@ -30,7 +33,7 @@ func NewUserAccountService(ur repository.UserRepository) *UserAccountService {
 	return ua
 }
 
-func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (aggregate.User, *hsm.AppError) {
+func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregate.User) (aggregate.User, *hsm.AppError) {
 	// Set the new user role to Limited
 	r := user.Role()
 	r.Name = model.Limited
@@ -42,7 +45,7 @@ func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (aggregate.Us
 	}
 
 	// Check if the user does not exist
-	u, e := ua.userRepository.FindByEmail(context.Background(), user.Email())
+	u, e := ua.userRepository.FindByEmail(ctx, user.Email())
 	if e != nil {
 		return user, ErrFailedToRegisterUser
 	}
@@ -52,9 +55,19 @@ func (ua *UserAccountService) RegisterNewUser(user aggregate.User) (aggregate.Us
 	}
 
 	// Create user
-	u, e = ua.userRepository.Create(context.Background(), user)
+	u, e = ua.userRepository.Create(ctx, user)
 	if e != nil {
 		return user, ErrFailedToRegisterUser
+	}
+
+	return u, nil
+}
+
+func (ua *UserAccountService) GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, *hsm.AppError) {
+	var u aggregate.User
+	u, e := ua.userRepository.FindById(ctx, uid)
+	if e != nil {
+		return u, ErrFailedToGetUser
 	}
 
 	return u, nil

@@ -14,3 +14,8 @@ POST http://{{hostname}}/{{baseUri}} HTTP/1.1
     "phone_area_code": "023",
     "phone_number": "123456"
 }
+
+###
+
+# @name getUserById
+GET http://{{hostname}}/{{baseUri}}/f409277c-a395-4313-ac8b-114936cfc702 HTTP/1.1
