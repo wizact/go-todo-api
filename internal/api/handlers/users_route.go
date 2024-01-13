@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -58,6 +59,8 @@ func (ur UserRoute) RegisterUser() middleware.AppHandler {
 			return e
 		}
 
+		w.Header().Add("location", fmt.Sprintf("/users/%v", u.UserID))
+		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(u)
 		return nil
 	}

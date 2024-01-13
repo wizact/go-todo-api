@@ -10,6 +10,7 @@ import (
 )
 
 type User struct {
+	UserID      string `json:"user_id"`
 	FirstName   string `json:"first_name"`
 	LastName    string `json:"last_name"`
 	DateOfBirth string `json:"dateOfBirth,omitempty"`
@@ -18,6 +19,9 @@ type User struct {
 	PhoneCountryCode string `json:"phone_country_code"`
 	PhoneAreaCode    string `json:"phone_area_code"`
 	PhoneNumber      string `json:"phone_number"`
+
+	LocationLongitude float64 `json:"location_longitude"`
+	LocationLatitude  float64 `json:"location_latitude"`
 }
 
 func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
@@ -42,10 +46,16 @@ func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
 
 	ua.SetUser(duser)
 
+	dloc := model.NewLocation()
+	dloc.SetCoordinates(u.LocationLongitude, u.LocationLatitude)
+
+	ua.SetLocation(dloc)
+
 	return ua, nil
 }
 
 func (u *User) ToApiModel(ua aggregate.User) *hsm.AppError {
+	u.UserID = ua.User().ID.String()
 	u.FirstName = ua.User().FirstName
 	u.LastName = ua.User().LastName
 	u.DateOfBirth = ua.User().DateOfBirth.String()
@@ -54,6 +64,9 @@ func (u *User) ToApiModel(ua aggregate.User) *hsm.AppError {
 	u.PhoneCountryCode = ua.User().Phone.CountryCode
 	u.PhoneAreaCode = ua.User().Phone.AreaCode
 	u.PhoneNumber = ua.User().Phone.Number
+
+	u.LocationLatitude = ua.Location().Latitude
+	u.LocationLongitude = ua.Location().Longitude
 
 	return nil
 }

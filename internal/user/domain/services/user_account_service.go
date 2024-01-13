@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
-	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
@@ -34,11 +33,6 @@ func NewUserAccountService(ur repository.UserRepository) *UserAccountService {
 }
 
 func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregate.User) (aggregate.User, *hsm.AppError) {
-	// Set the new user role to Limited
-	r := user.Role()
-	r.Name = model.Limited
-	user.SetRole(r)
-
 	// Verify the account
 	if !user.IsValid() {
 		return user, ErrInvalidUser
@@ -71,16 +65,4 @@ func (ua *UserAccountService) GetUserById(ctx context.Context, uid uuid.UUID) (a
 	}
 
 	return u, nil
-}
-
-func (ua *UserAccountService) ValidateNewUserEmail(u aggregate.User) *hsm.AppError {
-	// Verify the token
-	// Set the flag to enable the user
-	return nil
-}
-
-func (ua *UserAccountService) AuthenticateUser(email, password string) (bool, *hsm.AppError) {
-	// Verify the token
-	// Set the flag to enable the user
-	return true, nil
 }

@@ -10,7 +10,7 @@ import (
 // User aggregate with User as it's root entity
 type User struct {
 	user             *model.User
-	role             *model.Role
+	location         *model.Location
 	hasVerifiedEmail bool
 	isActive         bool
 }
@@ -18,10 +18,10 @@ type User struct {
 // NewUser creates a new user with an auto generated uuid and limited role
 func NewUser() User {
 	u := model.NewUser()
-	r := model.Role{}
+	l := model.Location{}
 	return User{
-		user: &u,
-		role: &r,
+		user:     &u,
+		location: &l,
 	}
 }
 
@@ -70,19 +70,19 @@ func (u *User) SetEmail(email string) error {
 	return nil
 }
 
-// Role gets the user role entity
-func (u *User) Role() model.Role {
-	if u.role == nil {
-		rm := model.Role{}
-		u.role = &rm
+// Location gets the user location value object
+func (u *User) Location() model.Location {
+	if u.location == nil {
+		l := model.Location{}
+		u.location = &l
 	}
 
-	return *u.role
+	return *u.location
 }
 
-// SetRole sets the user role
-func (u *User) SetRole(nr model.Role) {
-	u.role = &nr
+// SetLocation sets the user role
+func (u *User) SetLocation(nl model.Location) {
+	u.location = &nl
 }
 
 // HasVerifiedEmail gets the user has verified email flag
@@ -105,17 +105,7 @@ func (u *User) SetIsActive(b bool) {
 	u.isActive = b
 }
 
-// // IsDeleted gets the user is deleted flag
-// func (u *User) IsDeleted() bool {
-// 	return u.isDeleted
-// }
-
-// // SetIsDeleted sets the user is deleted flag
-// func (u *User) SetIsDeleted(b bool) {
-// 	u.isDeleted = b
-// }
-
 // IsValid checks if the user is valid
 func (u *User) IsValid() bool {
-	return (u.user != nil && u.user.IsValid()) && (u.role != nil && u.role.IsValid())
+	return (u.user != nil && u.user.IsValid()) && (u.location != nil && u.location.IsValid())
 }

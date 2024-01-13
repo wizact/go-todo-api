@@ -1,6 +1,7 @@
 package module
 
 import (
+	dbinfra "github.com/wizact/go-todo-api/internal/infra/db"
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	usecase "github.com/wizact/go-todo-api/internal/user/domain/services"
@@ -20,7 +21,8 @@ func NewUserModule(useDatabase bool) *UserModule {
 	var userRepo repository_port.UserRepository
 
 	if useDatabase {
-		repo, err := repository.NewUserSqlLiteRepository()
+		rf := dbinfra.SqliteRepositoryFactory[repository.UserSqliteRepository, *repository.UserSqliteRepository]{}
+		repo, err := rf.Get()
 		if err != nil {
 			panic(err)
 		}

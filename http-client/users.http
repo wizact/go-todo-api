@@ -12,10 +12,13 @@ POST http://{{hostname}}/{{baseUri}} HTTP/1.1
 
     "phone_country_code": "+64",
     "phone_area_code": "023",
-    "phone_number": "123456"
+    "phone_number": "123456",
+
+    "location_longitude": -41.26595602617756,
+	"location_latitude": 173.3002574488138
 }
 
 ###
 
 # @name getUserById
-GET http://{{hostname}}/{{baseUri}}/f409277c-a395-4313-ac8b-114936cfc702 HTTP/1.1
+GET http://{{hostname}}/{{baseUri}}/cbca0820-69e1-4e98-8d7c-9d01213d5c02 HTTP/1.1

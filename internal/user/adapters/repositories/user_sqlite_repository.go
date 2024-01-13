@@ -13,27 +13,31 @@ import (
 )
 
 type UserSqliteRepository struct {
-	db *gorm.DB
+	connection *dbinfra.SqliteConnection
 }
 
-func NewUserSqlLiteRepository() (*UserSqliteRepository, error) {
-	sc := dbinfra.SqliteConnection{}
-	db, err := sc.Connection(gorm.Config{})
+func (r *UserSqliteRepository) Connection(cnn *dbinfra.SqliteConnection) {
+	r.connection = cnn
+}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &UserSqliteRepository{db: db}, nil
+func (r *UserSqliteRepository) GetConnection() *dbinfra.SqliteConnection {
+	return r.connection
 }
 
 func (r *UserSqliteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.User, error) {
+	emptyUser := ua.User{}
+	db, err := r.connection.Open(gorm.Config{})
+
+	if err != nil {
+		return emptyUser, err
+	}
+
 	u := &SqliteUserAggregate{UserID: id.String()}
 
-	result := r.db.First(u)
+	result := db.First(u)
 
 	if result.Error != nil {
-		return ua.User{}, result.Error
+		return emptyUser, result.Error
 	}
 
 	de := u.FromDbModelToDomainEntity()
@@ -46,10 +50,17 @@ func (r *UserSqliteRepository) FindByEmail(ctx context.Context, email string) (u
 }
 
 func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.User, error) {
+	emptyUser := ua.User{}
+
+	db, err := r.connection.Open(gorm.Config{})
+	if err != nil {
+		return emptyUser, err
+	}
+
 	u := &SqliteUserAggregate{}
 	u.FromDomainEntityToDbModel(user)
 
-	result := r.db.Create(&u)
+	result := db.Create(&u)
 
 	if result.Error != nil {
 		return ua.User{}, result.Error
@@ -71,14 +82,18 @@ type SqliteUserAggregate struct {
 }
 
 type SqliteUserModel struct {
-	ID               string
-	FirstName        string
-	LastName         string
-	DateOfBirth      time.Time
-	Email            string
-	CountryCode      string
-	AreaCode         string
-	Number           string
+	ID          string
+	FirstName   string
+	LastName    string
+	DateOfBirth time.Time
+	Email       string
+	CountryCode string
+	AreaCode    string
+	Number      string
+
+	LocationLong float64
+	LocationLat  float64
+
 	HasVerifiedEmail bool
 	IsActive         bool
 }
@@ -94,6 +109,8 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 		CountryCode:      de.User().Phone.CountryCode,
 		AreaCode:         de.User().Phone.AreaCode,
 		Number:           de.User().Phone.Number,
+		LocationLong:     de.Location().Longitude,
+		LocationLat:      de.Location().Latitude,
 		HasVerifiedEmail: de.HasVerifiedEmail(),
 		IsActive:         de.IsActive(),
 	}
@@ -101,7 +118,7 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 
 func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	de := ua.NewUser()
-	mu := &model.User{
+	mu := model.User{
 		ID:          uuid.MustParse(dbm.UserID),
 		FirstName:   dbm.ValueData.FirstName,
 		LastName:    dbm.ValueData.LastName,
@@ -114,10 +131,14 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 		},
 	}
 
+	dl := model.NewLocation()
+	dl.SetCoordinates(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
+
 	de.SetHasVerifiedEmail(dbm.ValueData.HasVerifiedEmail)
 	de.SetIsActive(dbm.ValueData.IsActive)
 
-	de.SetUser(*mu)
+	de.SetUser(mu)
+	de.SetLocation(dl)
 
 	return de
 }
