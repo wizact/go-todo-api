@@ -10,6 +10,8 @@
 // db/migrations/4_alter_table_users_aggregate.up.sql
 // db/migrations/5_create_table_users_aggregate.down.sql
 // db/migrations/5_create_table_users_aggregate.up.sql
+// db/migrations/6_create_table_users_email_view.down.sql
+// db/migrations/6_create_table_users_email_view.up.sql
 package db
 
 import (
@@ -286,6 +288,46 @@ func _5_create_table_users_aggregateUpSql() (*asset, error) {
 	return a, nil
 }
 
+var __6_create_table_users_email_viewDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\x09\xf2\x0f\x50\x08\x71\x74\xf2\x71\x55\xf0\x74\x53\x70\x8d\xf0\x0c\x0e\x09\x56\x28\x2d\x4e\x2d\x2a\x8e\x4f\xcd\x4d\xcc\xcc\x89\x2f\xcb\x4c\x2d\xb7\x06\x04\x00\x00\xff\xff\x57\xa2\x1f\x52\x26\x00\x00\x00")
+
+func _6_create_table_users_email_viewDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__6_create_table_users_email_viewDownSql,
+		"6_create_table_users_email_view.down.sql",
+	)
+}
+
+func _6_create_table_users_email_viewDownSql() (*asset, error) {
+	bytes, err := _6_create_table_users_email_viewDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "6_create_table_users_email_view.down.sql", size: 38, mode: os.FileMode(420), modTime: time.Unix(1705190757, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __6_create_table_users_email_viewUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x7c\xcc\xc1\xaa\xc2\x30\x10\x85\xe1\x7d\x9f\xe2\x2c\xef\x05\xdf\xc0\x55\xd5\x51\x83\xb5\x95\x74\x4a\xdb\x55\x08\x66\xc4\x40\x05\x69\xda\xfa\xfa\x42\xba\x51\x11\xb7\xf3\x7f\x73\xd6\x9a\x52\x26\x70\xba\xca\x08\x6a\x8b\xbc\x60\x50\xa3\x4a\x2e\x31\x06\xe9\x83\x91\x9b\xf5\x9d\x99\xbc\x3c\xf0\x97\x00\x88\x67\xe3\x1d\x98\x1a\x8e\x3c\xaf\xb2\x0c\x27\xad\x8e\xa9\x6e\x71\xa0\x76\x11\x59\xfc\x7b\x47\x73\xb8\xda\x60\x26\xe9\xfd\xc5\x8b\x9b\xd7\xa1\x72\xa6\x1d\xe9\x0f\x78\xee\xc5\x0e\xe2\x8c\x1d\xbe\xcd\x8c\x77\xf7\xa3\x3a\xe9\xe4\xa5\x26\xff\xa8\x15\xef\x8b\x8a\xa1\x8b\x5a\x6d\x96\xcf\x00\x00\x00\xff\xff\xd1\x30\x2e\x31\xf7\x00\x00\x00")
+
+func _6_create_table_users_email_viewUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__6_create_table_users_email_viewUpSql,
+		"6_create_table_users_email_view.up.sql",
+	)
+}
+
+func _6_create_table_users_email_viewUpSql() (*asset, error) {
+	bytes, err := _6_create_table_users_email_viewUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "6_create_table_users_email_view.up.sql", size: 247, mode: os.FileMode(420), modTime: time.Unix(1705190720, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -338,16 +380,18 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"1_create_table.down.sql":                 _1_create_tableDownSql,
-	"1_create_table.up.sql":                   _1_create_tableUpSql,
-	"2_alter_table.down.sql":                  _2_alter_tableDownSql,
-	"2_alter_table.up.sql":                    _2_alter_tableUpSql,
-	"3_create_table_users_aggregate.down.sql": _3_create_table_users_aggregateDownSql,
-	"3_create_table_users_aggregate.up.sql":   _3_create_table_users_aggregateUpSql,
-	"4_alter_table_users_aggregate.down.sql":  _4_alter_table_users_aggregateDownSql,
-	"4_alter_table_users_aggregate.up.sql":    _4_alter_table_users_aggregateUpSql,
-	"5_create_table_users_aggregate.down.sql": _5_create_table_users_aggregateDownSql,
-	"5_create_table_users_aggregate.up.sql":   _5_create_table_users_aggregateUpSql,
+	"1_create_table.down.sql":                  _1_create_tableDownSql,
+	"1_create_table.up.sql":                    _1_create_tableUpSql,
+	"2_alter_table.down.sql":                   _2_alter_tableDownSql,
+	"2_alter_table.up.sql":                     _2_alter_tableUpSql,
+	"3_create_table_users_aggregate.down.sql":  _3_create_table_users_aggregateDownSql,
+	"3_create_table_users_aggregate.up.sql":    _3_create_table_users_aggregateUpSql,
+	"4_alter_table_users_aggregate.down.sql":   _4_alter_table_users_aggregateDownSql,
+	"4_alter_table_users_aggregate.up.sql":     _4_alter_table_users_aggregateUpSql,
+	"5_create_table_users_aggregate.down.sql":  _5_create_table_users_aggregateDownSql,
+	"5_create_table_users_aggregate.up.sql":    _5_create_table_users_aggregateUpSql,
+	"6_create_table_users_email_view.down.sql": _6_create_table_users_email_viewDownSql,
+	"6_create_table_users_email_view.up.sql":   _6_create_table_users_email_viewUpSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -391,16 +435,18 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"1_create_table.down.sql":                 &bintree{_1_create_tableDownSql, map[string]*bintree{}},
-	"1_create_table.up.sql":                   &bintree{_1_create_tableUpSql, map[string]*bintree{}},
-	"2_alter_table.down.sql":                  &bintree{_2_alter_tableDownSql, map[string]*bintree{}},
-	"2_alter_table.up.sql":                    &bintree{_2_alter_tableUpSql, map[string]*bintree{}},
-	"3_create_table_users_aggregate.down.sql": &bintree{_3_create_table_users_aggregateDownSql, map[string]*bintree{}},
-	"3_create_table_users_aggregate.up.sql":   &bintree{_3_create_table_users_aggregateUpSql, map[string]*bintree{}},
-	"4_alter_table_users_aggregate.down.sql":  &bintree{_4_alter_table_users_aggregateDownSql, map[string]*bintree{}},
-	"4_alter_table_users_aggregate.up.sql":    &bintree{_4_alter_table_users_aggregateUpSql, map[string]*bintree{}},
-	"5_create_table_users_aggregate.down.sql": &bintree{_5_create_table_users_aggregateDownSql, map[string]*bintree{}},
-	"5_create_table_users_aggregate.up.sql":   &bintree{_5_create_table_users_aggregateUpSql, map[string]*bintree{}},
+	"1_create_table.down.sql":                  &bintree{_1_create_tableDownSql, map[string]*bintree{}},
+	"1_create_table.up.sql":                    &bintree{_1_create_tableUpSql, map[string]*bintree{}},
+	"2_alter_table.down.sql":                   &bintree{_2_alter_tableDownSql, map[string]*bintree{}},
+	"2_alter_table.up.sql":                     &bintree{_2_alter_tableUpSql, map[string]*bintree{}},
+	"3_create_table_users_aggregate.down.sql":  &bintree{_3_create_table_users_aggregateDownSql, map[string]*bintree{}},
+	"3_create_table_users_aggregate.up.sql":    &bintree{_3_create_table_users_aggregateUpSql, map[string]*bintree{}},
+	"4_alter_table_users_aggregate.down.sql":   &bintree{_4_alter_table_users_aggregateDownSql, map[string]*bintree{}},
+	"4_alter_table_users_aggregate.up.sql":     &bintree{_4_alter_table_users_aggregateUpSql, map[string]*bintree{}},
+	"5_create_table_users_aggregate.down.sql":  &bintree{_5_create_table_users_aggregateDownSql, map[string]*bintree{}},
+	"5_create_table_users_aggregate.up.sql":    &bintree{_5_create_table_users_aggregateUpSql, map[string]*bintree{}},
+	"6_create_table_users_email_view.down.sql": &bintree{_6_create_table_users_email_viewDownSql, map[string]*bintree{}},
+	"6_create_table_users_email_view.up.sql":   &bintree{_6_create_table_users_email_viewUpSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,6 +10,7 @@ import (
 	dbinfra "github.com/wizact/go-todo-api/internal/infra/db"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
+	us "github.com/wizact/go-todo-api/internal/user/domain/services"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +36,11 @@ func (r *UserSqliteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.U
 
 	u := &SqliteUserAggregate{UserID: id.String()}
 
-	result := db.First(u)
+	result := db.Limit(1).First(u)
+
+	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return emptyUser, us.ErrUserIdDoesNotExist
+	}
 
 	if result.Error != nil {
 		return emptyUser, result.Error
@@ -46,7 +52,33 @@ func (r *UserSqliteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.U
 }
 
 func (r *UserSqliteRepository) FindByEmail(ctx context.Context, email string) (ua.User, error) {
-	return ua.User{}, nil
+	emptyUser := ua.User{}
+	db, err := r.connection.Open(gorm.Config{})
+
+	if err != nil {
+		return emptyUser, err
+	}
+
+	uev := &SqliteUserEmailView{Email: email}
+	result := db.Where(uev).First(uev)
+
+	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return emptyUser, us.ErrUserByEmailDoesNotExist
+	}
+
+	if result.Error != nil {
+		return emptyUser, result.Error
+	}
+
+	de := uev.FromDbModelToDomainEntity()
+
+	u, err := r.FindById(ctx, de.Id())
+
+	if err != nil {
+		return emptyUser, err
+	}
+
+	return u, nil
 }
 
 func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.User, error) {
@@ -63,10 +95,13 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 	result := db.Create(&u)
 
 	if result.Error != nil {
-		return ua.User{}, result.Error
+		return emptyUser, result.Error
 	}
 
-	return u.FromDbModelToDomainEntity(), nil
+	user = u.FromDbModelToDomainEntity()
+	r.CreateOrUpdateUserEmailView(ctx, user)
+
+	return user, nil
 }
 
 func (r *UserSqliteRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
@@ -96,6 +131,11 @@ type SqliteUserModel struct {
 
 	HasVerifiedEmail bool
 	IsActive         bool
+}
+
+// TableName overrides grom default table name
+func (SqliteUserAggregate) TableName() string {
+	return "users_aggregate"
 }
 
 func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
@@ -141,9 +181,4 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	de.SetLocation(dl)
 
 	return de
-}
-
-// TableName overrides grom default table name
-func (SqliteUserAggregate) TableName() string {
-	return "users_aggregate"
 }

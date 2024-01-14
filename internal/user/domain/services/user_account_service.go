@@ -16,7 +16,9 @@ var (
 	ErrFailedToRegisterUser = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
 	ErrEmailAlreadyExists   = hsm.NewAppError(errors.New("email already registered"), "email already registered", http.StatusBadRequest)
 
-	ErrFailedToGetUser = hsm.NewAppError(errors.New("cannot get user by id"), "cannot get user by id", http.StatusBadRequest)
+	ErrFailedToGetUser         = hsm.NewAppError(errors.New("cannot get user"), "cannot get user", http.StatusNotFound)
+	ErrUserIdDoesNotExist      = hsm.NewAppError(errors.New("user id does not exist"), "user id does not exist", http.StatusNotFound)
+	ErrUserByEmailDoesNotExist = hsm.NewAppError(errors.New("user email does not exist"), "user email does not exist", http.StatusNotFound)
 )
 
 type UserAccountService struct {
@@ -40,7 +42,7 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 
 	// Check if the user does not exist
 	u, e := ua.userRepository.FindByEmail(ctx, user.Email())
-	if e != nil {
+	if e != nil && !errors.Is(e, ErrUserByEmailDoesNotExist) {
 		return user, ErrFailedToRegisterUser
 	}
 
@@ -48,7 +50,8 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 		return user, ErrEmailAlreadyExists
 	}
 
-	// Create user
+	// Create user with an active status
+	user.SetIsActive(true)
 	u, e = ua.userRepository.Create(ctx, user)
 	if e != nil {
 		return user, ErrFailedToRegisterUser
@@ -60,7 +63,9 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 func (ua *UserAccountService) GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, *hsm.AppError) {
 	var u aggregate.User
 	u, e := ua.userRepository.FindById(ctx, uid)
+
 	if e != nil {
+		// Fallback to generic error
 		return u, ErrFailedToGetUser
 	}
 

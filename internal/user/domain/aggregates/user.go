@@ -109,3 +109,26 @@ func (u *User) SetIsActive(b bool) {
 func (u *User) IsValid() bool {
 	return (u.user != nil && u.user.IsValid()) && (u.location != nil && u.location.IsValid())
 }
+
+// UserEmailView is a snapshot of email information for user aggregate for read-only purposes
+type UserEmailView struct {
+	id               uuid.UUID
+	email            string
+	hasVerifiedEmail bool
+}
+
+func NewUserEmailView(id uuid.UUID, email string, hasVerifiedEmail bool) UserEmailView {
+	return UserEmailView{id: id, email: email, hasVerifiedEmail: hasVerifiedEmail}
+}
+
+func (uev UserEmailView) Id() uuid.UUID {
+	return uev.id
+}
+
+func (uev UserEmailView) Email() string {
+	return uev.email
+}
+
+func (uev UserEmailView) IsEmailVerified() bool {
+	return uev.hasVerifiedEmail
+}
