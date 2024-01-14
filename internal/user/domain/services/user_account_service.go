@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	ErrInvalidUser          = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
-	ErrFailedToRegisterUser = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
-	ErrEmailAlreadyExists   = hsm.NewAppError(errors.New("email already registered"), "email already registered", http.StatusBadRequest)
+	ErrInvalidUser               = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
+	ErrFailedToRegisterUser      = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
+	ErrServerErrorToRegisterUser = hsm.NewAppError(errors.New("internal server error"), "internal server error", http.StatusInternalServerError)
+	ErrEmailAlreadyExists        = hsm.NewAppError(errors.New("email already registered"), "email already registered", http.StatusBadRequest)
 
 	ErrFailedToGetUser         = hsm.NewAppError(errors.New("cannot get user"), "cannot get user", http.StatusNotFound)
 	ErrUserIdDoesNotExist      = hsm.NewAppError(errors.New("user id does not exist"), "user id does not exist", http.StatusNotFound)
@@ -54,7 +55,7 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 	user.SetIsActive(true)
 	u, e = ua.userRepository.Create(ctx, user)
 	if e != nil {
-		return user, ErrFailedToRegisterUser
+		return user, ErrServerErrorToRegisterUser
 	}
 
 	return u, nil

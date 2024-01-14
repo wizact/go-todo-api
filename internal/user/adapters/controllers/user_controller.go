@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -34,8 +35,9 @@ func (u *UserController) RegisterNewUser(ctx context.Context, user httpmodel.Use
 	ua, appErr = u.userAccountUseCase.RegisterNewUser(ctx, ua)
 
 	if appErr != nil {
+		log.Println(appErr)
 		// return proper error
-		return user, &hsm.AppError{ErrorObject: appErr, Message: appErr.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: appErr.ErrorObject, Message: appErr.Message, Code: appErr.Code}
 	}
 
 	// map aggregate to model

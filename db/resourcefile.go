@@ -12,6 +12,8 @@
 // db/migrations/5_create_table_users_aggregate.up.sql
 // db/migrations/6_create_table_users_email_view.down.sql
 // db/migrations/6_create_table_users_email_view.up.sql
+// db/migrations/7_alter_table_users_aggregate_and_email_view.down.sql
+// db/migrations/7_alter_table_users_aggregate_and_email_view.up.sql
 package db
 
 import (
@@ -328,6 +330,46 @@ func _6_create_table_users_email_viewUpSql() (*asset, error) {
 	return a, nil
 }
 
+var __7_alter_table_users_aggregate_and_email_viewDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x90\xcd\x4e\xc3\x30\x10\x84\xef\x7e\x8a\x39\x82\xc4\x1b\xf4\x94\xd2\x05\x2c\xd2\xa4\x72\x37\x6a\x7b\xb2\x2c\xbc\x0d\x96\x42\x8b\x9c\x1f\x5e\x1f\xa5\x29\x2d\xd0\x06\x71\xb4\xe7\xdb\xd9\x9d\x99\x99\x7c\x01\x4e\xa6\x29\x41\x3f\x80\xd6\x7a\xc9\x4b\xb4\xb5\xc4\xda\xba\xb2\x8c\x52\xba\x46\x26\xea\xde\x50\xc2\x74\xe6\xb2\x9c\x47\x58\xdc\x28\x00\x38\xbd\x6d\xf0\x60\x5a\x33\x16\x46\xcf\x13\xb3\xc1\x33\x6d\xee\x0e\x48\xe7\xaa\x56\xac\x77\x8d\x1b\x80\xde\x33\x2b\xd2\xf4\xa8\x4a\xac\xc3\x7e\x67\xc3\x6e\xbb\x47\x56\xcc\xa7\x64\x06\xe1\x25\x4a\x6f\xeb\xfb\x5d\x57\xe6\xda\x77\xff\x43\x56\xb7\x58\x69\x7e\xca\x0b\x86\xc9\x57\x7a\x36\x51\xea\x8f\xc8\xf2\xe6\x42\x65\xbb\x20\x1f\xff\xc8\x7c\x86\x8f\xa1\xfb\xef\x53\xde\xaf\xb3\x2e\x83\x1f\xe6\xae\xdd\xfe\xea\x6a\xdb\x49\x0c\xdb\x20\x7e\x70\x87\xce\x98\x1e\xc9\xfc\x02\x87\x0e\xbc\x75\xcd\x78\x05\x63\xaa\x97\x4a\xbe\xa9\x17\xfd\x7c\x06\x00\x00\xff\xff\xa1\xaa\x43\x50\x11\x02\x00\x00")
+
+func _7_alter_table_users_aggregate_and_email_viewDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__7_alter_table_users_aggregate_and_email_viewDownSql,
+		"7_alter_table_users_aggregate_and_email_view.down.sql",
+	)
+}
+
+func _7_alter_table_users_aggregate_and_email_viewDownSql() (*asset, error) {
+	bytes, err := _7_alter_table_users_aggregate_and_email_viewDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "7_alter_table_users_aggregate_and_email_view.down.sql", size: 529, mode: os.FileMode(420), modTime: time.Unix(1705271104, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __7_alter_table_users_aggregate_and_email_viewUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xac\x90\x41\x4e\xc3\x30\x10\x45\xf7\x3e\xc5\x2c\x41\xe2\x06\x5d\xa5\x74\x00\x8b\x34\xa9\xdc\x89\xda\xae\xac\x11\x9e\x06\x4b\xa1\x45\x8e\x13\xae\x8f\x88\x5b\x55\x2a\x09\x62\xd1\xed\xff\x6f\xbe\xec\xb7\x30\xe5\x0a\x28\x9b\xe7\x08\xfa\x09\x70\xab\xd7\xb4\x86\xae\x95\xd0\x5a\xae\xeb\x20\x35\x47\x99\xa9\x47\x83\x19\xe1\x85\x2b\x4a\x9a\x60\xe1\x4e\x01\xc0\x90\x5a\xef\x80\x70\x4b\xb0\x32\x7a\x99\x99\x1d\xbc\xe2\xee\x61\x68\x7b\x6e\x3a\xb1\x8e\x23\x27\xe0\x67\xae\xa8\xf2\xfc\xd4\x4a\x68\xfd\xf1\x60\xfd\x61\x7f\x84\xa2\x5a\xce\xd1\xa4\xe2\x2d\x08\x47\x71\x96\x23\xe8\x82\xf0\x19\xcd\xd5\x65\xf7\xe9\xae\x80\x94\x3b\x69\xe4\x94\x9f\x0b\x75\x0f\x1b\x4d\x2f\x65\x45\x60\xca\x8d\x5e\xcc\x94\xfa\x43\x85\x7c\xb0\x6f\x6c\xef\xe5\xeb\x1f\x2e\x2e\xf0\x98\x8c\xf3\x8b\x7f\x5b\x19\xee\xc6\x84\xbc\x73\x6b\x7b\x09\x7e\xef\xc5\xa5\xf5\x89\xff\xdf\x42\xd0\x94\x9f\xef\x00\x00\x00\xff\xff\xeb\xfe\xd4\xf8\x29\x02\x00\x00")
+
+func _7_alter_table_users_aggregate_and_email_viewUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__7_alter_table_users_aggregate_and_email_viewUpSql,
+		"7_alter_table_users_aggregate_and_email_view.up.sql",
+	)
+}
+
+func _7_alter_table_users_aggregate_and_email_viewUpSql() (*asset, error) {
+	bytes, err := _7_alter_table_users_aggregate_and_email_viewUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "7_alter_table_users_aggregate_and_email_view.up.sql", size: 553, mode: os.FileMode(420), modTime: time.Unix(1705272196, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -380,18 +422,20 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"1_create_table.down.sql":                  _1_create_tableDownSql,
-	"1_create_table.up.sql":                    _1_create_tableUpSql,
-	"2_alter_table.down.sql":                   _2_alter_tableDownSql,
-	"2_alter_table.up.sql":                     _2_alter_tableUpSql,
-	"3_create_table_users_aggregate.down.sql":  _3_create_table_users_aggregateDownSql,
-	"3_create_table_users_aggregate.up.sql":    _3_create_table_users_aggregateUpSql,
-	"4_alter_table_users_aggregate.down.sql":   _4_alter_table_users_aggregateDownSql,
-	"4_alter_table_users_aggregate.up.sql":     _4_alter_table_users_aggregateUpSql,
-	"5_create_table_users_aggregate.down.sql":  _5_create_table_users_aggregateDownSql,
-	"5_create_table_users_aggregate.up.sql":    _5_create_table_users_aggregateUpSql,
-	"6_create_table_users_email_view.down.sql": _6_create_table_users_email_viewDownSql,
-	"6_create_table_users_email_view.up.sql":   _6_create_table_users_email_viewUpSql,
+	"1_create_table.down.sql":                               _1_create_tableDownSql,
+	"1_create_table.up.sql":                                 _1_create_tableUpSql,
+	"2_alter_table.down.sql":                                _2_alter_tableDownSql,
+	"2_alter_table.up.sql":                                  _2_alter_tableUpSql,
+	"3_create_table_users_aggregate.down.sql":               _3_create_table_users_aggregateDownSql,
+	"3_create_table_users_aggregate.up.sql":                 _3_create_table_users_aggregateUpSql,
+	"4_alter_table_users_aggregate.down.sql":                _4_alter_table_users_aggregateDownSql,
+	"4_alter_table_users_aggregate.up.sql":                  _4_alter_table_users_aggregateUpSql,
+	"5_create_table_users_aggregate.down.sql":               _5_create_table_users_aggregateDownSql,
+	"5_create_table_users_aggregate.up.sql":                 _5_create_table_users_aggregateUpSql,
+	"6_create_table_users_email_view.down.sql":              _6_create_table_users_email_viewDownSql,
+	"6_create_table_users_email_view.up.sql":                _6_create_table_users_email_viewUpSql,
+	"7_alter_table_users_aggregate_and_email_view.down.sql": _7_alter_table_users_aggregate_and_email_viewDownSql,
+	"7_alter_table_users_aggregate_and_email_view.up.sql":   _7_alter_table_users_aggregate_and_email_viewUpSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -435,18 +479,20 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"1_create_table.down.sql":                  &bintree{_1_create_tableDownSql, map[string]*bintree{}},
-	"1_create_table.up.sql":                    &bintree{_1_create_tableUpSql, map[string]*bintree{}},
-	"2_alter_table.down.sql":                   &bintree{_2_alter_tableDownSql, map[string]*bintree{}},
-	"2_alter_table.up.sql":                     &bintree{_2_alter_tableUpSql, map[string]*bintree{}},
-	"3_create_table_users_aggregate.down.sql":  &bintree{_3_create_table_users_aggregateDownSql, map[string]*bintree{}},
-	"3_create_table_users_aggregate.up.sql":    &bintree{_3_create_table_users_aggregateUpSql, map[string]*bintree{}},
-	"4_alter_table_users_aggregate.down.sql":   &bintree{_4_alter_table_users_aggregateDownSql, map[string]*bintree{}},
-	"4_alter_table_users_aggregate.up.sql":     &bintree{_4_alter_table_users_aggregateUpSql, map[string]*bintree{}},
-	"5_create_table_users_aggregate.down.sql":  &bintree{_5_create_table_users_aggregateDownSql, map[string]*bintree{}},
-	"5_create_table_users_aggregate.up.sql":    &bintree{_5_create_table_users_aggregateUpSql, map[string]*bintree{}},
-	"6_create_table_users_email_view.down.sql": &bintree{_6_create_table_users_email_viewDownSql, map[string]*bintree{}},
-	"6_create_table_users_email_view.up.sql":   &bintree{_6_create_table_users_email_viewUpSql, map[string]*bintree{}},
+	"1_create_table.down.sql":                               &bintree{_1_create_tableDownSql, map[string]*bintree{}},
+	"1_create_table.up.sql":                                 &bintree{_1_create_tableUpSql, map[string]*bintree{}},
+	"2_alter_table.down.sql":                                &bintree{_2_alter_tableDownSql, map[string]*bintree{}},
+	"2_alter_table.up.sql":                                  &bintree{_2_alter_tableUpSql, map[string]*bintree{}},
+	"3_create_table_users_aggregate.down.sql":               &bintree{_3_create_table_users_aggregateDownSql, map[string]*bintree{}},
+	"3_create_table_users_aggregate.up.sql":                 &bintree{_3_create_table_users_aggregateUpSql, map[string]*bintree{}},
+	"4_alter_table_users_aggregate.down.sql":                &bintree{_4_alter_table_users_aggregateDownSql, map[string]*bintree{}},
+	"4_alter_table_users_aggregate.up.sql":                  &bintree{_4_alter_table_users_aggregateUpSql, map[string]*bintree{}},
+	"5_create_table_users_aggregate.down.sql":               &bintree{_5_create_table_users_aggregateDownSql, map[string]*bintree{}},
+	"5_create_table_users_aggregate.up.sql":                 &bintree{_5_create_table_users_aggregateUpSql, map[string]*bintree{}},
+	"6_create_table_users_email_view.down.sql":              &bintree{_6_create_table_users_email_viewDownSql, map[string]*bintree{}},
+	"6_create_table_users_email_view.up.sql":                &bintree{_6_create_table_users_email_viewUpSql, map[string]*bintree{}},
+	"7_alter_table_users_aggregate_and_email_view.down.sql": &bintree{_7_alter_table_users_aggregate_and_email_viewDownSql, map[string]*bintree{}},
+	"7_alter_table_users_aggregate_and_email_view.up.sql":   &bintree{_7_alter_table_users_aggregate_and_email_viewUpSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory

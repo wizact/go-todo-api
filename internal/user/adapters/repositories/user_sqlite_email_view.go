@@ -12,8 +12,8 @@ type SqliteUserEmailView struct {
 	UserID           string `gorm:"primaryKey;not null"`
 	Email            string
 	HasVerifiedEmail bool
-	CreatedAt        string
-	UpdatedAt        string
+	CreatedAt        int64          `gorm:"autoCreateTime:milli"`
+	UpdatedAt        int64          `gorm:"autoUpdateTime:milli"`
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
 }
 
@@ -22,18 +22,13 @@ func (SqliteUserEmailView) TableName() string {
 	return "users_email_view"
 }
 
-func (r *UserSqliteRepository) CreateOrUpdateUserEmailView(ctx context.Context, user ua.User) (ua.UserEmailView, error) {
+func (r *UserSqliteRepository) createOrUpdateUserEmailView(ctx context.Context, tx *gorm.DB, user ua.User) (ua.UserEmailView, error) {
 	emptyUserEmailView := ua.UserEmailView{}
-
-	db, err := r.connection.Open(gorm.Config{})
-	if err != nil {
-		return emptyUserEmailView, err
-	}
 
 	uev := &SqliteUserEmailView{}
 	uev.FromDomainEntityToDbModel(user)
 
-	result := db.
+	result := tx.
 		Where(SqliteUserEmailView{UserID: user.UserId().String()}).
 		Assign(*uev).
 		FirstOrCreate(&uev)

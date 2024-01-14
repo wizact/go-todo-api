@@ -89,18 +89,26 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 		return emptyUser, err
 	}
 
+	tx := db.Begin()
+
 	u := &SqliteUserAggregate{}
 	u.FromDomainEntityToDbModel(user)
 
-	result := db.Create(&u)
+	result := tx.Create(&u)
 
 	if result.Error != nil {
+		tx.Rollback()
 		return emptyUser, result.Error
 	}
 
 	user = u.FromDbModelToDomainEntity()
-	r.CreateOrUpdateUserEmailView(ctx, user)
+	_, err = r.createOrUpdateUserEmailView(ctx, tx, user)
+	if err != nil {
+		tx.Rollback()
+		return emptyUser, result.Error
+	}
 
+	tx.Commit()
 	return user, nil
 }
 
@@ -111,9 +119,9 @@ func (r *UserSqliteRepository) Update(ctx context.Context, user ua.User) (ua.Use
 type SqliteUserAggregate struct {
 	UserID    string          `gorm:"primaryKey;not null"`
 	ValueData SqliteUserModel `gorm:"serializer:json"`
-	CreatedAt string
-	UpdatedAt string
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	CreatedAt int64           `gorm:"autoCreateTime:milli"`
+	UpdatedAt int64           `gorm:"autoUpdateTime:milli"`
+	DeletedAt gorm.DeletedAt  `gorm:"index"`
 }
 
 type SqliteUserModel struct {
