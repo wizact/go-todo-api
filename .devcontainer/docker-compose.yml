@@ -1,0 +1,40 @@
+version: '3.8'
+
+volumes:
+  shared-data:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - type: bind
+        source: ../
+        target: /go/src/go-todo-api/
+        consistency: cached
+    ports:
+      - 9000:9000
+      - 2345:2345
+    expose:
+      - 9000
+    command: sleep infinity
+    networks: ["nats"]
+
+  nats:
+    image: nats
+    ports:
+      - 8222:8222
+      - 4222:4222
+    expose:
+      - 8222
+      - 4222
+    command: "--http_port 8222 "
+    networks: ["nats"]
+
+networks:
+  nats:
+    name: nats
+    driver: bridge
