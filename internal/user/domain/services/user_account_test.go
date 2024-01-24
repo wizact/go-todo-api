@@ -1,4 +1,4 @@
-package service
+package service_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	svc "github.com/wizact/go-todo-api/internal/user/domain/services"
 )
 
 func Test_NewUserAccountService(t *testing.T) {
@@ -14,7 +15,7 @@ func Test_NewUserAccountService(t *testing.T) {
 
 	ur := repository.NewUserMemoryRepository(seedUserList)
 
-	uas := NewUserAccountService(ur)
+	uas := svc.NewUserAccountService(ur)
 
 	_, err := uas.RegisterNewUser(context.Background(), u)
 
