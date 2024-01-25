@@ -18,23 +18,23 @@ type PubSubOpt struct {
 	ClientName string
 }
 
-type PubSubConnection struct {
+type NatsConnection struct {
 	conn    *nats.Conn
 	options *PubSubOpt
 }
 
-// NewPubSubConnection creates and returns a new nats connection with urls of the cluster and client name.
+// NewNatsConnection creates and returns a new nats connection with urls of the cluster and client name.
 // The connection is not established at this stage.
 // Urls are a string a instances of cluster seperated by space, or a single url.
 // If urls and client name are not provided, they will be resolved from env variables.
-func NewPubSubConnection(urls, clientName string) (*PubSubConnection, error) {
+func NewNatsConnection(urls, clientName string) (*NatsConnection, error) {
 	nc, err := resolveConnectionOpts("", "")
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &PubSubConnection{options: nc}, nil
+	return &NatsConnection{options: nc}, nil
 }
 
 func resolveConnectionOpts(urls, clientName string) (*PubSubOpt, error) {
@@ -53,7 +53,7 @@ func resolveConnectionOpts(urls, clientName string) (*PubSubOpt, error) {
 }
 
 // Connect returns an already established connection or establish a new connection and returns it.
-func (psc *PubSubConnection) Connect() (*nats.Conn, error) {
+func (psc *NatsConnection) Connect() (*nats.Conn, error) {
 	if psc.conn != nil && psc.conn.IsConnected() {
 		return psc.conn, nil
 	}

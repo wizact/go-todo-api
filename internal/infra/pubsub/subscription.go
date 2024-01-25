@@ -7,11 +7,11 @@ import (
 )
 
 type Subscription struct {
-	psc          *PubSubConnection
+	psc          *NatsConnection
 	subscription *nats.Subscription
 }
 
-func NewSubscription(psc *PubSubConnection) Subscription {
+func NewSubscription(psc *NatsConnection) Subscription {
 	return Subscription{psc: psc}
 }
 

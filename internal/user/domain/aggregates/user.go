@@ -25,6 +25,28 @@ func NewUser() User {
 	}
 }
 
+// GetAggregateEventPayload returns a representation of the aggregate for event processing
+func (u *User) GetAggregateEventPayload() interface{} {
+	ue := u.User()
+	ae := struct {
+		ID               uuid.UUID `json:"ID"`
+		FirstName        string    `json:"FirstName"`
+		LastName         string    `json:"LastName"`
+		Email            string    `json:"Email"`
+		IsActive         bool      `json:"IsActive"`
+		HasVerifiedEmail bool      `json:"HasVerifiedEmail"`
+	}{
+		ID:               u.UserId(),
+		FirstName:        ue.FirstName,
+		LastName:         ue.LastName,
+		Email:            ue.Email,
+		IsActive:         u.isActive,
+		HasVerifiedEmail: u.HasVerifiedEmail(),
+	}
+
+	return ae
+}
+
 // UserId gets the id of the user as aggregate root identity
 func (u *User) UserId() uuid.UUID {
 	return u.user.ID

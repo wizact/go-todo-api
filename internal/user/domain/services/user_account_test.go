@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	event "github.com/wizact/go-todo-api/internal/user/adapters/events"
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	svc "github.com/wizact/go-todo-api/internal/user/domain/services"
@@ -14,8 +15,9 @@ func Test_NewUserAccountService(t *testing.T) {
 	u := seedUserList[0]
 
 	ur := repository.NewUserMemoryRepository(seedUserList)
+	uecm := event.UserEventClientMock{}
 
-	uas := svc.NewUserAccountService(ur)
+	uas := svc.NewUserAccountService(ur, uecm)
 
 	_, err := uas.RegisterNewUser(context.Background(), u)
 

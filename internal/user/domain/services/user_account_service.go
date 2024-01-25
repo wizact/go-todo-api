@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	event "github.com/wizact/go-todo-api/internal/user/ports/output/events"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
@@ -24,12 +25,14 @@ var (
 
 type UserAccountService struct {
 	// repositories and other services
-	userRepository repository.UserRepository
+	userRepository  repository.UserRepository
+	userEventClient event.UserEventClient
 }
 
-func NewUserAccountService(ur repository.UserRepository) *UserAccountService {
+func NewUserAccountService(ur repository.UserRepository, uec event.UserEventClient) *UserAccountService {
 	ua := &UserAccountService{
-		userRepository: ur,
+		userRepository:  ur,
+		userEventClient: uec,
 	}
 
 	return ua
@@ -57,6 +60,9 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 	if e != nil {
 		return user, ErrServerErrorToRegisterUser
 	}
+
+	// emit events
+	ua.userEventClient.UserCreated(ctx, user)
 
 	return u, nil
 }
