@@ -7,37 +7,41 @@ import (
 )
 
 type Subscription struct {
-	pb           *PubSub
+	psc          *PubSubConnection
 	subscription *nats.Subscription
 }
 
-func NewSubscription(conn *PubSub) Subscription {
-	return Subscription{pb: conn}
+func NewSubscription(psc *PubSubConnection) Subscription {
+	return Subscription{psc: psc}
 }
 
-func (s *Subscription) Subscribe(subj string) {
-	sub, e := s.pb.conn.Subscribe(subj, func(msg *nats.Msg) {
-		log.Println("Recieved %v with %v", msg.Header, msg.Data)
+func (s *Subscription) Subscribe(subj string) error {
+	sub, err := s.psc.conn.Subscribe(subj, func(msg *nats.Msg) {
+		log.Printf("Recieved %v with %v \n", msg.Header, msg.Data)
 	})
 
-	if e != nil {
-		log.Fatalf(e.Error(), subj)
+	if err != nil {
+		return err
 	}
 
 	s.subscription = sub
+
+	return nil
 }
 
-func (s *Subscription) SubscribeChan(subj string, ch chan *nats.Msg) {
-	sub, e := s.pb.conn.ChanSubscribe(subj, ch)
+func (s *Subscription) SubscribeChan(subj string, ch chan *nats.Msg) error {
+	sub, err := s.psc.conn.ChanSubscribe(subj, ch)
 
-	if e != nil {
-		log.Fatalf(e.Error(), subj)
+	if err != nil {
+		return err
 	}
 
 	s.subscription = sub
+
+	return nil
 }
 
 func (s *Subscription) Unsubscribe() error {
-	s.pb.conn.Flush()
+	s.psc.conn.Flush()
 	return s.subscription.Unsubscribe()
 }

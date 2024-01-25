@@ -8,13 +8,16 @@ import (
 )
 
 var (
-	ErrFailedToConnectToDb = errors.New("failed to connect to database")
+	ErrFailedToResolveDbConnStr = errors.New("failed to resolve db connection string")
+	ErrFailedToConnectToDb      = errors.New("failed to connect to database")
 )
 
 type SqliteConnection struct {
 	connectionString string
 }
 
+// NewSqliteConnection create a new sqlite connection but it does not connect to it.
+// If connectionString is not provided, then it resolves it from env variables.
 func NewSqliteConnection(connectionString string) (*SqliteConnection, error) {
 
 	dp, err := resolveConnectionString(connectionString)
@@ -35,7 +38,7 @@ func resolveConnectionString(connectionString string) (string, error) {
 	dp, err := dc.GetDbPath()
 
 	if err != nil {
-		return "", ErrFailedToConnectToDb
+		return "", ErrFailedToResolveDbConnStr
 	}
 
 	return dp, nil
