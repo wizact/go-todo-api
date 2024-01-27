@@ -1,4 +1,4 @@
-package events
+package event
 
 import (
 	"context"
@@ -20,8 +20,8 @@ func (uecm UserEventClientMock) GetConnection() *pubsubinfra.NatsConnection {
 	return nil
 }
 
-// UserCreated publishes the user aggregate after successful user creation
-func (uecm UserEventClientMock) UserCreated(ctx context.Context, user ua.User) error {
+// NewUserRegistered publishes the user aggregate after successful user creation
+func (uecm UserEventClientMock) NewUserRegistered(ctx context.Context, user ua.User) error {
 	log.Println("UserEventClientMock.UserCreated")
 	return nil
 }

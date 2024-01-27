@@ -7,5 +7,5 @@ import (
 )
 
 type UserEventClient interface {
-	UserCreated(ctx context.Context, user ua.User) error
+	NewUserRegistered(ctx context.Context, user ua.User) error
 }

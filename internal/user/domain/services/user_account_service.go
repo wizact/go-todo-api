@@ -62,7 +62,7 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 	}
 
 	// emit events
-	ua.userEventClient.UserCreated(ctx, user)
+	ua.userEventClient.NewUserRegistered(ctx, user)
 
 	return u, nil
 }
