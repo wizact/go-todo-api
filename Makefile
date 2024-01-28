@@ -4,7 +4,7 @@ MIGRATIONNAME := migration
 PKG := github.com/wizact/$(NAME)
 SHELL := /usr/bin/env bash -o errexit -o pipefail -o nounset
 GO := go
-GO_VERSION := 1.19
+GO_VERSION := 1.20
 
 # Image for the build environment
 BUILD_IMAGE :=  ghcr.io/wizact/todo-api-builder:c26865d
