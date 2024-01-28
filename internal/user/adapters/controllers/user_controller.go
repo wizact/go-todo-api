@@ -29,7 +29,7 @@ func (u *UserController) RegisterNewUser(ctx context.Context, user httpmodel.Use
 	// map model to aggregate
 	ua, err := user.ToDomainModel()
 	if err != nil {
-		return user, &hsm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: err, SanitisedMessage: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	ua, appErr = u.userAccountUseCase.RegisterNewUser(ctx, ua)
@@ -37,14 +37,14 @@ func (u *UserController) RegisterNewUser(ctx context.Context, user httpmodel.Use
 	if appErr != nil {
 		log.Println(appErr)
 		// return proper error
-		return user, &hsm.AppError{ErrorObject: appErr.ErrorObject, Message: appErr.Message, Code: appErr.Code}
+		return user, &hsm.AppError{ErrorObject: appErr.ErrorObject, SanitisedMessage: appErr.SanitisedMessage, Code: appErr.Code}
 	}
 
 	// map aggregate to model
 	err = user.ToApiModel(ua)
 	if err != nil {
 		// return proper error
-		return user, &hsm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: err, SanitisedMessage: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	return user, nil
@@ -59,14 +59,14 @@ func (u *UserController) GetUserById(ctx context.Context, uid uuid.UUID) (httpmo
 
 	if appErr != nil {
 		// return proper error
-		return user, &hsm.AppError{ErrorObject: appErr, Message: appErr.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: appErr, SanitisedMessage: appErr.Error(), Code: http.StatusBadRequest}
 	}
 
 	// map aggregate to model
 	err := user.ToApiModel(ua)
 	if err != nil {
 		// return proper error
-		return user, &hsm.AppError{ErrorObject: err, Message: err.Error(), Code: http.StatusBadRequest}
+		return user, &hsm.AppError{ErrorObject: err, SanitisedMessage: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	return user, nil

@@ -49,7 +49,7 @@ func (ur UserRoute) RegisterUser() middleware.AppHandler {
 		var u httpModel.User
 		err := json.NewDecoder(r.Body).Decode(&u)
 		if err != nil {
-			return &hsm.AppError{ErrorObject: err, Message: "Bad Request", Code: http.StatusBadRequest}
+			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
 		}
 
 		u, err = ur.UserController.RegisterNewUser(context.TODO(), u)
@@ -75,7 +75,7 @@ func (ur UserRoute) GetUserById() middleware.AppHandler {
 		var uid uuid.UUID
 		var err error
 		if uid, err = uuid.Parse(mux.Vars(r)["id"]); err != nil {
-			return &hsm.AppError{ErrorObject: err, Message: "Bad Request", Code: http.StatusBadRequest}
+			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
 		}
 
 		u, err := ur.UserController.GetUserById(context.TODO(), uid)

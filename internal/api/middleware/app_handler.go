@@ -17,7 +17,7 @@ func (fn AppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(e.Error())
 
 		w.WriteHeader(e.Code)
-		ee := json.NewEncoder(w).Encode(&hsm.FriendlyError{Message: e.Message})
+		ee := json.NewEncoder(w).Encode(&hsm.FriendlyError{Message: e.SanitisedMessage})
 		if ee != nil {
 			log.Fatal(ee.Error())
 		}
