@@ -22,7 +22,7 @@ require (
 
 require (
 	github.com/gorilla/mux v1.8.0
-	github.com/mattn/go-sqlite3 v1.14.18
+	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/wizact/yacli v0.0.0-20200621092021-be57780af79a
 	golang.org/x/sys v0.16.0 // indirect

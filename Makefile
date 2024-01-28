@@ -7,7 +7,8 @@ GO := go
 GO_VERSION := 1.20
 
 # Image for the build environment
-BUILD_IMAGE :=  ghcr.io/wizact/todo-api-builder:c26865d
+BUILD_IMAGE :=  ghcr.io/wizact/todo-api-builder
+BUILD_IMAGE_VERSION := 0e03696
 
 PREFIX?=$(shell pwd)
 BUILDTAGS :=
@@ -78,7 +79,7 @@ build-%:| $(BUILD_DIRS)
 		--env OUTDIR=".go/bin/$(OS)_$(ARCH)"					\
 		--env OUTNAME=$(OUTBIN)									\
 		--env NAME=$(firstword $(subst _, ,$*))					\
-		$(BUILD_IMAGE)                                          \
+		$(BUILD_IMAGE):$(BUILD_IMAGE_VERSION)                   \
 		./build/build.sh
 
 
@@ -122,7 +123,7 @@ shell: | $(BUILD_DIRS)
 		--env OS="$(OS)"                                        \
 		--env VERSION="$(VERSION)"                              \
 		--env GOFLAGS="$(GOFLAGS)"                              \
-		$(BUILD_IMAGE)                                          \
+		$(BUILD_IMAGE):$(BUILD_IMAGE_VERSION)                   \
 		/bin/sh $(CMD)
 
 .PHONY: run-server
@@ -158,6 +159,11 @@ clean:
 	rm -rf .go/*
 	rm -rf out/*
 
+.PHONY: build-builder-image
+build-builder-image: # @HELP build the base builder image based on build/Dockerfile and tag is as current HEAD hash
+	(cd ./build && docker build -t ghcr.io/wizact/todo-api-builder:$(VERSION) .)
+
+
 .PHONY: help
 help: # @HELP prints this message
 help:
@@ -167,6 +173,7 @@ help:
 	echo "  GO_VERSION = $(GO_VERSION)"
 	echo "  VERSION = $(VERSION)"
 	echo "  BUILD_IMAGE = $(BUILD_IMAGE)"
+	echo "  BUILD_IMAGE_VERSION = $(BUILD_IMAGE_VERSION)"
 	echo "  GOFLAGS = $(GOFLAGS)"
 	echo "  REGISTRY = $(REGISTRY)"
 	echo

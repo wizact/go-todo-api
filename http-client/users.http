@@ -8,7 +8,7 @@ POST http://{{hostname}}/{{baseUri}} HTTP/1.1
     "first_name": "Foo",
     "last_name": "Bar",
     "dateOfBirth": "1983-01-02T15:04:05Z",
-    "email": "baz8@example.com",
+    "email": "baz10@example.com",
 
     "phone_country_code": "+64",
     "phone_area_code": "023",
@@ -21,4 +21,4 @@ POST http://{{hostname}}/{{baseUri}} HTTP/1.1
 ###
 
 # @name getUserById
-GET http://{{hostname}}/{{baseUri}}/e9dc7067-665e-4375-99f1-46f55f0b8666 HTTP/1.1
+GET http://{{hostname}}/{{baseUri}}/fb5a828d-c469-40fd-bad8-caaf8dd7c0a9 HTTP/1.1
