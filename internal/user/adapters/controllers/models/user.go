@@ -57,7 +57,7 @@ func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
 func (u *User) ToApiModel(ua aggregate.User) *hsm.AppError {
 	u.UserID = ua.User().ID.String()
 	u.FirstName = ua.User().FirstName
-	u.LastName = ua.User().LastName
+	u.LastName = ua.User().FirstName
 	u.DateOfBirth = ua.User().DateOfBirth.String()
 	u.Email = ua.User().Email
 
