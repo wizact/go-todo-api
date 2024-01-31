@@ -27,22 +27,22 @@ type User struct {
 func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
 	var ua aggregate.User = aggregate.NewUser()
 
-	duser := model.NewUser()
+	duser := model.NewEmptyUser()
 
-	duser.FirstName = u.FirstName
-	duser.LastName = u.FirstName
+	duser.SetName(u.FirstName, u.LastName)
 
 	if t, e := time.Parse(time.RFC3339, u.DateOfBirth); e != nil {
 		return ua, &hsm.AppError{SanitisedMessage: e.Error(), ErrorObject: e, Code: http.StatusBadRequest}
 	} else {
-		duser.DateOfBirth = t
+		duser.SetDateOfBirth(t)
 	}
 
-	duser.Email = u.Email
+	duser.SetEmail(u.Email)
 
-	duser.Phone.CountryCode = u.PhoneCountryCode
-	duser.Phone.AreaCode = u.PhoneAreaCode
-	duser.Phone.Number = u.PhoneNumber
+	dup := duser.Phone()
+	dup.SetCountryCode(u.PhoneCountryCode)
+	dup.SetAreaCode(u.PhoneAreaCode)
+	dup.SetNumber(u.PhoneNumber)
 
 	ua.SetUser(duser)
 
@@ -55,15 +55,18 @@ func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
 }
 
 func (u *User) ToApiModel(ua aggregate.User) *hsm.AppError {
-	u.UserID = ua.User().ID.String()
-	u.FirstName = ua.User().FirstName
-	u.LastName = ua.User().FirstName
-	u.DateOfBirth = ua.User().DateOfBirth.String()
-	u.Email = ua.User().Email
+	uau := ua.User()
+	fn, ln := uau.Name()
+	u.UserID = uau.ID().String()
+	u.FirstName = fn
+	u.LastName = ln
+	u.DateOfBirth = uau.DateOfBirth().String()
+	u.Email = uau.Email()
 
-	u.PhoneCountryCode = ua.User().Phone.CountryCode
-	u.PhoneAreaCode = ua.User().Phone.AreaCode
-	u.PhoneNumber = ua.User().Phone.Number
+	uaup := uau.Phone()
+	u.PhoneCountryCode = uaup.CountryCode()
+	u.PhoneAreaCode = uaup.AreaCode()
+	u.PhoneNumber = uaup.Number()
 
 	u.LocationLatitude = ua.Location().Latitude
 	u.LocationLongitude = ua.Location().Longitude

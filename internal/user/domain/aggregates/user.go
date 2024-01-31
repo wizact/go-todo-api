@@ -17,7 +17,7 @@ type User struct {
 
 // NewUser creates a new user with an auto generated uuid and limited role
 func NewUser() User {
-	u := model.NewUser()
+	u := model.NewEmptyUser()
 	l := model.Location{}
 	return User{
 		user:     &u,
@@ -28,6 +28,7 @@ func NewUser() User {
 // GetAggregateEventPayload returns a representation of the aggregate for event processing
 func (u *User) GetAggregateEventPayload() interface{} {
 	ue := u.User()
+	fn, ln := ue.Name()
 	ae := struct {
 		ID               uuid.UUID `json:"ID"`
 		FirstName        string    `json:"FirstName"`
@@ -37,9 +38,9 @@ func (u *User) GetAggregateEventPayload() interface{} {
 		HasVerifiedEmail bool      `json:"HasVerifiedEmail"`
 	}{
 		ID:               u.UserId(),
-		FirstName:        ue.FirstName,
-		LastName:         ue.LastName,
-		Email:            ue.Email,
+		FirstName:        fn,
+		LastName:         ln,
+		Email:            ue.Email(),
 		IsActive:         u.isActive,
 		HasVerifiedEmail: u.HasVerifiedEmail(),
 	}
@@ -49,13 +50,13 @@ func (u *User) GetAggregateEventPayload() interface{} {
 
 // UserId gets the id of the user as aggregate root identity
 func (u *User) UserId() uuid.UUID {
-	return u.user.ID
+	return u.user.ID()
 }
 
 // User gets the user as aggregate root
 func (u *User) User() model.User {
 	if u.user == nil {
-		um := model.NewUser()
+		um := model.NewEmptyUser()
 		u.user = &um
 	}
 	return *u.user
@@ -69,7 +70,7 @@ func (u *User) SetUser(nu model.User) {
 // Email gets the user email
 func (u *User) Email() string {
 	if u.user != nil {
-		return u.user.Email
+		return u.user.Email()
 	}
 
 	return ""
@@ -82,13 +83,13 @@ func (u *User) SetEmail(email string) error {
 	}
 
 	cloned := u.user
-	cloned.Email = email
+	cloned.SetEmail(email)
 
 	if !model.HasValidEmail(*cloned) {
 		return errors.New("email is not valid")
 	}
 
-	u.user.Email = email
+	u.user.SetEmail(email)
 	return nil
 }
 

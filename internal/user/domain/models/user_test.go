@@ -28,16 +28,16 @@ func TestUser_IsValid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := User{
-				ID:          tt.fields.ID,
-				FirstName:   tt.fields.FirstName,
-				LastName:    tt.fields.LastName,
-				DateOfBirth: tt.fields.DateOfBirth,
-				Email:       tt.fields.Email,
-				Phone:       tt.fields.Phone,
-			}
+			u := NewUser(
+				tt.fields.ID,
+				tt.fields.FirstName,
+				tt.fields.LastName,
+				tt.fields.DateOfBirth,
+				tt.fields.Email,
+				tt.fields.Phone,
+			)
 			if got := u.IsValid(); got != tt.want {
-				t.Errorf("User.IsValid() = %v, want %v", got, tt.want)
+				t.Errorf("User.IsValid() = %v, want %v %v", got, tt.want, u)
 			}
 		})
 	}
@@ -53,27 +53,27 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 		Phone       PhoneNumber
 	}
 
-	user2 := NewUser()
+	user2 := NewEmptyUser()
 
 	tests := []struct {
 		name   string
 		fields user
 		want   bool
 	}{
-		{"Users with the same id", user{ID: user2.ID, FirstName: "foo", LastName: "bar", Email: "foo@bar.baz"}, true},
+		{"Users with the same id", user{ID: user2.ID(), FirstName: "foo", LastName: "bar", Email: "foo@bar.baz"}, true},
 		{"Users with the different id", user{ID: uuid.New(), FirstName: "foo", LastName: "bar", Email: "foo@bar.baz"}, false},
 		{"Users with the different id and same email", user{ID: uuid.New(), FirstName: "foo", LastName: "bar", Email: "foo@bar.baz"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := User{
-				ID:          tt.fields.ID,
-				FirstName:   tt.fields.FirstName,
-				LastName:    tt.fields.LastName,
-				DateOfBirth: tt.fields.DateOfBirth,
-				Email:       tt.fields.Email,
-				Phone:       tt.fields.Phone,
-			}
+			u := NewUser(
+				tt.fields.ID,
+				tt.fields.FirstName,
+				tt.fields.LastName,
+				tt.fields.DateOfBirth,
+				tt.fields.Email,
+				tt.fields.Phone,
+			)
 			if got := u.IsTheSameUserAs(user2); got != tt.want {
 				t.Errorf("User.IsTheSameUserAs() = %v, want %v", got, tt.want)
 			}
@@ -82,11 +82,11 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 }
 
 func TestHasName(t *testing.T) {
-	user1 := NewUser()
+	user1 := NewEmptyUser()
 	user2 := user1
-	user2.FirstName = "foo"
+	user2.SetName("foo", "")
 	user3 := user1
-	user3.LastName = "bar"
+	user3.SetName("", "bar")
 	tests := []struct {
 		name string
 		user User
@@ -107,17 +107,19 @@ func TestHasName(t *testing.T) {
 
 func TestHasValidEmail(t *testing.T) {
 	tests := []struct {
-		name string
-		user User
-		want bool
+		name  string
+		email string
+		want  bool
 	}{
-		{"user with no email", User{Email: ""}, false},
-		{"user with no valid email", User{Email: "invalidemail"}, false},
-		{"user with valid email", User{Email: "foo@bar.baz"}, true},
+		{"user with no email", "", false},
+		{"user with no valid email", "invalidemail", false},
+		{"user with valid email", "foo@bar.baz", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := HasValidEmail(tt.user); got != tt.want {
+			u := NewEmptyUser()
+			u.SetEmail(tt.email)
+			if got := HasValidEmail(u); got != tt.want {
 				t.Errorf("HasValidEmail() = %v, want %v", got, tt.want)
 			}
 		})
@@ -130,10 +132,7 @@ func TestPhoneNumber_IsEqual(t *testing.T) {
 		AreaCode    string
 		Number      string
 	}
-	p2 := NewPhoneNumber()
-	p2.CountryCode = "+64"
-	p2.AreaCode = "021"
-	p2.Number = "123456"
+	p2 := NewPhoneNumber("+64", "021", "123456")
 
 	tests := []struct {
 		name   string
@@ -148,11 +147,11 @@ func TestPhoneNumber_IsEqual(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := PhoneNumber{
-				CountryCode: tt.fields.CountryCode,
-				AreaCode:    tt.fields.AreaCode,
-				Number:      tt.fields.Number,
-			}
+			p := NewPhoneNumber(
+				tt.fields.CountryCode,
+				tt.fields.AreaCode,
+				tt.fields.Number,
+			)
 			if got := p.IsEqual(tt.phone); got != tt.want {
 				t.Errorf("PhoneNumber.IsEqual() = %v, want %v", got, tt.want)
 			}

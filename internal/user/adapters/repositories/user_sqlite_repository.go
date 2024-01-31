@@ -148,15 +148,18 @@ func (SqliteUserAggregate) TableName() string {
 
 func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 	dbm.UserID = de.UserId().String()
+	deu := de.User()
+	deup := deu.Phone()
+	fn, ln := deu.Name()
 	dbm.ValueData = SqliteUserModel{
 		ID:               de.UserId().String(),
-		FirstName:        de.User().FirstName,
-		LastName:         de.User().LastName,
-		DateOfBirth:      de.User().DateOfBirth,
-		Email:            de.User().Email,
-		CountryCode:      de.User().Phone.CountryCode,
-		AreaCode:         de.User().Phone.AreaCode,
-		Number:           de.User().Phone.Number,
+		FirstName:        fn,
+		LastName:         ln,
+		DateOfBirth:      deu.DateOfBirth(),
+		Email:            deu.Email(),
+		CountryCode:      deup.CountryCode(),
+		AreaCode:         deup.AreaCode(),
+		Number:           deup.Number(),
 		LocationLong:     de.Location().Longitude,
 		LocationLat:      de.Location().Latitude,
 		HasVerifiedEmail: de.HasVerifiedEmail(),
@@ -166,18 +169,8 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 
 func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	de := ua.NewUser()
-	mu := model.User{
-		ID:          uuid.MustParse(dbm.UserID),
-		FirstName:   dbm.ValueData.FirstName,
-		LastName:    dbm.ValueData.LastName,
-		DateOfBirth: dbm.ValueData.DateOfBirth,
-		Email:       dbm.ValueData.Email,
-		Phone: model.PhoneNumber{
-			CountryCode: dbm.ValueData.CountryCode,
-			AreaCode:    dbm.ValueData.AreaCode,
-			Number:      dbm.ValueData.Number,
-		},
-	}
+	ph := model.NewPhoneNumber(dbm.ValueData.CountryCode, dbm.ValueData.AreaCode, dbm.ValueData.Number)
+	mu := model.NewUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
 
 	dl := model.NewLocation()
 	dl.SetCoordinates(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
