@@ -4,24 +4,29 @@ import (
 	"context"
 	"log"
 
-	pubsubinfra "github.com/wizact/go-todo-api/internal/infra/pubsub"
+	"github.com/nats-io/nats.go"
+	pubsub_infra "github.com/wizact/go-todo-api/internal/infra/pubsub"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 )
 
 type UserEventClientMock struct {
 }
 
-func (uecm UserEventClientMock) Connection(nc *pubsubinfra.NatsConnection) {
+func (uecm UserEventClientMock) Connection(nc *pubsub_infra.NatsConnection) {
 	log.Println("UserEventClientMock.Connection")
 }
 
-func (uecm UserEventClientMock) GetConnection() *pubsubinfra.NatsConnection {
+func (uecm UserEventClientMock) GetConnection() *pubsub_infra.NatsConnection {
 	log.Println("UserEventClientMock.GetConnection")
 	return nil
 }
 
-// NewUserRegistered publishes the user aggregate after successful user creation
-func (uecm UserEventClientMock) NewUserRegistered(ctx context.Context, user ua.User) error {
+// PublishNewUserRegisteredEvent publishes the user aggregate after successful user creation
+func (uecm UserEventClientMock) PublishNewUserRegisteredEvent(ctx context.Context, user ua.User) error {
 	log.Println("UserEventClientMock.UserCreated")
 	return nil
+}
+
+func (uecm UserEventClientMock) SubscribeToNewUserRegisteredEvent(ctx context.Context, ch chan *nats.Msg) (pubsub_infra.ChannelUnsubscribeCallBack, error) {
+	return nil, nil
 }

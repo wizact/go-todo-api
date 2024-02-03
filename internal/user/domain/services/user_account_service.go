@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
-	event "github.com/wizact/go-todo-api/internal/user/ports/output/events"
+	event "github.com/wizact/go-todo-api/internal/user/ports/events"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
@@ -62,7 +63,11 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 	}
 
 	// emit events
-	ua.userEventClient.NewUserRegistered(ctx, user)
+	err := ua.userEventClient.PublishNewUserRegisteredEvent(ctx, user)
+
+	if err != nil {
+		log.Printf("failed PublishNewUserRegisteredEvent for %v \n", u.UserId())
+	}
 
 	return u, nil
 }

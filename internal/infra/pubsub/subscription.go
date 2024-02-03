@@ -1,8 +1,6 @@
 package pubsub
 
 import (
-	"log"
-
 	"github.com/nats-io/nats.go"
 )
 
@@ -15,10 +13,21 @@ func NewSubscription(psc *NatsConnection) Subscription {
 	return Subscription{psc: psc}
 }
 
-func (s *Subscription) Subscribe(subj string) error {
-	sub, err := s.psc.conn.Subscribe(subj, func(msg *nats.Msg) {
-		log.Printf("Recieved %v with %v \n", msg.Header, msg.Data)
-	})
+func (s *Subscription) connect() error {
+	_, err := s.psc.Connect()
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Subscription) Subscribe(subj string, sc nats.MsgHandler) error {
+	if err := s.connect(); err != nil {
+		return err
+	}
+
+	sub, err := s.psc.conn.Subscribe(subj, sc)
 
 	if err != nil {
 		return err
@@ -29,19 +38,27 @@ func (s *Subscription) Subscribe(subj string) error {
 	return nil
 }
 
-func (s *Subscription) SubscribeChan(subj string, ch chan *nats.Msg) error {
+func (s *Subscription) SubscribeChan(subj string, ch chan *nats.Msg) (ChannelUnsubscribeCallBack, error) {
+	if err := s.connect(); err != nil {
+		return nil, err
+	}
+
 	sub, err := s.psc.conn.ChanSubscribe(subj, ch)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	s.subscription = sub
 
-	return nil
+	return s.UnsubscribeFn(), nil
 }
 
-func (s *Subscription) Unsubscribe() error {
-	s.psc.conn.Flush()
-	return s.subscription.Unsubscribe()
+func (s *Subscription) UnsubscribeFn() ChannelUnsubscribeCallBack {
+	return func() error {
+		s.psc.conn.Flush()
+		return s.subscription.Unsubscribe()
+	}
 }
+
+type ChannelUnsubscribeCallBack func() error

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -52,7 +51,7 @@ func (ur UserRoute) RegisterUser() middleware.AppHandler {
 			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
 		}
 
-		u, err = ur.UserController.RegisterNewUser(context.TODO(), u)
+		u, err = ur.UserController.RegisterNewUser(r.Context(), u)
 
 		e, a := err.(*hsm.AppError)
 		if e != nil && a {
@@ -78,7 +77,7 @@ func (ur UserRoute) GetUserById() middleware.AppHandler {
 			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
 		}
 
-		u, err := ur.UserController.GetUserById(context.TODO(), uid)
+		u, err := ur.UserController.GetUserById(r.Context(), uid)
 		e, a := err.(*hsm.AppError)
 		if e != nil && a {
 			return e

@@ -8,7 +8,7 @@ POST http://{{hostname}}/{{baseUri}} HTTP/1.1
     "first_name": "Foo",
     "last_name": "Bar",
     "dateOfBirth": "1983-01-02T15:04:05Z",
-    "email": "baz10@example.com",
+    "email": "baz70@example.com",
 
     "phone_country_code": "+64",
     "phone_area_code": "023",

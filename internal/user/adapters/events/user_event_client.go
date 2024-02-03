@@ -7,6 +7,9 @@ import (
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 )
 
+const UserDomainTopicName = "User"
+const NewUserRegisteredEventSubjectName = "NewUserRegistered"
+
 type UserEventClient struct {
 	natConnection *pubsubinfra.NatsConnection
 }
@@ -26,4 +29,9 @@ func (ue *UserEventClient) GetEventPayload(user ua.User) ([]byte, error) {
 	}
 
 	return b, nil
+}
+
+// NewUserRegisteredEventFQN retuens the fully qualified name (FQN) for new user registered event
+func (ue *UserEventClient) NewUserRegisteredEventFQN() string {
+	return UserDomainTopicName + "." + NewUserRegisteredEventSubjectName
 }
