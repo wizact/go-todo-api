@@ -29,3 +29,6 @@ convert data from the format most convenient for the use cases and entities, to 
 
 Ports must only be consist of interface type. 
 From inner circles nothing can reference outer circles expect the port folder
+
+Testing the domain event:
+nats subscribe "User.NewUserRegistered" -s nats:4222

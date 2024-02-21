@@ -1,0 +1,2 @@
+echo $SHELL
+go version
