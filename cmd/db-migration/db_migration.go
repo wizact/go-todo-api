@@ -12,7 +12,6 @@ func main() {
 	dbm := migration.DBMigration{}
 
 	dp, err := (&infradb.DbConfig{}).GetDbPath()
-
 	if err != nil {
 		log.Fatalf("error resolving db path: %v", err.Error())
 	}
@@ -22,7 +21,6 @@ func main() {
 			log.Println(err.Error())
 			return
 		}
-
 		log.Fatalln(err)
 	}
 }
