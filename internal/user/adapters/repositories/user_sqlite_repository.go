@@ -108,6 +108,12 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 		return emptyUser, result.Error
 	}
 
+	_, err = r.createOrUpdateUserTokenView(ctx, tx, user)
+	if err != nil {
+		tx.Rollback()
+		return emptyUser, result.Error
+	}
+
 	tx.Commit()
 	return user, nil
 }
@@ -139,6 +145,9 @@ type SqliteUserModel struct {
 
 	HasVerifiedEmail bool
 	IsActive         bool
+
+	VerificationToken string
+	VerificationSalt  string
 }
 
 // TableName overrides grom default table name
@@ -151,19 +160,22 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 	deu := de.User()
 	deup := deu.Phone()
 	fn, ln := deu.Name()
+	tk := de.Token()
 	dbm.ValueData = SqliteUserModel{
-		ID:               de.UserId().String(),
-		FirstName:        fn,
-		LastName:         ln,
-		DateOfBirth:      deu.DateOfBirth(),
-		Email:            deu.Email(),
-		CountryCode:      deup.CountryCode(),
-		AreaCode:         deup.AreaCode(),
-		Number:           deup.Number(),
-		LocationLong:     de.Location().Longitude,
-		LocationLat:      de.Location().Latitude,
-		HasVerifiedEmail: de.HasVerifiedEmail(),
-		IsActive:         de.IsActive(),
+		ID:                de.UserId().String(),
+		FirstName:         fn,
+		LastName:          ln,
+		DateOfBirth:       deu.DateOfBirth(),
+		Email:             deu.Email(),
+		CountryCode:       deup.CountryCode(),
+		AreaCode:          deup.AreaCode(),
+		Number:            deup.Number(),
+		LocationLong:      de.Location().Longitude,
+		LocationLat:       de.Location().Latitude,
+		HasVerifiedEmail:  de.HasVerifiedEmail(),
+		IsActive:          de.IsActive(),
+		VerificationToken: tk.VerificationToken(),
+		VerificationSalt:  tk.VerificationSalt(),
 	}
 }
 
@@ -171,6 +183,7 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	de := ua.NewUser()
 	ph := model.NewPhoneNumber(dbm.ValueData.CountryCode, dbm.ValueData.AreaCode, dbm.ValueData.Number)
 	mu := model.NewUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
+	tk := model.NewToken(dbm.ValueData.VerificationToken, dbm.ValueData.VerificationSalt)
 
 	dl := model.NewLocation()
 	dl.SetCoordinates(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
@@ -180,6 +193,7 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 
 	de.SetUser(mu)
 	de.SetLocation(dl)
+	de.SetToken(tk)
 
 	return de
 }

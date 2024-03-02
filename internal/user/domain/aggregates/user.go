@@ -11,6 +11,7 @@ import (
 type User struct {
 	user             *model.User
 	location         *model.Location
+	token            *model.Token
 	hasVerifiedEmail bool
 	isActive         bool
 }
@@ -19,9 +20,11 @@ type User struct {
 func NewUser() User {
 	u := model.NewEmptyUser()
 	l := model.Location{}
+	t := model.NewEmptyToken()
 	return User{
 		user:     &u,
 		location: &l,
+		token:    &t,
 	}
 }
 
@@ -65,6 +68,20 @@ func (u *User) User() model.User {
 // SetUser sets the user
 func (u *User) SetUser(nu model.User) {
 	u.user = &nu
+}
+
+// Token gets the user token value object
+func (u *User) Token() model.Token {
+	if u.token == nil {
+		tk := model.NewEmptyToken()
+		u.token = &tk
+	}
+	return *u.token
+}
+
+// SetToken sets the token object
+func (u *User) SetToken(tk model.Token) {
+	u.token = &tk
 }
 
 // Email gets the user email
@@ -130,7 +147,7 @@ func (u *User) SetIsActive(b bool) {
 
 // IsValid checks if the user is valid
 func (u *User) IsValid() bool {
-	return (u.user != nil && u.user.IsValid()) && (u.location != nil && u.location.IsValid())
+	return (u.user != nil && u.user.IsValid()) && (u.location != nil && u.location.IsValid()) && (u.token != nil && u.token.IsValid())
 }
 
 // UserEmailView is a snapshot of email information for user aggregate for read-only purposes
@@ -154,4 +171,23 @@ func (uev UserEmailView) Email() string {
 
 func (uev UserEmailView) IsEmailVerified() bool {
 	return uev.hasVerifiedEmail
+}
+
+// UserTokenView is a snapshot of tokens for user aggregate for read-only purposes
+type UserTokenView struct {
+	id                uuid.UUID
+	verificationToken string
+	verificationSalt  string
+}
+
+func NewUserTokenView(id uuid.UUID, vt, vs string) UserTokenView {
+	return UserTokenView{id: id, verificationToken: vt, verificationSalt: vs}
+}
+
+func (utv UserTokenView) VerificationToken() string {
+	return utv.verificationToken
+}
+
+func (utv UserTokenView) VerificationSalt() string {
+	return utv.verificationSalt
 }

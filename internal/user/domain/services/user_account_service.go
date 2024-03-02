@@ -55,8 +55,13 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 		return user, ErrEmailAlreadyExists
 	}
 
-	// Create user with an active status
+	// Create user with an active status, and refreshed verification tokens
 	user.SetIsActive(true)
+	t := user.Token()
+	t.RefreshVerificationToken()
+	t.RefreshVerificationSalt()
+	user.SetToken(t)
+
 	u, e = ua.userRepository.Create(ctx, user)
 	if e != nil {
 		return user, ErrServerErrorToRegisterUser
