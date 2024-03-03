@@ -1,0 +1,13 @@
+{
+    "first_name": "Foo",
+    "last_name": "Bar",
+    "dateOfBirth": "1983-01-02T15:04:05Z",
+    "email": "baz71@example.com",
+
+    "phone_country_code": "+64",
+    "phone_area_code": "023",
+    "phone_number": "123456",
+
+    "location_longitude": -41.26595602617756,
+	"location_latitude": 173.3002574488138
+}
