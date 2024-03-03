@@ -33,14 +33,14 @@ OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
 # Directories that we need created to build binaries. the final artefacts will live in out/<OS>_<ARCH>
-BUILD_DIRS := out/$(OS)_$(ARCH)					  \
-			  .go/bin/$(OS)_$(ARCH)               \
-			  .go/cache                           \
-              .go/pkg
-			  
+BUILD_DIRS := out/$(OS)_$(ARCH)				\
+			.go/bin/$(OS)_$(ARCH)		\
+			.go/cache			\
+			.go/pkg
+
 
 REGISTRY := "docker.pkg.github.com/wizact/go-todo-api/"
- 
+
 VERSION ?= $(shell git describe --tags --always --dirty)
 
 # The binaries to build (just the basenames)
@@ -58,28 +58,28 @@ $(foreach bin,$(BINS),$(eval $(strip   \
 )))
 
 build-%: # @HELP run the build command for each bins (BINS). usage: make build-<bin> OS=linux ARCH=arm64
-build-%:| $(BUILD_DIRS) 
+build-%:| $(BUILD_DIRS)
 	echo $@
 	echo "building $(firstword $(subst _, ,$*)) for $(OS)/$(ARCH)"
-	docker run                                                  \
-		-ti                                                     \
-		--rm                                                    \
-		-v $$(pwd):/src                                         \
-		-w /src                                                 \
-		-v $$(pwd)/.go/cache:/.cache                            \
-		--env GOCACHE="/.cache/gocache"                         \
-		--env GOMODCACHE="/.cache/gomodcache"                   \
-		--env ARCH="$(ARCH)"                                    \
-		--env OS="$(OS)"                                        \
-		--env BUILDTAGS="$(BUILDTAGS)"							\
-		--env CGO=$($(firstword $(subst _, ,$*))_cgo)			\
-		--env VERSION="$(VERSION)"                              \
-		--env GOFLAGS="$(GOFLAGS)"                              \
-		--env DEBUG="$(DBG)"                                    \
-		--env OUTDIR=".go/bin/$(OS)_$(ARCH)"					\
-		--env OUTNAME=$(OUTBIN)									\
-		--env NAME=$(firstword $(subst _, ,$*))					\
-		$(BUILD_IMAGE):$(BUILD_IMAGE_VERSION)                   \
+	docker run                                              \
+		-ti                                             \
+		--rm						\
+		-v $$(pwd):/src					\
+		-w /src                                         \
+		-v $$(pwd)/.go/cache:/.cache			\
+		--env GOCACHE="/.cache/gocache"			\
+		--env GOMODCACHE="/.cache/gomodcache"		\
+		--env ARCH="$(ARCH)"				\
+		--env OS="$(OS)"				\
+		--env BUILDTAGS="$(BUILDTAGS)"			\
+		--env CGO=$($(firstword $(subst _, ,$*))_cgo)	\
+		--env VERSION="$(VERSION)"			\
+		--env GOFLAGS="$(GOFLAGS)"			\
+		--env DEBUG="$(DBG)"				\
+		--env OUTDIR=".go/bin/$(OS)_$(ARCH)"		\
+		--env OUTNAME=$(OUTBIN)				\
+		--env NAME=$(firstword $(subst _, ,$*))		\
+		$(BUILD_IMAGE):$(BUILD_IMAGE_VERSION)		\
 		./build/build.sh
 
 
@@ -90,11 +90,11 @@ $(foreach bin,$(BINS),$(eval $(strip   \
 artefact-%: # @HELP copies the artefact from .go/<OS>_<ARCH>/<bin> to out/<OS>_<ARCH>/<bin> if they are newer
 artefact-%: | $(BUILD_DIRS)
 	if ! cmp -s .go/bin/$(OS)_$(ARCH)/$(OUTBIN) ./out/$(OS)_$(ARCH)/$(OUTBIN); then  	\
-		mv .go/bin/$(OS)_$(ARCH)/$(OUTBIN) out/$(OS)_$(ARCH)/$(OUTBIN);            		\
-		date >out/$(OS)_$(ARCH)/$@.stamp;                              					\
-		echo;                                  											\
-	else                                       											\
-		echo "(cached)";                       											\
+		mv .go/bin/$(OS)_$(ARCH)/$(OUTBIN) out/$(OS)_$(ARCH)/$(OUTBIN);         	\
+		date >out/$(OS)_$(ARCH)/$@.stamp;                       			\
+		echo;                           						\
+	else                                    						\
+		echo "(cached)";                       						\
 	fi
 
 $(BUILD_DIRS):
@@ -109,21 +109,21 @@ all-build: $(addprefix build-, $(BINS))
 shell: # @HELP launches a shell in the containerized build environment
 shell: | $(BUILD_DIRS)
 	echo "# launching a shell in the containerized build environment"
-	docker run                                                  \
-		-ti                                                     \
-		--rm                                                    \
-		-v $$(pwd):/src                                         \
-		-w /src                                                 \
-		-v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
-		-v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
-		-v $$(pwd)/.go/cache:/.cache                            \
-		--env GOCACHE="/.cache/gocache"                         \
-		--env GOMODCACHE="/.cache/gomodcache"                   \
-		--env ARCH="$(ARCH)"                                    \
-		--env OS="$(OS)"                                        \
-		--env VERSION="$(VERSION)"                              \
-		--env GOFLAGS="$(GOFLAGS)"                              \
-		$(BUILD_IMAGE):$(BUILD_IMAGE_VERSION)                   \
+	docker run							\
+		-ti							\
+		--rm							\
+		-v $$(pwd):/src						\
+		-w /src							\
+		-v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin		\
+		-v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)	\
+		-v $$(pwd)/.go/cache:/.cache				\
+		--env GOCACHE="/.cache/gocache"				\
+		--env GOMODCACHE="/.cache/gomodcache"			\
+		--env ARCH="$(ARCH)"					\
+		--env OS="$(OS)"					\
+		--env VERSION="$(VERSION)"				\
+		--env GOFLAGS="$(GOFLAGS)"				\
+		$(BUILD_IMAGE):$(BUILD_IMAGE_VERSION)			\
 		/bin/sh $(CMD)
 
 .PHONY: run-server
@@ -150,7 +150,7 @@ login: # @HELP configures docker to be authenticated to the defined registry
 .PHONY: test
 test: # @HELP tests all the go test files
 	$(MAKE) shell CMD="./build/test.sh"
-	
+
 
 .PHONY: clean-bins
 clean: # @HELP clear all the files in the out and .go folder
@@ -178,8 +178,8 @@ help:
 	echo "  REGISTRY = $(REGISTRY)"
 	echo
 	echo "TARGETS:"
-	grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST)     \
-		| awk '                                   \
-			BEGIN {FS = ": *# *@HELP"};           \
-			{ printf "  %-30s %s\n", $$1, $$2 };  \
+	grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST)		\
+		| awk '						\
+			BEGIN {FS = ": *# *@HELP"};		\
+			{ printf "  %-30s %s\n", $$1, $$2 };	\
 		'
