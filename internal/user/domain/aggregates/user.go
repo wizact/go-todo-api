@@ -1,6 +1,7 @@
 package aggregate
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/google/uuid"
@@ -52,6 +53,15 @@ func (u *User) GetDomainEventPayload() UserDomainEvent {
 	}
 
 	return ae
+}
+
+// LoadDomainEventObject unmarshal a byte array and returns UserDomainEvent if successful
+func (u *User) LoadDomainEventObject(p []byte) (UserDomainEvent, error) {
+	var de UserDomainEvent
+	if err := json.Unmarshal(p, &de); err != nil {
+		return de, err
+	}
+	return de, nil
 }
 
 // UserId gets the id of the user as aggregate root identity

@@ -6,6 +6,7 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/wizact/go-todo-api/internal/infra/pubsub"
+	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	event_port "github.com/wizact/go-todo-api/internal/user/ports/events"
 )
 
@@ -55,6 +56,22 @@ L:
 			}
 
 			log.Printf("%v, %v \n", newUser.Subject, string(newUser.Data))
+
+			// Unmarshal domain event to get the (aggregate id)
+			ude, e := r.getUserFromPayload(newUser.Data)
+			if e != nil {
+				log.Println(e)
+				continue
+			}
+			log.Println(ude.ID, ude.Email)
+
+			//TODO: Load  the aggregate, and retrieve the verification token / salt
+			/*
+				1. get the token for the user
+				2. create a jwt
+				3. form the email dto
+				4. trigger the email send
+			*/
 		case <-done:
 			log.Println("unsubscribing NewUserRegisteredListener")
 			unsubcb()
@@ -62,4 +79,10 @@ L:
 		}
 	}
 	return nil
+}
+
+func (r *Registration) getUserFromPayload(p []byte) (ua.UserDomainEvent, error) {
+	u := ua.NewUser()
+	return u.LoadDomainEventObject(p)
+
 }

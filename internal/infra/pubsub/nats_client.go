@@ -4,7 +4,7 @@ type NatsClient[T any, A any] interface {
 	*T
 	Connection(*NatsConnection)
 	GetConnection() *NatsConnection
-	GetEventPayload(A) ([]byte, error)
+	MarshalEventPayload(A) ([]byte, error)
 }
 
 type NatsClientFactory[T any, A any, P NatsClient[T, A]] struct {

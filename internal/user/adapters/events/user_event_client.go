@@ -22,7 +22,7 @@ func (ue *UserEventClient) GetConnection() *pubsubinfra.NatsConnection {
 	return ue.natConnection
 }
 
-func (ue *UserEventClient) GetEventPayload(user ua.User) ([]byte, error) {
+func (ue *UserEventClient) MarshalEventPayload(user ua.User) ([]byte, error) {
 	b, err := json.Marshal(user.GetDomainEventPayload())
 	if err != nil {
 		return []byte{}, nil

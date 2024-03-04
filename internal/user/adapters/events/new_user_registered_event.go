@@ -12,7 +12,7 @@ import (
 func (uv *UserEventClient) PublishNewUserRegisteredEvent(ctx context.Context, user ua.User) error {
 	pb := pubsub_infra.NewPublication[ua.User](uv.natConnection)
 
-	j, err := uv.GetEventPayload(user)
+	j, err := uv.MarshalEventPayload(user)
 
 	if err != nil {
 		return err
