@@ -16,6 +16,16 @@ type User struct {
 	isActive         bool
 }
 
+// UserDomainEvent represents the domain event for the User aggregate
+type UserDomainEvent struct {
+	ID               uuid.UUID `json:"ID"`
+	FirstName        string    `json:"FirstName"`
+	LastName         string    `json:"LastName"`
+	Email            string    `json:"Email"`
+	IsActive         bool      `json:"IsActive"`
+	HasVerifiedEmail bool      `json:"HasVerifiedEmail"`
+}
+
 // NewUser creates a new user with an auto generated uuid and limited role
 func NewUser() User {
 	u := model.NewEmptyUser()
@@ -29,17 +39,10 @@ func NewUser() User {
 }
 
 // GetAggregateEventPayload returns a representation of the aggregate for event processing
-func (u *User) GetAggregateEventPayload() interface{} {
+func (u *User) GetDomainEventPayload() UserDomainEvent {
 	ue := u.User()
 	fn, ln := ue.Name()
-	ae := struct {
-		ID               uuid.UUID `json:"ID"`
-		FirstName        string    `json:"FirstName"`
-		LastName         string    `json:"LastName"`
-		Email            string    `json:"Email"`
-		IsActive         bool      `json:"IsActive"`
-		HasVerifiedEmail bool      `json:"HasVerifiedEmail"`
-	}{
+	ae := UserDomainEvent{
 		ID:               u.UserId(),
 		FirstName:        fn,
 		LastName:         ln,
