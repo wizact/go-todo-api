@@ -8,20 +8,23 @@ import (
 	"github.com/wizact/go-todo-api/internal/infra/pubsub"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	event_port "github.com/wizact/go-todo-api/internal/user/ports/events"
+	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 )
 
 // Registration application service responsible for managing the lifecycle of a user registration
 type Registration struct {
 	userEventClient event_port.UserEventClient
-	done            chan bool
+	// app service can reference domain service ( but not the other way arround)
+	userAccountUseCase usecase_port.UserAccountUseCase
+	done               chan bool
 }
 
 // NewRegisteration returns a new instance of Registration application service
-func NewRegisteration(uec event_port.UserEventClient) *Registration {
-
+func NewRegisteration(uec event_port.UserEventClient, uc usecase_port.UserAccountUseCase) *Registration {
 	return &Registration{
-		userEventClient: uec,
-		done:            make(chan bool),
+		userEventClient:    uec,
+		userAccountUseCase: uc,
+		done:               make(chan bool),
 	}
 }
 
@@ -64,6 +67,14 @@ L:
 				continue
 			}
 			log.Println(ude.ID, ude.Email)
+
+			u, e := r.userAccountUseCase.GetUserById(context.Background(), ude.ID)
+			if e != nil {
+				log.Println(e)
+				continue
+			}
+
+			log.Println(u.Token())
 
 			//TODO: Load  the aggregate, and retrieve the verification token / salt
 			/*

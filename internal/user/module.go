@@ -6,7 +6,7 @@ import (
 	event "github.com/wizact/go-todo-api/internal/user/adapters/events"
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 
-	app_svc "github.com/wizact/go-todo-api/internal/user/application/services" // TODO: should be replaced with interface
+	app_svc "github.com/wizact/go-todo-api/internal/user/application/services"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	usecase "github.com/wizact/go-todo-api/internal/user/domain/services"
 	app_svc_port "github.com/wizact/go-todo-api/internal/user/ports/applications"
@@ -22,17 +22,20 @@ type UserModule struct {
 	userRepository     repository_port.UserRepository
 	userEventClient    event_port.UserEventClient
 	appRegistrationSvc app_svc_port.Registration
+	userAccountUseCase usecase_port.UserAccountUseCase
 }
 
 // New UserModule is the factory method for the UserModule container
 func NewUserModule(useDatabase bool) *UserModule {
 	userRepo := instantiateUserRepository(useDatabase)
 	userEventCli := instantiateUserEventClient()
-	appSvc := instantiateEventListeners(userEventCli)
+	userAccountUseCase := instantiateUserAccountUseCase(userRepo, userEventCli)
+	appSvc := instantiateAppSvc(userEventCli, userAccountUseCase)
 	return &UserModule{
 		userRepository:     userRepo,
 		userEventClient:    userEventCli,
 		appRegistrationSvc: appSvc,
+		userAccountUseCase: userAccountUseCase,
 	}
 }
 
@@ -64,8 +67,8 @@ func instantiateUserEventClient() event_port.UserEventClient {
 	return uec
 }
 
-func instantiateEventListeners(ev event_port.UserEventClient) app_svc_port.Registration {
-	appSvc := app_svc.NewRegisteration(ev)
+func instantiateAppSvc(ev event_port.UserEventClient, uc usecase_port.UserAccountUseCase) app_svc_port.Registration {
+	appSvc := app_svc.NewRegisteration(ev, uc)
 	err := appSvc.NewUserRegisteredListener()
 	if err != nil {
 		panic(err)
@@ -74,8 +77,12 @@ func instantiateEventListeners(ev event_port.UserEventClient) app_svc_port.Regis
 	return appSvc
 }
 
-func (u *UserModule) ResolveUserAccountUseCase() usecase_port.UserAccountUseCase {
-	return usecase.NewUserAccountService(u.userRepository, u.userEventClient)
+func instantiateUserAccountUseCase(r repository_port.UserRepository, ev event_port.UserEventClient) usecase_port.UserAccountUseCase {
+	return usecase.NewUserAccountService(r, ev)
+}
+
+func (u *UserModule) UserAccountUseCase() usecase_port.UserAccountUseCase {
+	return u.userAccountUseCase
 }
 
 // Done cleans up all the underlying resources for a graceful shotdown

@@ -18,10 +18,10 @@ type UserRouteFactory struct {
 }
 
 func (urf UserRouteFactory) CreateUserRoute() UserRoute {
-
+	um := userModule.NewUserModule(true)
 	return NewUserRoute(
 		controller.NewUserController(
-			userModule.NewUserModule(true).ResolveUserAccountUseCase()),
+			um.UserAccountUseCase()),
 	)
 
 }

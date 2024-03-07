@@ -194,6 +194,5 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	de.SetUser(mu)
 	de.SetLocation(dl)
 	de.SetToken(tk)
-
 	return de
 }
