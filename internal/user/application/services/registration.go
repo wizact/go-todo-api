@@ -58,24 +58,19 @@ L:
 				break L
 			}
 
-			log.Printf("%v, %v \n", newUser.Subject, string(newUser.Data))
-
 			// Unmarshal domain event to get the (aggregate id)
 			ude, e := r.getUserFromPayload(newUser.Data)
 			if e != nil {
-				log.Println(e)
-				continue
-			}
-			log.Println(ude.ID, ude.Email)
-
-			u, e := r.userAccountUseCase.GetUserById(context.Background(), ude.ID)
-			if e != nil {
-				log.Println(e)
+				log.Println("user registration app service > send email confirmation: ", e)
 				continue
 			}
 
-			log.Println(u.Token())
-
+			u, err := r.userAccountUseCase.GetUserById(context.Background(), ude.ID)
+			if err != nil {
+				log.Println("user registration app service > send email confirmation: ", err)
+				continue
+			}
+			log.Println(u)
 			//TODO: Load  the aggregate, and retrieve the verification token / salt
 			/*
 				1. get the token for the user
