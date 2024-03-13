@@ -70,11 +70,20 @@ L:
 				log.Println("user registration app service > send email confirmation: ", err)
 				continue
 			}
-			log.Println(u)
+
+			t := u.Token()
+			h, e := t.CreateTokenVerificationHash()
+			if e != nil {
+				log.Println("user registration app service > hash function failed: ", e)
+				continue
+			}
+
+			log.Println(string(h))
+
 			//TODO: Load  the aggregate, and retrieve the verification token / salt
 			/*
 				1. get the token for the user
-				2. create a jwt
+				2. create a hash
 				3. form the email dto
 				4. trigger the email send
 			*/
