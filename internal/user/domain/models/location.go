@@ -10,6 +10,7 @@ func NewLocation() Location {
 	return Location{}
 }
 
+// TODO: Validation of Value Object should happen during the creation only, and new changes should return a new one
 func (l *Location) SetCoordinates(long, lat float64) {
 	l.Latitude = lat
 	l.Longitude = long

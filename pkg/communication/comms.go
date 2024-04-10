@@ -6,15 +6,27 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-type Email struct {
+type Emailer interface {
+	Send() (int, error)
+}
+
+type Communication struct {
+	emailer Emailer
+}
+
+func NewCommunication(em Emailer) Communication {
+	return Communication{emailer: em}
+}
+
+type SendGridEmailer struct {
 	SendGridKey string
 }
 
-func NewEmail() *Email {
-	return &Email{}
+func NewSendGridEmailer() SendGridEmailer {
+	return SendGridEmailer{}
 }
 
-func (e *Email) Send() (int, error) {
+func (e SendGridEmailer) Send() (int, error) {
 	f := mail.NewEmail("hi", "hi@example.com")
 	s := "Email Subject"
 	t := mail.NewEmail("to", "to@example.com")

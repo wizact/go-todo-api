@@ -104,6 +104,7 @@ func NewEmptyPhoneNumber() PhoneNumber {
 	return PhoneNumber{}
 }
 
+// TODO: Validation of value object should happen only on the creation side.
 func NewPhoneNumber(countryCode, areaCode, number string) PhoneNumber {
 	ph := PhoneNumber{}
 	ph.SetCountryCode(countryCode)
