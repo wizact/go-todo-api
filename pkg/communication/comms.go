@@ -7,7 +7,7 @@ import (
 )
 
 type Emailer interface {
-	Send() (int, error)
+	Send(to, toemail string) (int, error)
 }
 
 type Communication struct {
@@ -18,18 +18,24 @@ func NewCommunication(em Emailer) Communication {
 	return Communication{emailer: em}
 }
 
+func (c *Communication) Communicate(to, toemail string) (int, error) {
+	return c.emailer.Send(to, toemail)
+}
+
 type SendGridEmailer struct {
-	SendGridKey string
+	SendGridKey       string
+	SendGridFromName  string
+	SendGridFromEmail string
 }
 
 func NewSendGridEmailer() SendGridEmailer {
 	return SendGridEmailer{}
 }
 
-func (e SendGridEmailer) Send() (int, error) {
-	f := mail.NewEmail("hi", "hi@example.com")
-	s := "Email Subject"
-	t := mail.NewEmail("to", "to@example.com")
+func (e SendGridEmailer) Send(to, toemail string) (int, error) {
+	f := mail.NewEmail(e.SendGridFromName, e.SendGridFromEmail)
+	s := "Verify your account"
+	t := mail.NewEmail(to, toemail)
 	ptc := "Please verify your account"
 	htc := "<p>Please verify your account</p>"
 	ms := mail.NewSingleEmail(f, s, t, ptc, htc)
