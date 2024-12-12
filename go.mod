@@ -7,6 +7,8 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nats-io/nats.go v1.32.0
+	github.com/sendgrid/sendgrid-go v3.14.0+incompatible
+	golang.org/x/crypto v0.31.0
 	gorm.io/gorm v1.25.5
 )
 
@@ -17,9 +19,7 @@ require (
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
-	github.com/sendgrid/sendgrid-go v3.14.0+incompatible // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
-	golang.org/x/crypto v0.18.0 // indirect
 )
 
 require (
@@ -27,6 +27,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/wizact/yacli v0.0.0-20200621092021-be57780af79a
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	gorm.io/driver/sqlite v1.5.4
 )
