@@ -8,7 +8,7 @@ GO_VERSION := 1.20
 
 # Image for the build environment
 BUILD_IMAGE :=  ghcr.io/wizact/todo-api-builder
-BUILD_IMAGE_VERSION := 0e03696
+BUILD_IMAGE_VERSION := 4179b77  
 
 PREFIX?=$(shell pwd)
 BUILDTAGS :=
