@@ -1,5 +1,5 @@
 # Dockerfile used for the build image
-FROM golang:1.20-alpine
+FROM golang:1.23-alpine
 
 LABEL org.opencontainers.image.source=https://github.com/wizact/go-todo-api
 LABEL org.opencontainers.image.description="Todo API Builder Image"

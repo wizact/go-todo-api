@@ -10,6 +10,9 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c ". /usr/local/share/nv
 RUN apt-get update && apt-get install gnupg2 -y
 RUN apt install zsh
 RUN apt-get install keychain
+
+RUN apt install build-essential libreadline-dev unzip libssl-dev -y
+
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
