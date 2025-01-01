@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/nats-io/nats.go"
-	pubsub_infra "github.com/wizact/go-todo-api/internal/infra/pubsub"
-	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	pubsub_infra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
+	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 // PublishNewUserRegisteredEvent publishes the user aggregate after successful user creation
-func (uv *UserEventClient) PublishNewUserRegisteredEvent(ctx context.Context, user ua.User) error {
-	pb := pubsub_infra.NewPublication[ua.User](uv.natConnection)
+func (uv *UserEventClient) PublishNewUserRegisteredEvent(ctx context.Context, userDE ude.UserDomainEvent) error {
+	pb := pubsub_infra.NewPublication[ude.UserDomainEvent](uv.natConnection)
 
-	j, err := uv.MarshalEventPayload(user)
+	j, err := uv.MarshalEventPayload(userDE)
 
 	if err != nil {
 		return err

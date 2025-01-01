@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/nats-io/nats.go"
-	pubsub_infra "github.com/wizact/go-todo-api/internal/infra/pubsub"
+	pubsub_infra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
 )
 
 type UserEventClientInput interface {

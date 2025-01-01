@@ -3,9 +3,9 @@ package event
 import (
 	"context"
 
-	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 type UserEventClientOutput interface {
-	PublishNewUserRegisteredEvent(ctx context.Context, user ua.User) error
+	PublishNewUserRegisteredEvent(ctx context.Context, userDe ude.UserDomainEvent) error
 }

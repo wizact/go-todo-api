@@ -68,7 +68,7 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 	}
 
 	// emit events
-	err := ua.userEventClient.PublishNewUserRegisteredEvent(ctx, user)
+	err := ua.userEventClient.PublishNewUserRegisteredEvent(ctx, user.GetDomainEventPayload())
 
 	if err != nil {
 		log.Printf("failed PublishNewUserRegisteredEvent for %v \n", u.UserId())

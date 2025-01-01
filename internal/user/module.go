@@ -2,9 +2,10 @@ package module
 
 import (
 	dbinfra "github.com/wizact/go-todo-api/internal/infra/db"
-	pubsubinfra "github.com/wizact/go-todo-api/internal/infra/pubsub"
-	event "github.com/wizact/go-todo-api/internal/user/adapters/events"
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
+	pubsubinfra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
+	UserDomainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
+	event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
 
 	app_svc "github.com/wizact/go-todo-api/internal/user/application/services"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
@@ -58,7 +59,7 @@ func instantiateUserRepository(useDatabase bool) repository_port.UserRepository 
 }
 
 func instantiateUserEventClient() event_port.UserEventClient {
-	nf := pubsubinfra.NatsClientFactory[event.UserEventClient, aggregate.User, *event.UserEventClient]{}
+	nf := pubsubinfra.NatsClientFactory[event.UserEventClient, UserDomainEvent.UserDomainEvent, *event.UserEventClient]{}
 	uec, err := nf.Get()
 	if err != nil {
 		panic(err)

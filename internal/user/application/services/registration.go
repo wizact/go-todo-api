@@ -5,10 +5,10 @@ import (
 	"log"
 
 	"github.com/nats-io/nats.go"
-	"github.com/wizact/go-todo-api/internal/infra/pubsub"
-	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	event_port "github.com/wizact/go-todo-api/internal/user/ports/events"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
+	"github.com/wizact/go-todo-api/pkg/event-library/pubsub"
+	de "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 // Registration application service responsible for managing the lifecycle of a user registration
@@ -96,8 +96,12 @@ L:
 	return nil
 }
 
-func (r *Registration) getUserFromPayload(p []byte) (ua.UserDomainEvent, error) {
-	u := ua.NewUser()
-	return u.LoadDomainEventObject(p)
+func (r *Registration) getUserFromPayload(p []byte) (de.UserDomainEvent, error) {
+	ude := de.UserDomainEvent{}
+	if err := ude.LoadDomainEventObject(p); err != nil {
+		return ude, err
+	}
+
+	return ude, nil
 
 }

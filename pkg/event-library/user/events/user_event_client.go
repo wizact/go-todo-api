@@ -3,27 +3,28 @@ package event
 import (
 	"encoding/json"
 
-	pubsubinfra "github.com/wizact/go-todo-api/internal/infra/pubsub"
-	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	pubsub "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
+
+	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 const UserDomainTopicName = "User"
 const NewUserRegisteredEventSubjectName = "NewUserRegistered"
 
 type UserEventClient struct {
-	natConnection *pubsubinfra.NatsConnection
+	natConnection *pubsub.NatsConnection
 }
 
-func (ue *UserEventClient) Connection(nc *pubsubinfra.NatsConnection) {
+func (ue *UserEventClient) Connection(nc *pubsub.NatsConnection) {
 	ue.natConnection = nc
 }
 
-func (ue *UserEventClient) GetConnection() *pubsubinfra.NatsConnection {
+func (ue *UserEventClient) GetConnection() *pubsub.NatsConnection {
 	return ue.natConnection
 }
 
-func (ue *UserEventClient) MarshalEventPayload(user ua.User) ([]byte, error) {
-	b, err := json.Marshal(user.GetDomainEventPayload())
+func (ue *UserEventClient) MarshalEventPayload(userDE ude.UserDomainEvent) ([]byte, error) {
+	b, err := json.Marshal(userDE)
 	if err != nil {
 		return []byte{}, nil
 	}

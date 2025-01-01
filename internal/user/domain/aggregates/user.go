@@ -1,11 +1,11 @@
 package aggregate
 
 import (
-	"encoding/json"
 	"errors"
 
 	"github.com/google/uuid"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
+	domainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 // User aggregate with User as it's root entity
@@ -15,16 +15,6 @@ type User struct {
 	token            *model.Token
 	hasVerifiedEmail bool
 	isActive         bool
-}
-
-// UserDomainEvent represents the domain event for the User aggregate
-type UserDomainEvent struct {
-	ID               uuid.UUID `json:"ID"`
-	FirstName        string    `json:"FirstName"`
-	LastName         string    `json:"LastName"`
-	Email            string    `json:"Email"`
-	IsActive         bool      `json:"IsActive"`
-	HasVerifiedEmail bool      `json:"HasVerifiedEmail"`
 }
 
 // NewUser creates a new user with an auto generated uuid and limited role
@@ -40,10 +30,10 @@ func NewUser() User {
 }
 
 // GetAggregateEventPayload returns a representation of the aggregate for event processing
-func (u *User) GetDomainEventPayload() UserDomainEvent {
+func (u *User) GetDomainEventPayload() domainEvent.UserDomainEvent {
 	ue := u.User()
 	fn, ln := ue.Name()
-	ae := UserDomainEvent{
+	ae := domainEvent.UserDomainEvent{
 		ID:               u.UserId(),
 		FirstName:        fn,
 		LastName:         ln,
@@ -53,15 +43,6 @@ func (u *User) GetDomainEventPayload() UserDomainEvent {
 	}
 
 	return ae
-}
-
-// LoadDomainEventObject unmarshal a byte array and returns UserDomainEvent if successful
-func (u *User) LoadDomainEventObject(p []byte) (UserDomainEvent, error) {
-	var de UserDomainEvent
-	if err := json.Unmarshal(p, &de); err != nil {
-		return de, err
-	}
-	return de, nil
 }
 
 // UserId gets the id of the user as aggregate root identity

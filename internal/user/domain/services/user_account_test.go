@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	event "github.com/wizact/go-todo-api/internal/user/adapters/events"
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	svc "github.com/wizact/go-todo-api/internal/user/domain/services"
+	event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
 )
 
 func Test_NewUserAccountService(t *testing.T) {

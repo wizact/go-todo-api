@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	api "github.com/wizact/go-todo-api/internal/api"
-	"github.com/wizact/go-todo-api/internal/infra"
+	"github.com/wizact/go-todo-api/pkg/version"
 	"github.com/wizact/yacli"
 )
 
@@ -15,7 +15,7 @@ func main() {
 
 	app := yacli.NewApplication()
 
-	app.Name = infra.APPNAME
+	app.Name = version.APPNAME
 	app.Description = "Go DDD & Clean Architecture API Example"
 
 	app.AddCommand(&api.StartServerCommand{})

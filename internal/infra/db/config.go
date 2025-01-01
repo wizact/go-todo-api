@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/wizact/go-todo-api/internal/infra"
+	"github.com/wizact/go-todo-api/pkg/version"
 )
 
 type DbConfig struct {
@@ -17,7 +17,7 @@ func (d *DbConfig) GetDbPath() (string, error) {
 		return d.DbPath, nil
 	}
 
-	err := envconfig.Process(infra.APPNAME, d)
+	err := envconfig.Process(version.APPNAME, d)
 	if err != nil {
 		panic(err)
 	}

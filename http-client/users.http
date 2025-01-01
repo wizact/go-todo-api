@@ -9,4 +9,4 @@ POST http://{{hostname}}/{{baseUri}} HTTP/1.1
 ###
 
 # @name getUserById
-GET http://{{hostname}}/{{baseUri}}/fb5a828d-c469-40fd-bad8-caaf8dd7c0a9 HTTP/1.1
+GET http://{{hostname}}/{{baseUri}}/00e71618-ed35-4db5-8b4a-2f376ff87934 HTTP/1.1
