@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/nats-io/nats.go"
+	app_svc_port "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
 	"github.com/wizact/go-todo-api/pkg/event-library/pubsub"
 	de "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
@@ -13,13 +14,15 @@ import (
 // NewUserRegisteredEventListener application service responsible for managing the lifecycle of a user registration
 type NewUserRegisteredEventListener struct {
 	userEventClient event_port.UserEventClient
+	userRegAppSvc   app_svc_port.Registration
 	done            chan bool
 }
 
 // NewNewUserRegisteredEventListene returns a new instance of NewUserRegisteredEventListener application service
-func NewNewUserRegisteredEventListener(uec event_port.UserEventClient) *NewUserRegisteredEventListener {
+func NewNewUserRegisteredEventListener(uec event_port.UserEventClient, userRegAppSvc app_svc_port.Registration) *NewUserRegisteredEventListener {
 	return &NewUserRegisteredEventListener{
 		userEventClient: uec,
+		userRegAppSvc:   userRegAppSvc,
 		done:            make(chan bool),
 	}
 }
@@ -49,7 +52,7 @@ L:
 		select {
 		case newUser, ok := <-nuc:
 			if !ok {
-				log.Println("terminating NewUserRegisteredListener")
+				log.Println("communication > terminating NewUserRegisteredListener")
 				unsubcb()
 				break L
 			}
@@ -61,13 +64,15 @@ L:
 				continue
 			}
 
-			log.Println(ude.Email)
+			log.Println("communication > Preparing email verification message for:", ude.Email)
 
 			// Call user app service to get the user info required to send the email
+			r.userRegAppSvc.GetRegistrationVerificationEmailData(ude.ID)
+
 			// Send the email
 
 		case <-done:
-			log.Println("unsubscribing NewUserRegisteredListener")
+			log.Println("communication > unsubscribing NewUserRegisteredListener")
 			unsubcb()
 			break L
 		}

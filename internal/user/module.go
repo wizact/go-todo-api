@@ -69,21 +69,21 @@ func instantiateUserEventClient() event_port.UserEventClient {
 }
 
 func instantiateAppSvc(ev event_port.UserEventClient, uc usecase_port.UserAccountUseCase) app_svc_port.Registration {
-	appSvc := app_svc.NewRegisteration(ev, uc)
-	err := appSvc.NewUserRegisteredListener()
-	if err != nil {
-		panic(err)
-	}
-
-	return appSvc
+	return app_svc.NewRegisteration(ev, uc)
 }
 
 func instantiateUserAccountUseCase(r repository_port.UserRepository, ev event_port.UserEventClient) usecase_port.UserAccountUseCase {
 	return usecase.NewUserAccountService(r, ev)
 }
 
+// UserAccountUseCase returns the concrete implementation of the UserAccountUseCase
 func (u *UserModule) UserAccountUseCase() usecase_port.UserAccountUseCase {
 	return u.userAccountUseCase
+}
+
+// UserRegistrationAppService returns the concrete implementation of the Registration service
+func (u *UserModule) UserRegistrationAppService() app_svc_port.Registration {
+	return u.appRegistrationSvc
 }
 
 // Done cleans up all the underlying resources for a graceful shotdown

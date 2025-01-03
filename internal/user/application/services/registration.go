@@ -2,13 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 
-	"github.com/nats-io/nats.go"
+	"github.com/google/uuid"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
-	"github.com/wizact/go-todo-api/pkg/event-library/pubsub"
-	de "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 // Registration application service responsible for managing the lifecycle of a user registration
@@ -32,76 +31,20 @@ func (r *Registration) Done() {
 	r.done <- true
 }
 
-// NewUserRegisteredListener listens to the event and trigger the lifecycle required for user approval process
-func (r *Registration) NewUserRegisteredListener() error {
-	nuc := make(chan *nats.Msg)
-
-	unsubcb, err := r.userEventClient.SubscribeToNewUserRegisteredEvent(context.Background(), nuc)
-
+// GetRegistrationVerificationEmailData returns the data required to send a registration verification email
+func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[string]string, error) {
+	mp := make(map[string]string)
+	u, err := r.userAccountUseCase.GetUserById(context.Background(), uid)
 	if err != nil {
-		return err
+		return mp, fmt.Errorf("user registration app service > send email verification: %v", err)
 	}
 
-	go r.sendUserEmailConfirmationMessage(nuc, r.done, unsubcb)
-
-	return nil
-}
-
-func (r *Registration) sendUserEmailConfirmationMessage(nuc <-chan *nats.Msg, done chan bool, unsubcb pubsub.ChannelUnsubscribeCallBack) error {
-L:
-	for {
-		select {
-		case newUser, ok := <-nuc:
-			if !ok {
-				log.Println("terminating NewUserRegisteredListener")
-				unsubcb()
-				break L
-			}
-
-			// Unmarshal domain event to get the (aggregate id)
-			ude, e := r.getUserFromPayload(newUser.Data)
-			if e != nil {
-				log.Println("user registration app service > send email confirmation: ", e)
-				continue
-			}
-
-			u, err := r.userAccountUseCase.GetUserById(context.Background(), ude.ID)
-			if err != nil {
-				log.Println("user registration app service > send email confirmation: ", err)
-				continue
-			}
-
-			t := u.Token()
-			h, e := t.CreateTokenVerificationHash()
-			if e != nil {
-				log.Println("user registration app service > hash function failed: ", e)
-				continue
-			}
-
-			log.Println(string(h))
-
-			//TODO: Load  the aggregate, and retrieve the verification token / salt
-			/*
-				1. get the token for the user
-				2. create a hash
-				3. form the email dto
-				4. trigger the email send
-			*/
-		case <-done:
-			log.Println("unsubscribing NewUserRegisteredListener")
-			unsubcb()
-			break L
-		}
-	}
-	return nil
-}
-
-func (r *Registration) getUserFromPayload(p []byte) (de.UserDomainEvent, error) {
-	ude := de.UserDomainEvent{}
-	if err := ude.LoadDomainEventObject(p); err != nil {
-		return ude, err
+	t := u.Token()
+	h, e := t.CreateTokenVerificationHash()
+	if e != nil {
+		return mp, fmt.Errorf("user registration app service > hash function failed: %v", e)
 	}
 
-	return ude, nil
-
+	log.Println(string(h))
+	return mp, nil
 }

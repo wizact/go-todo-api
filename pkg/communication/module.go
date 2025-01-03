@@ -1,14 +1,14 @@
 package communication
 
 import (
+	umf "github.com/wizact/go-todo-api/internal/domain-factory"
+	user_domain_listener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
 	app_svc "github.com/wizact/go-todo-api/pkg/communication/application/services"
 	ports "github.com/wizact/go-todo-api/pkg/communication/ports/applications"
 	user_event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
 	pubsubinfra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
 	UserDomainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 	user_event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
-
-	user_domain_listener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
 
 	"errors"
 
@@ -66,7 +66,9 @@ func instantiateAppSvc(useSendGrid bool) ports.Emailer {
 }
 
 func instantiateUserDomainListenersAndListen(uec user_event_port.UserEventClient) *user_domain_listener.NewUserRegisteredEventListener {
-	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec)
+
+	um := umf.CreateNewUserModule()
+	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, um.UserRegistrationAppService())
 	err := nurel.Listen()
 	if err != nil {
 		panic(err)

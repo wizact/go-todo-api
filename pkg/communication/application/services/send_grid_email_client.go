@@ -20,12 +20,12 @@ func NewSendGridEmailClient(sgKey, sgFromName, sgFromEmail string) SendGridEmail
 	}
 }
 
-func (e SendGridEmailClient) Send(to, toemail string) (int, error) {
+func (e SendGridEmailClient) Send(to, toemail, subj, plainText, htmlText string) (int, error) {
 	f := mail.NewEmail(e.sendGridFromName, e.sendGridFromEmail)
-	s := "Verify your account"
+	s := subj
 	t := mail.NewEmail(to, toemail)
-	ptc := "Please verify your account"
-	htc := "<p>Please verify your account</p>"
+	ptc := plainText
+	htc := htmlText
 	ms := mail.NewSingleEmail(f, s, t, ptc, htc)
 	client := sendgrid.NewSendClient(e.sendGridKey)
 	r, err := client.Send(ms)
