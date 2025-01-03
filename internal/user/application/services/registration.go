@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/nats-io/nats.go"
-	event_port "github.com/wizact/go-todo-api/internal/user/ports/events"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
+	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
 	"github.com/wizact/go-todo-api/pkg/event-library/pubsub"
 	de "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )

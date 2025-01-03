@@ -11,9 +11,9 @@ import (
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	usecase "github.com/wizact/go-todo-api/internal/user/domain/services"
 	app_svc_port "github.com/wizact/go-todo-api/internal/user/ports/applications"
-	event_port "github.com/wizact/go-todo-api/internal/user/ports/events"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	repository_port "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
+	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
 )
 
 // A UserModule is the dependency container for the User module

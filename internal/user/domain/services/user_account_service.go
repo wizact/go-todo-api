@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
-	event "github.com/wizact/go-todo-api/internal/user/ports/events"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
+	event "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 

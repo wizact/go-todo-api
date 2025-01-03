@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	hndl "github.com/wizact/go-todo-api/internal/api/handlers"
+	comms "github.com/wizact/go-todo-api/pkg/communication"
 )
 
 const (
@@ -23,6 +24,9 @@ func StartServer(address, port string, tls bool) {
 	router := mux.NewRouter()
 	// router.Use(commonMiddleware)
 
+	// Register services
+	registerBackgroundServices()
+
 	// Register all the routes
 	registerRoutes(router)
 
@@ -34,6 +38,10 @@ func StartServer(address, port string, tls bool) {
 	} else {
 		log.Fatal(http.ListenAndServe(serverAddress, router))
 	}
+}
+
+func registerBackgroundServices() {
+	comms.NewCommsModule(false)
 }
 
 func registerRoutes(router *mux.Router) {
