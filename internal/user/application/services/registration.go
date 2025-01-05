@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
@@ -33,18 +32,24 @@ func (r *Registration) Done() {
 
 // GetRegistrationVerificationEmailData returns the data required to send a registration verification email
 func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[string]string, error) {
-	mp := make(map[string]string)
+	em := make(map[string]string)
 	u, err := r.userAccountUseCase.GetUserById(context.Background(), uid)
 	if err != nil {
-		return mp, fmt.Errorf("user registration app service > send email verification: %v", err)
+		return em, fmt.Errorf("user registration app service > send email verification: %v", err)
 	}
 
 	t := u.Token()
 	h, e := t.CreateTokenVerificationHash()
 	if e != nil {
-		return mp, fmt.Errorf("user registration app service > hash function failed: %v", e)
+		return em, fmt.Errorf("user registration app service > hash function failed: %v", e)
 	}
 
-	log.Println(string(h))
-	return mp, nil
+	ue := u.User()
+	em["email"] = u.Email()
+	em["nick_name"] = ue.ConcatenatedName()
+	em["hash"] = string(h)
+	em["base_url"] = "http://localhost:8080" //TODO: get base url from env
+	em["verify_email_link"] = fmt.Sprintf("%s/verify-registration?uid=%s&hash=%s", em["base_url"], uid.String(), h)
+
+	return em, nil
 }

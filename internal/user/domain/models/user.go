@@ -54,6 +54,9 @@ func (u *User) SetName(fn, ln string) {
 	u.lastName = ln
 }
 
+// ConcatenatedName returns the full name of the user by concatenating the first name and last name
+func (u *User) ConcatenatedName() string { return u.firstName + u.lastName }
+
 func (u *User) DateOfBirth() time.Time       { return u.dateOfBirth }
 func (u *User) SetDateOfBirth(dob time.Time) { u.dateOfBirth = dob }
 

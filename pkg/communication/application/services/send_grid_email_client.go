@@ -35,3 +35,32 @@ func (e SendGridEmailClient) Send(to, toemail, subj, plainText, htmlText string)
 		return r.StatusCode, nil
 	}
 }
+
+func (e SendGridEmailClient) SendUsingTemplate(to, toemail, subj, templateId string, tdata map[string]string) (int, error) {
+	m := mail.NewV3Mail()
+	m.SetFrom(mail.NewEmail(e.sendGridFromName, e.sendGridFromEmail))
+	m.SetTemplateID(templateId)
+
+	// create personalization
+	p := mail.NewPersonalization()
+	tos := []*mail.Email{
+		mail.NewEmail(to, toemail),
+	}
+	p.AddTos(tos...)
+
+	for k, v := range tdata {
+		p.SetDynamicTemplateData(k, v)
+	}
+
+	m.AddPersonalizations(p)
+	req := sendgrid.GetRequest(e.sendGridKey, "/v3/mail/send", "https://api.sendgrid.com")
+	req.Method = "POST"
+	var b = mail.GetRequestBody(m)
+	req.Body = b
+	res, err := sendgrid.API(req)
+	if err != nil {
+		return 0, err
+	} else {
+		return res.StatusCode, nil
+	}
+}

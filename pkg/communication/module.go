@@ -32,7 +32,7 @@ func NewCommsModule(useSendGrid bool) *CommsModule {
 	userEventCli := instantiateUserEventClient()
 	emailClientAppSvc := instantiateAppSvc(useSendGrid)
 
-	udl := instantiateUserDomainListenersAndListen(userEventCli)
+	udl := instantiateUserDomainListenersAndListen(userEventCli, emailClientAppSvc)
 
 	return &CommsModule{
 		userEventClient:           userEventCli,
@@ -65,10 +65,10 @@ func instantiateAppSvc(useSendGrid bool) ports.Emailer {
 	return app_svc.NewSendGridEmailClient(sg.SendGridKey, sg.SendGridFromName, sg.SendGridFromEmail)
 }
 
-func instantiateUserDomainListenersAndListen(uec user_event_port.UserEventClient) *user_domain_listener.NewUserRegisteredEventListener {
+func instantiateUserDomainListenersAndListen(uec user_event_port.UserEventClient, ecas ports.Emailer) *user_domain_listener.NewUserRegisteredEventListener {
 
 	um := umf.CreateNewUserModule()
-	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, um.UserRegistrationAppService())
+	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, um.UserRegistrationAppService(), ecas)
 	err := nurel.Listen()
 	if err != nil {
 		panic(err)
