@@ -31,7 +31,7 @@ services:
     expose:
       - 8222
       - 4222
-    command: "--http_port 8222 "
+    command: "--http_port 8222 -js"
     networks: ["nats"]
 
 networks:
