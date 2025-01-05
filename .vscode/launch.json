@@ -11,8 +11,9 @@
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/server",
             "args": ["start-server", "-address=localhost", "-port=9000", "-tls=false"],
-            "env": { "TODOAPI_DBPATH":"/go/src/go-todo-api/db/todo.db", "TODOAPI_NATSURL": "nats:4222", "TODOAPI_SENDGRIDKEY" : "dummyvalue1", "TODOAPI_SENDGRIDFROMNAME":"dummyvalue1", "TODOAPI_SENDGRIDFROMEMAIL":"dummyvalue1" },
-            "debugAdapter": "dlv-dap"
+            "env": { "TODOAPI_DBPATH":"/go/src/go-todo-api/db/todo.db", "TODOAPI_NATSURL": "nats:4222" },
+            "debugAdapter": "dlv-dap",
+            "envFile": "${workspaceFolder}/.env"
         },
         {
             "name": "Launch DB migration",
