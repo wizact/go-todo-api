@@ -51,5 +51,5 @@ func (t *Token) CreateTokenVerificationHash() ([]byte, error) {
 
 // CompareTokenVerificationWithHash compares the bcrypt-hashed verification token with the actual plain-text value and returns true if the match
 func (t *Token) CompareTokenVerificationWithHash(h []byte) bool {
-	return bcrypt.CompareHashAndPassword(h, []byte(t.verificationToken)) != nil
+	return bcrypt.CompareHashAndPassword(h, []byte(t.verificationToken)) == nil
 }

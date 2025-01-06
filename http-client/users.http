@@ -12,3 +12,10 @@ Content-Type: application/json
 GET http://{{hostname}}/{{baseUri}}/034f856e-4ae4-4787-adb8-980428f6987c HTTP/1.1
 Content-Type: application/json
 Authorization: 'Bearer bearer token'
+
+###
+
+# @name verifyRegisteration
+POST http://{{hostname}}/{{baseUri}}/verify-registration?uid=049c5f01-3d97-4074-b814-a7b876a7327d&hash=$2a$14$7bU74rm/.DmIYEpk8JDL/eIWoANf/vGlT8EgS9ofQHiYvu0nlceLa HTTP/1.1
+Content-Type: application/json
+# Authorization: 'Bearer bearer token'

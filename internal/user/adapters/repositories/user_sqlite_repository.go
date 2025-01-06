@@ -119,6 +119,7 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 }
 
 func (r *UserSqliteRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
+	// TODO: Implement
 	return ua.User{}, nil
 }
 

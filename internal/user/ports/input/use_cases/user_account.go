@@ -11,4 +11,5 @@ import (
 type UserAccountUseCase interface {
 	RegisterNewUser(ctx context.Context, user aggregate.User) (aggregate.User, *hsm.AppError)
 	GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, *hsm.AppError)
+	UpdateUser(ctx context.Context, user aggregate.User) (aggregate.User, *hsm.AppError)
 }

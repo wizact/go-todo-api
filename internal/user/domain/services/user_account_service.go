@@ -55,8 +55,6 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 		return user, ErrEmailAlreadyExists
 	}
 
-	// Create user with an active status, and refreshed verification tokens
-	user.SetIsActive(true)
 	t := user.Token()
 	t.RefreshVerificationToken()
 	t.RefreshVerificationSalt()
@@ -77,9 +75,22 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 	return u, nil
 }
 
+// GetUserById gets a user aggregate by id
 func (ua *UserAccountService) GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, *hsm.AppError) {
 	var u aggregate.User
 	u, e := ua.userRepository.FindById(ctx, uid)
+
+	if e != nil {
+		// Fallback to generic error
+		return u, ErrFailedToGetUser
+	}
+
+	return u, nil
+}
+
+// UpdateUser updates a user aggregate
+func (ua *UserAccountService) UpdateUser(ctx context.Context, user aggregate.User) (aggregate.User, *hsm.AppError) {
+	u, e := ua.userRepository.Update(ctx, user)
 
 	if e != nil {
 		// Fallback to generic error

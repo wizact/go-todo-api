@@ -21,8 +21,7 @@ func (urf UserRouteFactory) CreateUserRoute() UserRoute {
 	um := umf.CreateNewUserModule()
 	return NewUserRoute(
 		controller.NewUserController(
-			um.UserAccountUseCase()),
-	)
+			um.UserAccountUseCase(), um.UserRegistrationAppService()))
 }
 
 type UserRoute struct {
@@ -36,8 +35,36 @@ func NewUserRoute(userController controller.UserController) UserRoute {
 }
 
 func (ur UserRoute) SetupRoutes(routePath string, router *mux.Router) {
-	router.Handle(routePath, middleware.AppHandler(ur.RegisterUser()).Config(true)).Methods("POST")
+	router.Handle(routePath, middleware.AppHandler(ur.RegisterUser()).Config(false)).Methods("POST")
+	router.Handle(routePath+"/verify-registration", middleware.AppHandler(ur.VerifyRegistration()).Config(false)).Methods("POST")
+
 	router.Handle(routePath+"/{id}", middleware.AppHandler(ur.GetUserById()).Config(true)).Methods("GET")
+}
+
+func (ur UserRoute) VerifyRegistration() middleware.AppHandler {
+	fn := func(w http.ResponseWriter, r *http.Request) *hsm.AppError {
+		var uid uuid.UUID
+		var hash string
+		var err error
+		if uid, err = uuid.Parse(r.URL.Query().Get("uid")); err != nil || uid == uuid.Nil {
+			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
+		}
+
+		if hash = r.URL.Query().Get("hash"); hash == "" {
+			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
+		}
+
+		err = ur.UserController.VerifyUserRegistration(r.Context(), uid, hash)
+		e, a := err.(*hsm.AppError)
+		if e != nil && a {
+			return e
+		}
+
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+
+	return fn
 }
 
 // RegisterUser registers a user

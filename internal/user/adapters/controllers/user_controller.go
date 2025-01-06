@@ -8,18 +8,34 @@ import (
 	"github.com/google/uuid"
 	httpmodel "github.com/wizact/go-todo-api/internal/user/adapters/controllers/models"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	userAppSvc "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	usecase "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
 type UserController struct {
 	userAccountUseCase usecase.UserAccountUseCase
+	registrationAppSvc userAppSvc.Registration
 }
 
-func NewUserController(uasuc usecase.UserAccountUseCase) UserController {
+func NewUserController(uasuc usecase.UserAccountUseCase, rappsvc userAppSvc.Registration) UserController {
 	return UserController{
 		userAccountUseCase: uasuc,
+		registrationAppSvc: rappsvc,
 	}
+}
+
+func (u *UserController) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) *hsm.AppError {
+	// TODO: AuthZ check (own user or admin)
+	appErr := u.registrationAppSvc.VerifyUserRegistration(ctx, uid, hash)
+
+	if appErr != nil {
+		log.Println(appErr)
+		// return proper error
+		return &hsm.AppError{ErrorObject: appErr.ErrorObject, SanitisedMessage: appErr.SanitisedMessage, Code: appErr.Code}
+	}
+
+	return nil
 }
 
 func (u *UserController) RegisterNewUser(ctx context.Context, user httpmodel.User) (httpmodel.User, *hsm.AppError) {
@@ -51,6 +67,7 @@ func (u *UserController) RegisterNewUser(ctx context.Context, user httpmodel.Use
 }
 
 func (u *UserController) GetUserById(ctx context.Context, uid uuid.UUID) (httpmodel.User, *hsm.AppError) {
+	// TODO: AuthZ check (own user or admin)
 	var ua aggregate.User
 	var user httpmodel.User
 	var appErr *hsm.AppError
