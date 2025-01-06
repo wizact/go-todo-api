@@ -17,7 +17,7 @@ func NewHealthCheckRoute() HealthCheckRoute {
 }
 
 func (hcr HealthCheckRoute) SetupRoutes(routePath string, router *mux.Router) {
-	router.Handle(routePath, mw.AppHandler(hcr.GetHealthCheck())).Methods("GET")
+	router.Handle(routePath, mw.AppHandler(hcr.GetHealthCheck()).Config(false)).Methods("GET")
 }
 
 // GetHealthCheck returns OK when is called

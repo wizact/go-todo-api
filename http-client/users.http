@@ -1,12 +1,14 @@
 @baseUri= users
 
-
 # @name registerNewUser
 POST http://{{hostname}}/{{baseUri}} HTTP/1.1
+Content-Type: application/json
 
 < ./payloads/user_new.json
 
 ###
 
 # @name getUserById
-GET http://{{hostname}}/{{baseUri}}/00e71618-ed35-4db5-8b4a-2f376ff87934 HTTP/1.1
+GET http://{{hostname}}/{{baseUri}}/034f856e-4ae4-4787-adb8-980428f6987c HTTP/1.1
+Content-Type: application/json
+Authorization: 'Bearer bearer token'

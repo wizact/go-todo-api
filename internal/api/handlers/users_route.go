@@ -36,8 +36,8 @@ func NewUserRoute(userController controller.UserController) UserRoute {
 }
 
 func (ur UserRoute) SetupRoutes(routePath string, router *mux.Router) {
-	router.Handle(routePath, middleware.AppHandler(ur.RegisterUser())).Methods("POST")
-	router.Handle(routePath+"/{id}", middleware.AppHandler(ur.GetUserById())).Methods("GET")
+	router.Handle(routePath, middleware.AppHandler(ur.RegisterUser()).Config(true)).Methods("POST")
+	router.Handle(routePath+"/{id}", middleware.AppHandler(ur.GetUserById()).Config(true)).Methods("GET")
 }
 
 // RegisterUser registers a user
@@ -66,7 +66,7 @@ func (ur UserRoute) RegisterUser() middleware.AppHandler {
 	return fn
 }
 
-// GetUserById retrieves a user by it's Id
+// GetUserById retrieves a user by its Id
 func (ur UserRoute) GetUserById() middleware.AppHandler {
 	fn := func(w http.ResponseWriter, r *http.Request) *hsm.AppError {
 

@@ -6,6 +6,9 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
+const SENDGRID_ENDPOINT = "/v3/mail/send"
+const SENDGRID_HOST = "https://api.sendgrid.com"
+
 type SendGridEmailClient struct {
 	sendGridKey       string
 	sendGridFromName  string
@@ -53,7 +56,7 @@ func (e SendGridEmailClient) SendUsingTemplate(to, toemail, subj, templateId str
 	}
 
 	m.AddPersonalizations(p)
-	req := sendgrid.GetRequest(e.sendGridKey, "/v3/mail/send", "https://api.sendgrid.com")
+	req := sendgrid.GetRequest(e.sendGridKey, SENDGRID_ENDPOINT, SENDGRID_HOST)
 	req.Method = "POST"
 	var b = mail.GetRequestBody(m)
 	req.Body = b

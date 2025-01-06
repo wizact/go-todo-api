@@ -16,7 +16,7 @@ func (e MemoryEmailClient) Send(to, toemail, subj, plainText, htmlText string) (
 }
 
 func (e MemoryEmailClient) SendUsingTemplate(to, toemail, subj, templateId string, tdata map[string]string) (int, error) {
-	log.Println("Sending email to: ", toemail)
+	log.Println("Sending email to: ", toemail, " using template: ", templateId, " with data: ", tdata)
 
 	return 200, nil
 }
