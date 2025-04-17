@@ -8,7 +8,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nats-io/nats.go v1.32.0
 	github.com/sendgrid/sendgrid-go v3.14.0+incompatible
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.35.0
 	gorm.io/gorm v1.25.5
 )
 
@@ -27,6 +27,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/wizact/yacli v0.0.0-20200621092021-be57780af79a
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	gorm.io/driver/sqlite v1.5.4
 )
