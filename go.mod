@@ -1,6 +1,6 @@
 module github.com/wizact/go-todo-api
 
-go 1.19
+go 1.24.0
 
 require (
 	github.com/golang-migrate/migrate v3.5.4+incompatible
@@ -8,7 +8,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nats-io/nats.go v1.32.0
 	github.com/sendgrid/sendgrid-go v3.14.0+incompatible
-	golang.org/x/crypto v0.35.0
+	golang.org/x/crypto v0.45.0
 	gorm.io/gorm v1.25.5
 )
 
@@ -27,6 +27,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/wizact/yacli v0.0.0-20200621092021-be57780af79a
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
 	gorm.io/driver/sqlite v1.5.4
 )
