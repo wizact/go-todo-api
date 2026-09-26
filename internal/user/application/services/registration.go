@@ -60,7 +60,7 @@ func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[
 func (r *Registration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) *hsm.AppError {
 	u, err := r.userAccountUseCase.GetUserById(ctx, uid)
 	if err != nil {
-		return &hsm.AppError{ErrorObject: err.ErrorObject, SanitisedMessage: "Failed activating the user", Code: http.StatusBadRequest}
+		return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Failed activating the user", Code: http.StatusBadRequest}
 	}
 
 	t := u.Token()
@@ -73,7 +73,7 @@ func (r *Registration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID
 
 	_, e := r.userAccountUseCase.UpdateUser(ctx, u)
 	if e != nil {
-		return &hsm.AppError{ErrorObject: e.ErrorObject, SanitisedMessage: "Failed activating the user", Code: http.StatusBadRequest}
+		return &hsm.AppError{ErrorObject: e, SanitisedMessage: "Failed activating the user", Code: http.StatusBadRequest}
 	}
 
 	return nil

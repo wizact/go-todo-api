@@ -14,6 +14,7 @@ import (
 
 	"github.com/wizact/go-todo-api/internal/api/handlers"
 	controller "github.com/wizact/go-todo-api/internal/user/adapters/controllers"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 	"github.com/wizact/go-todo-api/internal/user/ports/mocks"
@@ -48,6 +49,16 @@ func TestUserRoute_RegisterUser_Status(t *testing.T) {
 			fixture:    "register_user_malformed.json",
 			wantStatus: http.StatusBadRequest,
 			setupMocks: func(routeMocks) {},
+		},
+		{
+			name:       "returns internal server error when persistence fails",
+			fixture:    "register_user.json",
+			wantStatus: http.StatusInternalServerError,
+			setupMocks: func(m routeMocks) {
+				m.userAccount.EXPECT().
+					RegisterNewUser(gomock.Any(), gomock.Any()).
+					Return(aggregate.User{}, domain.ErrUserPersistence)
+			},
 		},
 	}
 

@@ -3,25 +3,14 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 	event "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
-	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
-)
-
-var (
-	ErrInvalidUser               = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
-	ErrFailedToRegisterUser      = hsm.NewAppError(errors.New("user info is not valid"), "user info is not valid", http.StatusBadRequest)
-	ErrServerErrorToRegisterUser = hsm.NewAppError(errors.New("internal server error"), "internal server error", http.StatusInternalServerError)
-	ErrEmailAlreadyExists        = hsm.NewAppError(errors.New("email already registered"), "email already registered", http.StatusBadRequest)
-
-	ErrFailedToGetUser         = hsm.NewAppError(errors.New("cannot get user"), "cannot get user", http.StatusNotFound)
-	ErrUserIdDoesNotExist      = hsm.NewAppError(errors.New("user id does not exist"), "user id does not exist", http.StatusNotFound)
-	ErrUserByEmailDoesNotExist = hsm.NewAppError(errors.New("user email does not exist"), "user email does not exist", http.StatusNotFound)
 )
 
 type UserAccountService struct {
@@ -39,20 +28,20 @@ func NewUserAccountService(ur repository.UserRepository, uec event.UserEventClie
 	return ua
 }
 
-func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregate.User) (aggregate.User, *hsm.AppError) {
+func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregate.User) (aggregate.User, error) {
 	// Verify the account
 	if !user.IsValid() {
-		return user, ErrInvalidUser
+		return user, domain.ErrInvalidUser
 	}
 
 	// Check if the user does not exist
 	u, e := ua.userRepository.FindByEmail(ctx, user.Email())
-	if e != nil && !errors.Is(e, ErrUserByEmailDoesNotExist) {
-		return user, ErrFailedToRegisterUser
+	if e != nil && !errors.Is(e, domain.ErrUserEmailNotFound) {
+		return user, fmt.Errorf("%w: find user by email: %w", domain.ErrRegistrationFailed, e)
 	}
 
 	if u.Email() == user.Email() {
-		return user, ErrEmailAlreadyExists
+		return user, domain.ErrEmailAlreadyExists
 	}
 
 	t := user.Token()
@@ -62,7 +51,7 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 
 	u, e = ua.userRepository.Create(ctx, user)
 	if e != nil {
-		return user, ErrServerErrorToRegisterUser
+		return user, fmt.Errorf("%w: create user: %w", domain.ErrUserPersistence, e)
 	}
 
 	// emit events
@@ -76,25 +65,25 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 }
 
 // GetUserById gets a user aggregate by id
-func (ua *UserAccountService) GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, *hsm.AppError) {
+func (ua *UserAccountService) GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, error) {
 	var u aggregate.User
 	u, e := ua.userRepository.FindById(ctx, uid)
 
 	if e != nil {
 		// Fallback to generic error
-		return u, ErrFailedToGetUser
+		return u, fmt.Errorf("%w: find user by ID: %w", domain.ErrUserLookupFailed, e)
 	}
 
 	return u, nil
 }
 
 // UpdateUser updates a user aggregate
-func (ua *UserAccountService) UpdateUser(ctx context.Context, user aggregate.User) (aggregate.User, *hsm.AppError) {
+func (ua *UserAccountService) UpdateUser(ctx context.Context, user aggregate.User) (aggregate.User, error) {
 	u, e := ua.userRepository.Update(ctx, user)
 
 	if e != nil {
 		// Fallback to generic error
-		return u, ErrFailedToGetUser
+		return u, fmt.Errorf("%w: update user: %w", domain.ErrUserLookupFailed, e)
 	}
 
 	return u, nil

@@ -2,15 +2,17 @@ package service_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	svc "github.com/wizact/go-todo-api/internal/user/domain/services"
 	event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
 )
 
-func Test_NewUserAccountService(t *testing.T) {
+func TestUserAccountService_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t *testing.T) {
 	seedUserList := init_users(t)
 	u := seedUserList[0]
 
@@ -21,8 +23,8 @@ func Test_NewUserAccountService(t *testing.T) {
 
 	_, err := uas.RegisterNewUser(context.Background(), u)
 
-	if err == nil {
-		t.Error(err)
+	if !errors.Is(err, domain.ErrEmailAlreadyExists) {
+		t.Errorf("error = %v, want %v", err, domain.ErrEmailAlreadyExists)
 	}
 }
 

@@ -15,7 +15,6 @@ import (
 
 	uuid "github.com/google/uuid"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
-	httpservermodel "github.com/wizact/go-todo-api/pkg/http-server-model"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -44,11 +43,11 @@ func (m *MockUserAccountUseCase) EXPECT() *MockUserAccountUseCaseMockRecorder {
 }
 
 // GetUserById mocks base method.
-func (m *MockUserAccountUseCase) GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, *httpservermodel.AppError) {
+func (m *MockUserAccountUseCase) GetUserById(ctx context.Context, uid uuid.UUID) (aggregate.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserById", ctx, uid)
 	ret0, _ := ret[0].(aggregate.User)
-	ret1, _ := ret[1].(*httpservermodel.AppError)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
@@ -59,11 +58,11 @@ func (mr *MockUserAccountUseCaseMockRecorder) GetUserById(ctx, uid any) *gomock.
 }
 
 // RegisterNewUser mocks base method.
-func (m *MockUserAccountUseCase) RegisterNewUser(ctx context.Context, user aggregate.User) (aggregate.User, *httpservermodel.AppError) {
+func (m *MockUserAccountUseCase) RegisterNewUser(ctx context.Context, user aggregate.User) (aggregate.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterNewUser", ctx, user)
 	ret0, _ := ret[0].(aggregate.User)
-	ret1, _ := ret[1].(*httpservermodel.AppError)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
@@ -74,11 +73,11 @@ func (mr *MockUserAccountUseCaseMockRecorder) RegisterNewUser(ctx, user any) *go
 }
 
 // UpdateUser mocks base method.
-func (m *MockUserAccountUseCase) UpdateUser(ctx context.Context, user aggregate.User) (aggregate.User, *httpservermodel.AppError) {
+func (m *MockUserAccountUseCase) UpdateUser(ctx context.Context, user aggregate.User) (aggregate.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUser", ctx, user)
 	ret0, _ := ret[0].(aggregate.User)
-	ret1, _ := ret[1].(*httpservermodel.AppError)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
