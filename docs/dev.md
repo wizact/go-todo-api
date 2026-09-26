@@ -1,5 +1,7 @@
 # Development Container
 
+The project requires Go 1.27. The development container and builder image use the latest configured Go 1.27 patch release.
+
 To bring up the development environment, make [devcontainer cli](https://github.com/devcontainers/cli) is installed and run the following command:
 
 ```
@@ -21,4 +23,3 @@ To test domain events, make sure nats client is installed and run the following 
 ```
 nats subscribe "User.NewUserRegistered" -s nats:4222
 ```
-

@@ -4,11 +4,11 @@ MIGRATIONNAME := migration
 PKG := github.com/wizact/$(NAME)
 SHELL := /usr/bin/env bash -o errexit -o pipefail -o nounset
 GO := go
-GO_VERSION := 1.20
+GO_VERSION := 1.27.1
 
 # Image for the build environment
 BUILD_IMAGE :=  ghcr.io/wizact/todo-api-builder
-BUILD_IMAGE_VERSION := 4179b77  
+BUILD_IMAGE_VERSION := go$(GO_VERSION)
 
 PREFIX?=$(shell pwd)
 BUILDTAGS :=
@@ -160,8 +160,8 @@ clean:
 	rm -rf out/*
 
 .PHONY: build-builder-image
-build-builder-image: # @HELP build the base builder image based on build/Dockerfile and tag is as current HEAD hash
-	(cd ./build && docker build -t ghcr.io/wizact/todo-api-builder:$(VERSION) .)
+build-builder-image: # @HELP build the base builder image and tag it with the configured Go version
+	(cd ./build && docker build --build-arg GO_VERSION=$(GO_VERSION) -t $(BUILD_IMAGE):$(BUILD_IMAGE_VERSION) .)
 
 
 .PHONY: help
