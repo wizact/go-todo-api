@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	dbinfra "github.com/wizact/go-todo-api/internal/infra/db"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
-	us "github.com/wizact/go-todo-api/internal/user/domain/services"
 	"gorm.io/gorm"
 )
 
@@ -39,7 +39,7 @@ func (r *UserSqliteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.U
 	result := db.Limit(1).First(u)
 
 	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return emptyUser, us.ErrUserIdDoesNotExist
+		return emptyUser, domain.ErrUserIDNotFound
 	}
 
 	if result.Error != nil {
@@ -63,7 +63,7 @@ func (r *UserSqliteRepository) FindByEmail(ctx context.Context, email string) (u
 	result := db.Where(uev).First(uev)
 
 	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return emptyUser, us.ErrUserByEmailDoesNotExist
+		return emptyUser, domain.ErrUserEmailNotFound
 	}
 
 	if result.Error != nil {

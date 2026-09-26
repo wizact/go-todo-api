@@ -2,12 +2,13 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/google/uuid"
 	httpmodel "github.com/wizact/go-todo-api/internal/user/adapters/controllers/models"
-	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	userAppSvc "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	usecase "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
@@ -39,51 +40,56 @@ func (u *UserController) VerifyUserRegistration(ctx context.Context, uid uuid.UU
 }
 
 func (u *UserController) RegisterNewUser(ctx context.Context, user httpmodel.User) (httpmodel.User, *hsm.AppError) {
-	var ua aggregate.User
-	var appErr *hsm.AppError
-
 	// map model to aggregate
-	ua, err := user.ToDomainModel()
-	if err != nil {
-		return user, &hsm.AppError{ErrorObject: err, SanitisedMessage: err.Error(), Code: http.StatusBadRequest}
+	ua, appErr := user.ToDomainModel()
+	if appErr != nil {
+		return user, &hsm.AppError{ErrorObject: appErr, SanitisedMessage: appErr.Error(), Code: http.StatusBadRequest}
 	}
 
-	ua, appErr = u.userAccountUseCase.RegisterNewUser(ctx, ua)
+	ua, err := u.userAccountUseCase.RegisterNewUser(ctx, ua)
 
-	if appErr != nil {
-		log.Println(appErr)
-		// return proper error
-		return user, &hsm.AppError{ErrorObject: appErr.ErrorObject, SanitisedMessage: appErr.SanitisedMessage, Code: appErr.Code}
+	if err != nil {
+		log.Println(err)
+		return user, userAccountRegistrationAppError(err)
 	}
 
 	// map aggregate to model
-	err = user.ToApiModel(ua)
-	if err != nil {
-		// return proper error
-		return user, &hsm.AppError{ErrorObject: err, SanitisedMessage: err.Error(), Code: http.StatusBadRequest}
-	}
-
-	return user, nil
-}
-
-func (u *UserController) GetUserById(ctx context.Context, uid uuid.UUID) (httpmodel.User, *hsm.AppError) {
-	// TODO: AuthZ check (own user or admin)
-	var ua aggregate.User
-	var user httpmodel.User
-	var appErr *hsm.AppError
-
-	ua, appErr = u.userAccountUseCase.GetUserById(ctx, uid)
-
+	appErr = user.ToApiModel(ua)
 	if appErr != nil {
 		// return proper error
 		return user, &hsm.AppError{ErrorObject: appErr, SanitisedMessage: appErr.Error(), Code: http.StatusBadRequest}
 	}
 
-	// map aggregate to model
-	err := user.ToApiModel(ua)
+	return user, nil
+}
+
+func userAccountRegistrationAppError(err error) *hsm.AppError {
+	switch {
+	case errors.Is(err, domain.ErrInvalidUser), errors.Is(err, domain.ErrRegistrationFailed):
+		return hsm.NewAppError(err, "user info is not valid", http.StatusBadRequest)
+	case errors.Is(err, domain.ErrEmailAlreadyExists):
+		return hsm.NewAppError(err, "email already registered", http.StatusBadRequest)
+	default:
+		return hsm.NewAppError(err, "internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (u *UserController) GetUserById(ctx context.Context, uid uuid.UUID) (httpmodel.User, *hsm.AppError) {
+	// TODO: AuthZ check (own user or admin)
+	var user httpmodel.User
+
+	ua, err := u.userAccountUseCase.GetUserById(ctx, uid)
+
 	if err != nil {
 		// return proper error
 		return user, &hsm.AppError{ErrorObject: err, SanitisedMessage: err.Error(), Code: http.StatusBadRequest}
+	}
+
+	// map aggregate to model
+	appErr := user.ToApiModel(ua)
+	if appErr != nil {
+		// return proper error
+		return user, &hsm.AppError{ErrorObject: appErr, SanitisedMessage: appErr.Error(), Code: http.StatusBadRequest}
 	}
 
 	return user, nil
