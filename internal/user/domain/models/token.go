@@ -1,9 +1,6 @@
 package model
 
-import (
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
-)
+import "github.com/google/uuid"
 
 type Token struct {
 	verificationToken string
@@ -42,14 +39,4 @@ func (t *Token) RefreshVerificationToken() {
 func (t *Token) RefreshVerificationSalt() {
 	vs := uuid.NewString()
 	t.SetVerificationSalt(vs)
-}
-
-// CreateTokenVerificationHash hashes the token verification using bcrypt hash algorithm
-func (t *Token) CreateTokenVerificationHash() ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(t.verificationToken), 14)
-}
-
-// CompareTokenVerificationWithHash compares the bcrypt-hashed verification token with the actual plain-text value and returns true if the match
-func (t *Token) CompareTokenVerificationWithHash(h []byte) bool {
-	return bcrypt.CompareHashAndPassword(h, []byte(t.verificationToken)) == nil
 }

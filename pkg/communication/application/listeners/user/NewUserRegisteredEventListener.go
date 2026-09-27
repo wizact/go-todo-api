@@ -4,11 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/nats-io/nats.go"
 	user_app_svc_port "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	comms_app_svc_port "github.com/wizact/go-todo-api/pkg/communication/ports/applications"
-	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
-	"github.com/wizact/go-todo-api/pkg/event-library/pubsub"
+	event_input "github.com/wizact/go-todo-api/pkg/event-library/ports/input/events"
 	de "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
@@ -18,13 +16,13 @@ const VERIFY_REGISTRATION_TEMPLATE_ID = ""
 // NewUserRegisteredEventListener application service responsible for managing the lifecycle of a user registration
 type NewUserRegisteredEventListener struct {
 	emailClientAppSvc comms_app_svc_port.Emailer
-	userEventClient   event_port.UserEventClient
+	userEventClient   event_input.UserEventClientInput
 	userRegAppSvc     user_app_svc_port.Registration
 	done              chan bool
 }
 
 // NewNewUserRegisteredEventListene returns a new instance of NewUserRegisteredEventListener application service
-func NewNewUserRegisteredEventListener(uec event_port.UserEventClient, userRegAppSvc user_app_svc_port.Registration, emailClientAppSvc comms_app_svc_port.Emailer) *NewUserRegisteredEventListener {
+func NewNewUserRegisteredEventListener(uec event_input.UserEventClientInput, userRegAppSvc user_app_svc_port.Registration, emailClientAppSvc comms_app_svc_port.Emailer) *NewUserRegisteredEventListener {
 	return &NewUserRegisteredEventListener{
 		emailClientAppSvc: emailClientAppSvc,
 		userEventClient:   uec,
@@ -39,7 +37,7 @@ func (r *NewUserRegisteredEventListener) Done() {
 
 // Listen listens to the event and trigger the lifecycle required for user approval process
 func (r *NewUserRegisteredEventListener) Listen() error {
-	nuc := make(chan *nats.Msg)
+	nuc := make(chan de.UserDomainEvent)
 
 	unsubcb, err := r.userEventClient.SubscribeToNewUserRegisteredEvent(context.Background(), nuc)
 
@@ -52,22 +50,15 @@ func (r *NewUserRegisteredEventListener) Listen() error {
 	return nil
 }
 
-func (r *NewUserRegisteredEventListener) sendUserEmailVerificationMessage(nuc <-chan *nats.Msg, done chan bool, unsubcb pubsub.ChannelUnsubscribeCallBack) error {
+func (r *NewUserRegisteredEventListener) sendUserEmailVerificationMessage(nuc <-chan de.UserDomainEvent, done chan bool, unsubcb event_input.Unsubscribe) error {
 L:
 	for {
 		select {
-		case newUser, ok := <-nuc:
+		case ude, ok := <-nuc:
 			if !ok {
 				log.Println("communication > terminating NewUserRegisteredListener")
 				unsubcb()
 				break L
-			}
-
-			// Unmarshal domain event to get the (aggregate id)
-			ude, e := r.getUserFromPayload(newUser.Data)
-			if e != nil {
-				log.Println("communication > new user registered event listener app service > send email confirmation: ", e)
-				continue
 			}
 
 			log.Println("communication > Preparing email verification message for:", ude.Email)
@@ -88,14 +79,4 @@ L:
 		}
 	}
 	return nil
-}
-
-func (r *NewUserRegisteredEventListener) getUserFromPayload(p []byte) (de.UserDomainEvent, error) {
-	ude := de.UserDomainEvent{}
-	if err := ude.LoadDomainEventObject(p); err != nil {
-		return ude, err
-	}
-
-	return ude, nil
-
 }

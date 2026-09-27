@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	dbinfra "github.com/wizact/go-todo-api/internal/infra/db"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
-	us "github.com/wizact/go-todo-api/internal/user/domain/services"
 	"gorm.io/gorm"
 )
 
@@ -39,7 +39,7 @@ func (r *UserSqliteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.U
 	result := db.Limit(1).First(u)
 
 	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return emptyUser, us.ErrUserIdDoesNotExist
+		return emptyUser, domain.ErrUserIDNotFound
 	}
 
 	if result.Error != nil {
@@ -63,7 +63,7 @@ func (r *UserSqliteRepository) FindByEmail(ctx context.Context, email string) (u
 	result := db.Where(uev).First(uev)
 
 	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return emptyUser, us.ErrUserByEmailDoesNotExist
+		return emptyUser, domain.ErrUserEmailNotFound
 	}
 
 	if result.Error != nil {
@@ -89,33 +89,30 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 		return emptyUser, err
 	}
 
-	tx := db.Begin()
+	var persistedUser ua.User
+	err = db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		record := &SqliteUserAggregate{}
+		record.FromDomainEntityToDbModel(user)
 
-	u := &SqliteUserAggregate{}
-	u.FromDomainEntityToDbModel(user)
+		if err := tx.Create(record).Error; err != nil {
+			return err
+		}
 
-	result := tx.Create(&u)
+		persistedUser = record.FromDbModelToDomainEntity()
+		if _, err := r.createOrUpdateUserEmailView(ctx, tx, persistedUser); err != nil {
+			return err
+		}
+		if _, err := r.createOrUpdateUserTokenView(ctx, tx, persistedUser); err != nil {
+			return err
+		}
 
-	if result.Error != nil {
-		tx.Rollback()
-		return emptyUser, result.Error
-	}
-
-	user = u.FromDbModelToDomainEntity()
-	_, err = r.createOrUpdateUserEmailView(ctx, tx, user)
+		return nil
+	})
 	if err != nil {
-		tx.Rollback()
-		return emptyUser, result.Error
+		return emptyUser, err
 	}
 
-	_, err = r.createOrUpdateUserTokenView(ctx, tx, user)
-	if err != nil {
-		tx.Rollback()
-		return emptyUser, result.Error
-	}
-
-	tx.Commit()
-	return user, nil
+	return persistedUser, nil
 }
 
 func (r *UserSqliteRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
@@ -160,6 +157,8 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 	dbm.UserID = de.UserId().String()
 	deu := de.User()
 	deup := deu.Phone()
+	location := de.Location()
+	longitude, latitude := location.Coordinates()
 	fn, ln := deu.Name()
 	tk := de.Token()
 	dbm.ValueData = SqliteUserModel{
@@ -171,8 +170,8 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 		CountryCode:       deup.CountryCode(),
 		AreaCode:          deup.AreaCode(),
 		Number:            deup.Number(),
-		LocationLong:      de.Location().Longitude,
-		LocationLat:       de.Location().Latitude,
+		LocationLong:      longitude,
+		LocationLat:       latitude,
 		HasVerifiedEmail:  de.HasVerifiedEmail(),
 		IsActive:          de.IsActive(),
 		VerificationToken: tk.VerificationToken(),
@@ -181,19 +180,15 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 }
 
 func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
-	de := ua.NewUser()
 	ph := model.NewPhoneNumber(dbm.ValueData.CountryCode, dbm.ValueData.AreaCode, dbm.ValueData.Number)
-	mu := model.NewUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
+	mu := model.RehydrateUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
 	tk := model.NewToken(dbm.ValueData.VerificationToken, dbm.ValueData.VerificationSalt)
 
-	dl := model.NewLocation()
-	dl.SetCoordinates(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
+	dl := model.NewLocation(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
 
-	de.SetHasVerifiedEmail(dbm.ValueData.HasVerifiedEmail)
-	de.SetIsActive(dbm.ValueData.IsActive)
-
-	de.SetUser(mu)
-	de.SetLocation(dl)
-	de.SetToken(tk)
-	return de
+	status := ua.RegistrationStatus{
+		IsActive:         dbm.ValueData.IsActive,
+		HasVerifiedEmail: dbm.ValueData.HasVerifiedEmail,
+	}
+	return ua.RehydrateUser(mu, dl, tk, status)
 }

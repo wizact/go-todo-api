@@ -5,7 +5,7 @@ import (
 	user_domain_listener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
 	app_svc "github.com/wizact/go-todo-api/pkg/communication/application/services"
 	ports "github.com/wizact/go-todo-api/pkg/communication/ports/applications"
-	user_event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
+	user_event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/input/events"
 	pubsubinfra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
 	UserDomainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 	user_event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
@@ -21,7 +21,7 @@ import (
 // implementation of the interface instead of the memory or fake implementation.
 type CommsModule struct {
 	emailClientAppSvc ports.Emailer
-	userEventClient   user_event_port.UserEventClient
+	userEventClient   user_event_port.UserEventClientInput
 
 	// Listeners
 	newUserRegisteredListener *user_domain_listener.NewUserRegisteredEventListener
@@ -41,7 +41,7 @@ func NewCommsModule(useSendGrid bool) *CommsModule {
 	}
 }
 
-func instantiateUserEventClient() user_event_port.UserEventClient {
+func instantiateUserEventClient() user_event_port.UserEventClientInput {
 	nf := pubsubinfra.NatsClientFactory[user_event.UserEventClient, UserDomainEvent.UserDomainEvent, *user_event.UserEventClient]{}
 	uec, err := nf.Get()
 	if err != nil {
@@ -65,7 +65,7 @@ func instantiateAppSvc(useSendGrid bool) ports.Emailer {
 	return app_svc.NewSendGridEmailClient(sg.SendGridKey, sg.SendGridFromName, sg.SendGridFromEmail)
 }
 
-func instantiateUserDomainListenersAndListen(uec user_event_port.UserEventClient, ecas ports.Emailer) *user_domain_listener.NewUserRegisteredEventListener {
+func instantiateUserDomainListenersAndListen(uec user_event_port.UserEventClientInput, ecas ports.Emailer) *user_domain_listener.NewUserRegisteredEventListener {
 
 	um := umf.CreateNewUserModule()
 	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, um.UserRegistrationAppService(), ecas)

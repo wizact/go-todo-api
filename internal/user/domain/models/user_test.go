@@ -1,11 +1,85 @@
 package model
 
 import (
+	"errors"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+func TestRehydrateUser_PreservesID(t *testing.T) {
+	t.Parallel()
+
+	want := uuid.New()
+	user := RehydrateUser(
+		want,
+		"Ada",
+		"Lovelace",
+		time.Date(1815, time.December, 10, 0, 0, 0, 0, time.UTC),
+		"ada@example.com",
+		NewPhoneNumber("+44", "20", "12345678"),
+	)
+
+	if got := user.ID(); got != want {
+		t.Fatalf("user ID = %v, want %v", got, want)
+	}
+}
+
+func TestNewUser_InvalidDetails_ReturnsError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		firstName string
+		lastName  string
+		email     string
+	}{
+		{name: "missing name", email: "ada@example.com"},
+		{name: "invalid email", firstName: "Ada", lastName: "Lovelace", email: "invalid"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := NewUser(tt.firstName, tt.lastName, time.Time{}, tt.email, PhoneNumber{})
+			if !errors.Is(err, ErrInvalidUser) {
+				t.Fatalf("error = %v, want %v", err, ErrInvalidUser)
+			}
+		})
+	}
+}
+
+func TestNewUser_ValidDetails_GeneratesID(t *testing.T) {
+	t.Parallel()
+
+	user, err := NewUser("Ada", "Lovelace", time.Time{}, "ada@example.com", PhoneNumber{})
+	if err != nil {
+		t.Fatalf("NewUser() error = %v", err)
+	}
+
+	if got := user.ID(); got == uuid.Nil {
+		t.Fatal("user ID is empty")
+	}
+}
+
+func TestUser_DoesNotExposeConstructionMutation(t *testing.T) {
+	t.Parallel()
+
+	typeOfUser := reflect.TypeFor[*User]()
+	for _, methodName := range []string{"SetID", "SetName", "SetDateOfBirth", "SetEmail", "SetPhone"} {
+		t.Run(methodName, func(t *testing.T) {
+			t.Parallel()
+
+			_, exposed := typeOfUser.MethodByName(methodName)
+			if exposed {
+				t.Fatalf("User exposes %s", methodName)
+			}
+		})
+	}
+}
 
 func TestUser_IsValid(t *testing.T) {
 	type user struct {
@@ -28,7 +102,7 @@ func TestUser_IsValid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := NewUser(
+			u := RehydrateUser(
 				tt.fields.ID,
 				tt.fields.FirstName,
 				tt.fields.LastName,
@@ -53,7 +127,7 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 		Phone       PhoneNumber
 	}
 
-	user2 := NewEmptyUser()
+	user2 := RehydrateUser(uuid.New(), "foo", "bar", time.Time{}, "foo@bar.baz", PhoneNumber{})
 
 	tests := []struct {
 		name   string
@@ -66,7 +140,7 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := NewUser(
+			u := RehydrateUser(
 				tt.fields.ID,
 				tt.fields.FirstName,
 				tt.fields.LastName,
@@ -82,11 +156,9 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 }
 
 func TestHasName(t *testing.T) {
-	user1 := NewEmptyUser()
-	user2 := user1
-	user2.SetName("foo", "")
-	user3 := user1
-	user3.SetName("", "bar")
+	user1 := User{}
+	user2 := RehydrateUser(uuid.Nil, "foo", "", time.Time{}, "", PhoneNumber{})
+	user3 := RehydrateUser(uuid.Nil, "", "bar", time.Time{}, "", PhoneNumber{})
 	tests := []struct {
 		name string
 		user User
@@ -117,8 +189,7 @@ func TestHasValidEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := NewEmptyUser()
-			u.SetEmail(tt.email)
+			u := RehydrateUser(uuid.Nil, "", "", time.Time{}, tt.email, PhoneNumber{})
 			if got := HasValidEmail(u); got != tt.want {
 				t.Errorf("HasValidEmail() = %v, want %v", got, tt.want)
 			}
@@ -156,5 +227,53 @@ func TestPhoneNumber_IsEqual(t *testing.T) {
 				t.Errorf("PhoneNumber.IsEqual() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestPhoneNumber_DoesNotExposeMutation(t *testing.T) {
+	t.Parallel()
+
+	typeOfPhoneNumber := reflect.TypeFor[*PhoneNumber]()
+	for _, methodName := range []string{"SetCountryCode", "SetAreaCode", "SetNumber"} {
+		t.Run(methodName, func(t *testing.T) {
+			t.Parallel()
+
+			_, exposed := typeOfPhoneNumber.MethodByName(methodName)
+			if exposed {
+				t.Fatalf("PhoneNumber exposes %s", methodName)
+			}
+		})
+	}
+}
+
+func TestNewLocation_InitializesCoordinates(t *testing.T) {
+	t.Parallel()
+
+	want := [2]float64{173.3002574488138, -41.26595602617756}
+	location := NewLocation(want[0], want[1])
+	longitude, latitude := location.Coordinates()
+
+	if got := [2]float64{longitude, latitude}; got != want {
+		t.Fatalf("coordinates = %v, want %v", got, want)
+	}
+}
+
+func TestLocation_DoesNotExposeCoordinateMutation(t *testing.T) {
+	t.Parallel()
+
+	_, exposed := reflect.TypeFor[*Location]().MethodByName("SetCoordinates")
+	if exposed {
+		t.Fatal("Location exposes SetCoordinates")
+	}
+}
+
+func TestLocation_DoesNotExposeFields(t *testing.T) {
+	t.Parallel()
+
+	typeOfLocation := reflect.TypeFor[Location]()
+	for index := range typeOfLocation.NumField() {
+		if field := typeOfLocation.Field(index); field.IsExported() {
+			t.Fatalf("Location exposes field %s", field.Name)
+		}
 	}
 }

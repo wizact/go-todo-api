@@ -14,6 +14,7 @@ import (
 
 	"github.com/wizact/go-todo-api/internal/api/handlers"
 	controller "github.com/wizact/go-todo-api/internal/user/adapters/controllers"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 	"github.com/wizact/go-todo-api/internal/user/ports/mocks"
@@ -48,6 +49,16 @@ func TestUserRoute_RegisterUser_Status(t *testing.T) {
 			fixture:    "register_user_malformed.json",
 			wantStatus: http.StatusBadRequest,
 			setupMocks: func(routeMocks) {},
+		},
+		{
+			name:       "returns internal server error when persistence fails",
+			fixture:    "register_user.json",
+			wantStatus: http.StatusInternalServerError,
+			setupMocks: func(m routeMocks) {
+				m.userAccount.EXPECT().
+					RegisterNewUser(gomock.Any(), gomock.Any()).
+					Return(aggregate.User{}, domain.ErrUserPersistence)
+			},
 		},
 	}
 
@@ -89,6 +100,16 @@ func TestUserRoute_VerifyRegistration_Status(t *testing.T) {
 			query:      "?uid=invalid&hash=verification-hash",
 			wantStatus: http.StatusBadRequest,
 			setupMocks: func(routeMocks) {},
+		},
+		{
+			name:       "returns bad request for mismatched verification hash",
+			query:      "?uid=" + validID.String() + "&hash=invalid-hash",
+			wantStatus: http.StatusBadRequest,
+			setupMocks: func(m routeMocks) {
+				m.registration.EXPECT().
+					VerifyUserRegistration(gomock.Any(), validID, "invalid-hash").
+					Return(domain.ErrVerificationHashMismatch)
+			},
 		},
 	}
 
@@ -139,7 +160,7 @@ func loadFixture(t *testing.T, name string) *bytes.Reader {
 
 func registeredUser() aggregate.User {
 	phone := model.NewPhoneNumber("+64", "23", "123456")
-	user := model.NewUser(
+	user := model.RehydrateUser(
 		uuid.MustParse(registeredUserID),
 		"Foo",
 		"Bar",
@@ -147,8 +168,7 @@ func registeredUser() aggregate.User {
 		"foo.bar@example.com",
 		phone,
 	)
-	location := model.NewLocation()
-	location.SetCoordinates(173.3002574488138, -41.26595602617756)
+	location := model.NewLocation(173.3002574488138, -41.26595602617756)
 
 	result := aggregate.NewUser()
 	result.SetUser(user)

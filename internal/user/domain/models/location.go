@@ -2,18 +2,16 @@ package model
 
 // Location is a value object referencing user's default location
 type Location struct {
-	Longitude float64
-	Latitude  float64
+	longitude float64
+	latitude  float64
 }
 
-func NewLocation() Location {
-	return Location{}
+func NewLocation(longitude, latitude float64) Location {
+	return Location{longitude: longitude, latitude: latitude}
 }
 
-// TODO: Validation of Value Object should happen during the creation only, and new changes should return a new one
-func (l *Location) SetCoordinates(long, lat float64) {
-	l.Latitude = lat
-	l.Longitude = long
+func (l Location) Coordinates() (float64, float64) {
+	return l.longitude, l.latitude
 }
 
 func (l Location) IsValid() bool {

@@ -25,30 +25,22 @@ type User struct {
 }
 
 func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
-	var ua aggregate.User = aggregate.NewUser()
+	ua := aggregate.NewUser()
 
-	duser := model.NewEmptyUser()
-
-	duser.SetName(u.FirstName, u.LastName)
-
-	if t, e := time.Parse(time.RFC3339, u.DateOfBirth); e != nil {
-		return ua, &hsm.AppError{SanitisedMessage: e.Error(), ErrorObject: e, Code: http.StatusBadRequest}
-	} else {
-		duser.SetDateOfBirth(t)
+	dateOfBirth, err := time.Parse(time.RFC3339, u.DateOfBirth)
+	if err != nil {
+		return ua, &hsm.AppError{SanitisedMessage: err.Error(), ErrorObject: err, Code: http.StatusBadRequest}
 	}
 
-	duser.SetEmail(u.Email)
-
-	dup := duser.Phone()
-	dup.SetCountryCode(u.PhoneCountryCode)
-	dup.SetAreaCode(u.PhoneAreaCode)
-	dup.SetNumber(u.PhoneNumber)
+	phone := model.NewPhoneNumber(u.PhoneCountryCode, u.PhoneAreaCode, u.PhoneNumber)
+	duser, err := model.NewUser(u.FirstName, u.LastName, dateOfBirth, u.Email, phone)
+	if err != nil {
+		return ua, hsm.NewAppError(err, "user info is not valid", http.StatusBadRequest)
+	}
 
 	ua.SetUser(duser)
 
-	dloc := model.NewLocation()
-	dloc.SetCoordinates(u.LocationLongitude, u.LocationLatitude)
-
+	dloc := model.NewLocation(u.LocationLongitude, u.LocationLatitude)
 	ua.SetLocation(dloc)
 
 	return ua, nil
@@ -68,8 +60,8 @@ func (u *User) ToApiModel(ua aggregate.User) *hsm.AppError {
 	u.PhoneAreaCode = uaup.AreaCode()
 	u.PhoneNumber = uaup.Number()
 
-	u.LocationLatitude = ua.Location().Latitude
-	u.LocationLongitude = ua.Location().Longitude
+	location := ua.Location()
+	u.LocationLongitude, u.LocationLatitude = location.Coordinates()
 
 	return nil
 }
