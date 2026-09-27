@@ -17,6 +17,12 @@ type User struct {
 	isActive         bool
 }
 
+// RegistrationStatus is the persisted registration state of a user.
+type RegistrationStatus struct {
+	IsActive         bool
+	HasVerifiedEmail bool
+}
+
 // NewUser creates a new user with an auto generated uuid and limited role
 func NewUser() User {
 	u := model.NewEmptyUser()
@@ -26,6 +32,17 @@ func NewUser() User {
 		user:     &u,
 		location: &l,
 		token:    &t,
+	}
+}
+
+// RehydrateUser restores a user aggregate from persisted state.
+func RehydrateUser(user model.User, location model.Location, token model.Token, status RegistrationStatus) User {
+	return User{
+		user:             &user,
+		location:         &location,
+		token:            &token,
+		hasVerifiedEmail: status.HasVerifiedEmail,
+		isActive:         status.IsActive,
 	}
 }
 
@@ -124,19 +141,15 @@ func (u *User) HasVerifiedEmail() bool {
 	return u.hasVerifiedEmail
 }
 
-// SetHasVerifiedEmail sets the user has verified email flag
-func (u *User) SetHasVerifiedEmail(b bool) {
-	u.hasVerifiedEmail = b
-}
-
 // IsActive gets the user is active flag
 func (u *User) IsActive() bool {
 	return u.isActive
 }
 
-// SetIsActive sets the user is active flag
-func (u *User) SetIsActive(b bool) {
-	u.isActive = b
+// VerifyRegistration activates the user after their email is verified.
+func (u *User) VerifyRegistration() {
+	u.isActive = true
+	u.hasVerifiedEmail = true
 }
 
 // IsValid checks if the user is valid

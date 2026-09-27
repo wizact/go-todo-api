@@ -181,7 +181,6 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 }
 
 func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
-	de := ua.NewUser()
 	ph := model.NewPhoneNumber(dbm.ValueData.CountryCode, dbm.ValueData.AreaCode, dbm.ValueData.Number)
 	mu := model.NewUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
 	tk := model.NewToken(dbm.ValueData.VerificationToken, dbm.ValueData.VerificationSalt)
@@ -189,11 +188,9 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	dl := model.NewLocation()
 	dl.SetCoordinates(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
 
-	de.SetHasVerifiedEmail(dbm.ValueData.HasVerifiedEmail)
-	de.SetIsActive(dbm.ValueData.IsActive)
-
-	de.SetUser(mu)
-	de.SetLocation(dl)
-	de.SetToken(tk)
-	return de
+	status := ua.RegistrationStatus{
+		IsActive:         dbm.ValueData.IsActive,
+		HasVerifiedEmail: dbm.ValueData.HasVerifiedEmail,
+	}
+	return ua.RehydrateUser(mu, dl, tk, status)
 }
