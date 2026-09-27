@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	domainEvent "github.com/wizact/go-todo-api/internal/user/domain"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
-	domainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 // User aggregate with User as it's root entity
@@ -30,10 +30,10 @@ func NewUser() User {
 }
 
 // GetAggregateEventPayload returns a representation of the aggregate for event processing
-func (u *User) GetDomainEventPayload() domainEvent.UserDomainEvent {
+func (u *User) GetDomainEventPayload() domainEvent.UserRegisteredEvent {
 	ue := u.User()
 	fn, ln := ue.Name()
-	ae := domainEvent.UserDomainEvent{
+	ae := domainEvent.UserRegisteredEvent{
 		ID:               u.UserId(),
 		FirstName:        fn,
 		LastName:         ln,
