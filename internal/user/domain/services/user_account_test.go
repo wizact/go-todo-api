@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 	svc "github.com/wizact/go-todo-api/internal/user/domain/services"
 )
 
@@ -34,10 +36,13 @@ func (userEventPublisherStub) PublishNewUserRegisteredEvent(context.Context, dom
 }
 
 func init_users(t *testing.T) []aggregate.User {
+	t.Helper()
+
 	ua := aggregate.NewUser()
-	u := ua.User()
-	u.SetName("John", "Doe")
-	u.SetEmail("john.doe@example.com")
+	u, err := model.NewUser("John", "Doe", time.Time{}, "john.doe@example.com", model.PhoneNumber{})
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
 
 	ua.SetUser(u)
 

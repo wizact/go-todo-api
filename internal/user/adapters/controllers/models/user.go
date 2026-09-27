@@ -25,22 +25,18 @@ type User struct {
 }
 
 func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
-	var ua aggregate.User = aggregate.NewUser()
+	ua := aggregate.NewUser()
 
-	duser := model.NewEmptyUser()
-
-	duser.SetName(u.FirstName, u.LastName)
-
-	if t, e := time.Parse(time.RFC3339, u.DateOfBirth); e != nil {
-		return ua, &hsm.AppError{SanitisedMessage: e.Error(), ErrorObject: e, Code: http.StatusBadRequest}
-	} else {
-		duser.SetDateOfBirth(t)
+	dateOfBirth, err := time.Parse(time.RFC3339, u.DateOfBirth)
+	if err != nil {
+		return ua, &hsm.AppError{SanitisedMessage: err.Error(), ErrorObject: err, Code: http.StatusBadRequest}
 	}
 
-	duser.SetEmail(u.Email)
-
 	phone := model.NewPhoneNumber(u.PhoneCountryCode, u.PhoneAreaCode, u.PhoneNumber)
-	duser.SetPhone(phone)
+	duser, err := model.NewUser(u.FirstName, u.LastName, dateOfBirth, u.Email, phone)
+	if err != nil {
+		return ua, hsm.NewAppError(err, "user info is not valid", http.StatusBadRequest)
+	}
 
 	ua.SetUser(duser)
 

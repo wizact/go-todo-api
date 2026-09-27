@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"net/mail"
 	"strings"
 	"time"
@@ -18,53 +19,61 @@ type User struct {
 	phone       PhoneNumber
 }
 
-func NewEmptyUser() User {
-	return User{
-		id:    uuid.New(),
-		phone: NewEmptyPhoneNumber(),
-	}
-}
+var ErrInvalidUser = errors.New("user info is not valid")
 
 func NewUser(
+	firstName string,
+	lastName string,
+	dateOfBirth time.Time,
+	email string,
+	phone PhoneNumber,
+) (User, error) {
+	u := User{
+		id:          uuid.New(),
+		firstName:   firstName,
+		lastName:    lastName,
+		dateOfBirth: dateOfBirth,
+		email:       email,
+		phone:       phone,
+	}
+	if !u.IsValid() {
+		return User{}, ErrInvalidUser
+	}
+
+	return u, nil
+}
+
+// RehydrateUser restores a user from persisted state without generating a new identity.
+func RehydrateUser(
 	id uuid.UUID,
 	firstName string,
 	lastName string,
 	dateOfBirth time.Time,
 	email string,
-	phone PhoneNumber) User {
-
-	u := User{}
-
-	u.SetID(id)
-	u.SetName(firstName, lastName)
-	u.SetDateOfBirth(dateOfBirth)
-	u.SetEmail(email)
-	u.SetPhone(phone)
-
-	return u
-
+	phone PhoneNumber,
+) User {
+	return User{
+		id:          id,
+		firstName:   firstName,
+		lastName:    lastName,
+		dateOfBirth: dateOfBirth,
+		email:       email,
+		phone:       phone,
+	}
 }
 
-func (u *User) ID() uuid.UUID      { return u.id }
-func (u *User) SetID(id uuid.UUID) { u.id = id }
+func (u User) ID() uuid.UUID { return u.id }
 
-func (u *User) Name() (string, string) { return u.firstName, u.lastName }
-func (u *User) SetName(fn, ln string) {
-	u.firstName = fn
-	u.lastName = ln
-}
+func (u User) Name() (string, string) { return u.firstName, u.lastName }
 
 // ConcatenatedName returns the full name of the user by concatenating the first name and last name
-func (u *User) ConcatenatedName() string { return u.firstName + u.lastName }
+func (u User) ConcatenatedName() string { return u.firstName + u.lastName }
 
-func (u *User) DateOfBirth() time.Time       { return u.dateOfBirth }
-func (u *User) SetDateOfBirth(dob time.Time) { u.dateOfBirth = dob }
+func (u User) DateOfBirth() time.Time { return u.dateOfBirth }
 
-func (u *User) Email() string      { return u.email }
-func (u *User) SetEmail(em string) { u.email = em }
+func (u User) Email() string { return u.email }
 
-func (u *User) Phone() PhoneNumber      { return u.phone }
-func (u *User) SetPhone(ph PhoneNumber) { u.phone = ph }
+func (u User) Phone() PhoneNumber { return u.phone }
 
 func (u User) IsValid() bool {
 	spec := sp.NewAndSpecification[User](

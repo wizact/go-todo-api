@@ -1,12 +1,85 @@
 package model
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+func TestRehydrateUser_PreservesID(t *testing.T) {
+	t.Parallel()
+
+	want := uuid.New()
+	user := RehydrateUser(
+		want,
+		"Ada",
+		"Lovelace",
+		time.Date(1815, time.December, 10, 0, 0, 0, 0, time.UTC),
+		"ada@example.com",
+		NewPhoneNumber("+44", "20", "12345678"),
+	)
+
+	if got := user.ID(); got != want {
+		t.Fatalf("user ID = %v, want %v", got, want)
+	}
+}
+
+func TestNewUser_InvalidDetails_ReturnsError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		firstName string
+		lastName  string
+		email     string
+	}{
+		{name: "missing name", email: "ada@example.com"},
+		{name: "invalid email", firstName: "Ada", lastName: "Lovelace", email: "invalid"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := NewUser(tt.firstName, tt.lastName, time.Time{}, tt.email, PhoneNumber{})
+			if !errors.Is(err, ErrInvalidUser) {
+				t.Fatalf("error = %v, want %v", err, ErrInvalidUser)
+			}
+		})
+	}
+}
+
+func TestNewUser_ValidDetails_GeneratesID(t *testing.T) {
+	t.Parallel()
+
+	user, err := NewUser("Ada", "Lovelace", time.Time{}, "ada@example.com", PhoneNumber{})
+	if err != nil {
+		t.Fatalf("NewUser() error = %v", err)
+	}
+
+	if got := user.ID(); got == uuid.Nil {
+		t.Fatal("user ID is empty")
+	}
+}
+
+func TestUser_DoesNotExposeConstructionMutation(t *testing.T) {
+	t.Parallel()
+
+	typeOfUser := reflect.TypeFor[*User]()
+	for _, methodName := range []string{"SetID", "SetName", "SetDateOfBirth", "SetEmail", "SetPhone"} {
+		t.Run(methodName, func(t *testing.T) {
+			t.Parallel()
+
+			_, exposed := typeOfUser.MethodByName(methodName)
+			if exposed {
+				t.Fatalf("User exposes %s", methodName)
+			}
+		})
+	}
+}
 
 func TestUser_IsValid(t *testing.T) {
 	type user struct {
@@ -29,7 +102,7 @@ func TestUser_IsValid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := NewUser(
+			u := RehydrateUser(
 				tt.fields.ID,
 				tt.fields.FirstName,
 				tt.fields.LastName,
@@ -54,7 +127,7 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 		Phone       PhoneNumber
 	}
 
-	user2 := NewEmptyUser()
+	user2 := RehydrateUser(uuid.New(), "foo", "bar", time.Time{}, "foo@bar.baz", PhoneNumber{})
 
 	tests := []struct {
 		name   string
@@ -67,7 +140,7 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := NewUser(
+			u := RehydrateUser(
 				tt.fields.ID,
 				tt.fields.FirstName,
 				tt.fields.LastName,
@@ -83,11 +156,9 @@ func TestUser_IsTheSameUserAs(t *testing.T) {
 }
 
 func TestHasName(t *testing.T) {
-	user1 := NewEmptyUser()
-	user2 := user1
-	user2.SetName("foo", "")
-	user3 := user1
-	user3.SetName("", "bar")
+	user1 := User{}
+	user2 := RehydrateUser(uuid.Nil, "foo", "", time.Time{}, "", PhoneNumber{})
+	user3 := RehydrateUser(uuid.Nil, "", "bar", time.Time{}, "", PhoneNumber{})
 	tests := []struct {
 		name string
 		user User
@@ -118,8 +189,7 @@ func TestHasValidEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := NewEmptyUser()
-			u.SetEmail(tt.email)
+			u := RehydrateUser(uuid.Nil, "", "", time.Time{}, tt.email, PhoneNumber{})
 			if got := HasValidEmail(u); got != tt.want {
 				t.Errorf("HasValidEmail() = %v, want %v", got, tt.want)
 			}

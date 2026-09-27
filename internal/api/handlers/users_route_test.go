@@ -160,7 +160,7 @@ func loadFixture(t *testing.T, name string) *bytes.Reader {
 
 func registeredUser() aggregate.User {
 	phone := model.NewPhoneNumber("+64", "23", "123456")
-	user := model.NewUser(
+	user := model.RehydrateUser(
 		uuid.MustParse(registeredUserID),
 		"Foo",
 		"Bar",

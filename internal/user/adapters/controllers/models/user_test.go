@@ -1,10 +1,43 @@
 package models
 
 import (
+	"net/http"
 	"testing"
 
 	domainmodel "github.com/wizact/go-todo-api/internal/user/domain/models"
 )
+
+func TestUserToDomainModel_InvalidDetails_ReturnsBadRequest(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		firstName string
+		lastName  string
+		email     string
+	}{
+		{name: "missing name", email: "ada@example.com"},
+		{name: "invalid email", firstName: "Ada", lastName: "Lovelace", email: "invalid"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			input := User{
+				FirstName:   tt.firstName,
+				LastName:    tt.lastName,
+				DateOfBirth: "1815-12-10T00:00:00Z",
+				Email:       tt.email,
+			}
+
+			_, appErr := input.ToDomainModel()
+			if appErr == nil || appErr.Code != http.StatusBadRequest {
+				t.Fatalf("error = %#v, want status %d", appErr, http.StatusBadRequest)
+			}
+		})
+	}
+}
 
 func TestUserToDomainModel_PreservesPhoneNumber(t *testing.T) {
 	t.Parallel()
