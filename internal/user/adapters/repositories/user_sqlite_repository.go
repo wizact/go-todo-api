@@ -89,33 +89,30 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 		return emptyUser, err
 	}
 
-	tx := db.Begin()
+	var persistedUser ua.User
+	err = db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		record := &SqliteUserAggregate{}
+		record.FromDomainEntityToDbModel(user)
 
-	u := &SqliteUserAggregate{}
-	u.FromDomainEntityToDbModel(user)
+		if err := tx.Create(record).Error; err != nil {
+			return err
+		}
 
-	result := tx.Create(&u)
+		persistedUser = record.FromDbModelToDomainEntity()
+		if _, err := r.createOrUpdateUserEmailView(ctx, tx, persistedUser); err != nil {
+			return err
+		}
+		if _, err := r.createOrUpdateUserTokenView(ctx, tx, persistedUser); err != nil {
+			return err
+		}
 
-	if result.Error != nil {
-		tx.Rollback()
-		return emptyUser, result.Error
-	}
-
-	user = u.FromDbModelToDomainEntity()
-	_, err = r.createOrUpdateUserEmailView(ctx, tx, user)
+		return nil
+	})
 	if err != nil {
-		tx.Rollback()
-		return emptyUser, result.Error
+		return emptyUser, err
 	}
 
-	_, err = r.createOrUpdateUserTokenView(ctx, tx, user)
-	if err != nil {
-		tx.Rollback()
-		return emptyUser, result.Error
-	}
-
-	tx.Commit()
-	return user, nil
+	return persistedUser, nil
 }
 
 func (r *UserSqliteRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
