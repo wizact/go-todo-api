@@ -14,7 +14,6 @@ import (
 	reflect "reflect"
 
 	uuid "github.com/google/uuid"
-	httpservermodel "github.com/wizact/go-todo-api/pkg/http-server-model"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -70,10 +69,10 @@ func (mr *MockRegistrationMockRecorder) GetRegistrationVerificationEmailData(uid
 }
 
 // VerifyUserRegistration mocks base method.
-func (m *MockRegistration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) *httpservermodel.AppError {
+func (m *MockRegistration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VerifyUserRegistration", ctx, uid, hash)
-	ret0, _ := ret[0].(*httpservermodel.AppError)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 

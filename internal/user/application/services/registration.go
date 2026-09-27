@@ -2,14 +2,12 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
-	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
 // Registration application service responsible for managing the lifecycle of a user registration
@@ -38,13 +36,13 @@ func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[
 	em := make(map[string]string)
 	u, err := r.userAccountUseCase.GetUserById(context.Background(), uid)
 	if err != nil {
-		return em, fmt.Errorf("user registration app service > send email verification: %v", err)
+		return em, fmt.Errorf("get user for registration verification email: %w", err)
 	}
 
 	t := u.Token()
 	h, e := t.CreateTokenVerificationHash()
 	if e != nil {
-		return em, fmt.Errorf("user registration app service > hash function failed: %v", e)
+		return em, fmt.Errorf("create registration verification hash: %w", e)
 	}
 
 	ue := u.User()
@@ -57,15 +55,15 @@ func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[
 	return em, nil
 }
 
-func (r *Registration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) *hsm.AppError {
+func (r *Registration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) error {
 	u, err := r.userAccountUseCase.GetUserById(ctx, uid)
 	if err != nil {
-		return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Failed activating the user", Code: http.StatusBadRequest}
+		return fmt.Errorf("get user for registration verification: %w", err)
 	}
 
 	t := u.Token()
 	if !t.CompareTokenVerificationWithHash([]byte(hash)) {
-		return &hsm.AppError{ErrorObject: errors.New("hash is not matched"), SanitisedMessage: "Failed activating the user", Code: http.StatusBadRequest}
+		return domain.ErrVerificationHashMismatch
 	}
 
 	u.SetIsActive(true)
@@ -73,7 +71,7 @@ func (r *Registration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID
 
 	_, e := r.userAccountUseCase.UpdateUser(ctx, u)
 	if e != nil {
-		return &hsm.AppError{ErrorObject: e, SanitisedMessage: "Failed activating the user", Code: http.StatusBadRequest}
+		return fmt.Errorf("activate user: %w", e)
 	}
 
 	return nil
