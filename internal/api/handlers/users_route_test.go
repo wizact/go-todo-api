@@ -168,8 +168,7 @@ func registeredUser() aggregate.User {
 		"foo.bar@example.com",
 		phone,
 	)
-	location := model.NewLocation()
-	location.SetCoordinates(173.3002574488138, -41.26595602617756)
+	location := model.NewLocation(173.3002574488138, -41.26595602617756)
 
 	result := aggregate.NewUser()
 	result.SetUser(user)
