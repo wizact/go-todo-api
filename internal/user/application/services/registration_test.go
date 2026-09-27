@@ -1,4 +1,4 @@
-package service_test
+package service
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
 
-	service "github.com/wizact/go-todo-api/internal/user/application/services"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	"github.com/wizact/go-todo-api/internal/user/ports/mocks"
@@ -21,7 +20,7 @@ func TestRegistration_VerifyUserRegistration_HashMismatch_ReturnsDomainError(t *
 	userAccount.EXPECT().
 		GetUserById(gomock.Any(), userID).
 		Return(aggregate.NewUser(), nil)
-	registration := service.NewRegisteration(userAccount)
+	registration := NewRegisteration(userAccount)
 
 	err := registration.VerifyUserRegistration(context.Background(), userID, "invalid-hash")
 
@@ -37,7 +36,7 @@ func TestRegistration_VerifyUserRegistration_PersistsVerifiedUser(t *testing.T) 
 	token := user.Token()
 	token.RefreshVerificationToken()
 	user.SetToken(token)
-	hash, err := token.CreateTokenVerificationHash()
+	hash, err := hashRegistrationVerificationSecret(token.VerificationToken())
 	if err != nil {
 		t.Fatalf("create verification hash: %v", err)
 	}
@@ -50,9 +49,9 @@ func TestRegistration_VerifyUserRegistration_PersistsVerifiedUser(t *testing.T) 
 			return updated.IsActive() && updated.HasVerifiedEmail()
 		})).
 		Return(user, nil)
-	registration := service.NewRegisteration(userAccount)
+	registration := NewRegisteration(userAccount)
 
-	err = registration.VerifyUserRegistration(context.Background(), user.UserId(), string(hash))
+	err = registration.VerifyUserRegistration(context.Background(), user.UserId(), hash)
 
 	if err != nil {
 		t.Fatalf("verify registration: %v", err)
