@@ -37,7 +37,7 @@ func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[
 	}
 
 	t := u.Token()
-	h, e := t.CreateTokenVerificationHash()
+	h, e := hashRegistrationVerificationSecret(t.VerificationToken())
 	if e != nil {
 		return em, fmt.Errorf("create registration verification hash: %w", e)
 	}
@@ -45,7 +45,7 @@ func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[
 	ue := u.User()
 	em["email"] = u.Email()
 	em["nick_name"] = ue.ConcatenatedName()
-	em["hash"] = string(h)
+	em["hash"] = h
 	em["base_url"] = "http://localhost:8080" //TODO: get base url from env
 	em["verify_email_link"] = fmt.Sprintf("%s/users/verify-registration?uid=%s&hash=%s", em["base_url"], uid.String(), h)
 
@@ -59,7 +59,7 @@ func (r *Registration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID
 	}
 
 	t := u.Token()
-	if !t.CompareTokenVerificationWithHash([]byte(hash)) {
+	if !matchesRegistrationVerification(hash, t.VerificationToken()) {
 		return domain.ErrVerificationHashMismatch
 	}
 
