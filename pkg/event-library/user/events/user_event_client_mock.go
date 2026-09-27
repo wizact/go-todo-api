@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/nats-io/nats.go"
+	event_input "github.com/wizact/go-todo-api/pkg/event-library/ports/input/events"
 	pubsub "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
 	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
@@ -27,6 +27,6 @@ func (uecm UserEventClientMock) PublishNewUserRegisteredEvent(ctx context.Contex
 	return nil
 }
 
-func (uecm UserEventClientMock) SubscribeToNewUserRegisteredEvent(ctx context.Context, ch chan *nats.Msg) (pubsub.ChannelUnsubscribeCallBack, error) {
-	return nil, nil
+func (uecm UserEventClientMock) SubscribeToNewUserRegisteredEvent(ctx context.Context, events chan<- ude.UserDomainEvent) (event_input.Unsubscribe, error) {
+	return func() error { return nil }, nil
 }
