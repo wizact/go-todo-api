@@ -12,7 +12,6 @@ import (
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	"github.com/wizact/go-todo-api/internal/user/ports/mocks"
-	event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
 )
 
 func TestRegistration_VerifyUserRegistration_HashMismatch_ReturnsDomainError(t *testing.T) {
@@ -22,7 +21,7 @@ func TestRegistration_VerifyUserRegistration_HashMismatch_ReturnsDomainError(t *
 	userAccount.EXPECT().
 		GetUserById(gomock.Any(), userID).
 		Return(aggregate.NewUser(), nil)
-	registration := service.NewRegisteration(event.UserEventClientMock{}, userAccount)
+	registration := service.NewRegisteration(userAccount)
 
 	err := registration.VerifyUserRegistration(context.Background(), userID, "invalid-hash")
 

@@ -10,19 +10,19 @@ import (
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
-	event "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
+	event "github.com/wizact/go-todo-api/pkg/event-library/ports/output/events"
 )
 
 type UserAccountService struct {
 	// repositories and other services
-	userRepository  repository.UserRepository
-	userEventClient event.UserEventClient
+	userRepository     repository.UserRepository
+	userEventPublisher event.UserEventPublisher
 }
 
-func NewUserAccountService(ur repository.UserRepository, uec event.UserEventClient) *UserAccountService {
+func NewUserAccountService(ur repository.UserRepository, publisher event.UserEventPublisher) *UserAccountService {
 	ua := &UserAccountService{
-		userRepository:  ur,
-		userEventClient: uec,
+		userRepository:     ur,
+		userEventPublisher: publisher,
 	}
 
 	return ua
@@ -55,7 +55,7 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 	}
 
 	// emit events
-	err := ua.userEventClient.PublishNewUserRegisteredEvent(ctx, user.GetDomainEventPayload())
+	err := ua.userEventPublisher.PublishNewUserRegisteredEvent(ctx, user.GetDomainEventPayload())
 
 	if err != nil {
 		log.Printf("failed PublishNewUserRegisteredEvent for %v \n", u.UserId())
