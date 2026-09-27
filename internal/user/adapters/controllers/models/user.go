@@ -39,16 +39,12 @@ func (u *User) ToDomainModel() (aggregate.User, *hsm.AppError) {
 
 	duser.SetEmail(u.Email)
 
-	dup := duser.Phone()
-	dup.SetCountryCode(u.PhoneCountryCode)
-	dup.SetAreaCode(u.PhoneAreaCode)
-	dup.SetNumber(u.PhoneNumber)
+	phone := model.NewPhoneNumber(u.PhoneCountryCode, u.PhoneAreaCode, u.PhoneNumber)
+	duser.SetPhone(phone)
 
 	ua.SetUser(duser)
 
-	dloc := model.NewLocation()
-	dloc.SetCoordinates(u.LocationLongitude, u.LocationLatitude)
-
+	dloc := model.NewLocation(u.LocationLongitude, u.LocationLatitude)
 	ua.SetLocation(dloc)
 
 	return ua, nil
@@ -68,8 +64,8 @@ func (u *User) ToApiModel(ua aggregate.User) *hsm.AppError {
 	u.PhoneAreaCode = uaup.AreaCode()
 	u.PhoneNumber = uaup.Number()
 
-	u.LocationLatitude = ua.Location().Latitude
-	u.LocationLongitude = ua.Location().Longitude
+	location := ua.Location()
+	u.LocationLongitude, u.LocationLatitude = location.Coordinates()
 
 	return nil
 }

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -156,5 +157,53 @@ func TestPhoneNumber_IsEqual(t *testing.T) {
 				t.Errorf("PhoneNumber.IsEqual() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestPhoneNumber_DoesNotExposeMutation(t *testing.T) {
+	t.Parallel()
+
+	typeOfPhoneNumber := reflect.TypeFor[*PhoneNumber]()
+	for _, methodName := range []string{"SetCountryCode", "SetAreaCode", "SetNumber"} {
+		t.Run(methodName, func(t *testing.T) {
+			t.Parallel()
+
+			_, exposed := typeOfPhoneNumber.MethodByName(methodName)
+			if exposed {
+				t.Fatalf("PhoneNumber exposes %s", methodName)
+			}
+		})
+	}
+}
+
+func TestNewLocation_InitializesCoordinates(t *testing.T) {
+	t.Parallel()
+
+	want := [2]float64{173.3002574488138, -41.26595602617756}
+	location := NewLocation(want[0], want[1])
+	longitude, latitude := location.Coordinates()
+
+	if got := [2]float64{longitude, latitude}; got != want {
+		t.Fatalf("coordinates = %v, want %v", got, want)
+	}
+}
+
+func TestLocation_DoesNotExposeCoordinateMutation(t *testing.T) {
+	t.Parallel()
+
+	_, exposed := reflect.TypeFor[*Location]().MethodByName("SetCoordinates")
+	if exposed {
+		t.Fatal("Location exposes SetCoordinates")
+	}
+}
+
+func TestLocation_DoesNotExposeFields(t *testing.T) {
+	t.Parallel()
+
+	typeOfLocation := reflect.TypeFor[Location]()
+	for index := range typeOfLocation.NumField() {
+		if field := typeOfLocation.Field(index); field.IsExported() {
+			t.Fatalf("Location exposes field %s", field.Name)
+		}
 	}
 }

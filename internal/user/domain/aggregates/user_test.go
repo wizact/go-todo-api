@@ -59,7 +59,7 @@ func TestRehydrateUser_RestoresRegistrationStatus(t *testing.T) {
 	want := RegistrationStatus{IsActive: true, HasVerifiedEmail: false}
 	user := RehydrateUser(
 		model.NewEmptyUser(),
-		model.NewLocation(),
+		model.NewLocation(0, 0),
 		model.NewEmptyToken(),
 		want,
 	)

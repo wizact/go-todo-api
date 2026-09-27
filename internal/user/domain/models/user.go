@@ -107,23 +107,19 @@ func NewEmptyPhoneNumber() PhoneNumber {
 	return PhoneNumber{}
 }
 
-// TODO: Validation of value object should happen only on the creation side.
 func NewPhoneNumber(countryCode, areaCode, number string) PhoneNumber {
-	ph := PhoneNumber{}
-	ph.SetCountryCode(countryCode)
-	ph.SetAreaCode(areaCode)
-	ph.SetNumber(number)
-	return ph
+	return PhoneNumber{
+		countryCode: countryCode,
+		areaCode:    areaCode,
+		number:      number,
+	}
 }
 
-func (p *PhoneNumber) CountryCode() string      { return p.countryCode }
-func (p *PhoneNumber) SetCountryCode(cc string) { p.countryCode = cc }
+func (p PhoneNumber) CountryCode() string { return p.countryCode }
 
-func (p *PhoneNumber) AreaCode() string      { return p.areaCode }
-func (p *PhoneNumber) SetAreaCode(ac string) { p.areaCode = ac }
+func (p PhoneNumber) AreaCode() string { return p.areaCode }
 
-func (p *PhoneNumber) Number() string      { return p.number }
-func (p *PhoneNumber) SetNumber(ph string) { p.number = ph }
+func (p PhoneNumber) Number() string { return p.number }
 
 // IsEqual checks whether or not two instances of PhoneNumber value object are equal or not by comparing all elements of the value objects with each other
 func (p PhoneNumber) IsEqual(p2 PhoneNumber) bool {
