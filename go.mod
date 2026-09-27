@@ -13,6 +13,7 @@ require (
 	github.com/nats-io/nats.go v1.32.0
 	github.com/sendgrid/sendgrid-go v3.14.0+incompatible
 	github.com/wizact/yacli v0.0.0-20200621092021-be57780af79a
+	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.45.0
 	gorm.io/driver/sqlite v1.5.4
 	gorm.io/gorm v1.25.5
@@ -26,6 +27,5 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 )
