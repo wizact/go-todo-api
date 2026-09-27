@@ -6,6 +6,6 @@ import (
 	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
-type UserEventClientOutput interface {
+type UserEventPublisher interface {
 	PublishNewUserRegisteredEvent(ctx context.Context, userDe ude.UserDomainEvent) error
 }

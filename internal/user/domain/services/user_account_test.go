@@ -9,7 +9,7 @@ import (
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	svc "github.com/wizact/go-todo-api/internal/user/domain/services"
-	event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
+	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 func TestUserAccountService_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t *testing.T) {
@@ -17,15 +17,21 @@ func TestUserAccountService_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t 
 	u := seedUserList[0]
 
 	ur := repository.NewUserMemoryRepository(seedUserList)
-	uecm := event.UserEventClientMock{}
+	publisher := userEventPublisherStub{}
 
-	uas := svc.NewUserAccountService(ur, uecm)
+	uas := svc.NewUserAccountService(ur, publisher)
 
 	_, err := uas.RegisterNewUser(context.Background(), u)
 
 	if !errors.Is(err, domain.ErrEmailAlreadyExists) {
 		t.Errorf("error = %v, want %v", err, domain.ErrEmailAlreadyExists)
 	}
+}
+
+type userEventPublisherStub struct{}
+
+func (userEventPublisherStub) PublishNewUserRegisteredEvent(context.Context, ude.UserDomainEvent) error {
+	return nil
 }
 
 func init_users(t *testing.T) []aggregate.User {

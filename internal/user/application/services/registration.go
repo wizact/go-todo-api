@@ -7,21 +7,18 @@ import (
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
-	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
 )
 
 // Registration application service responsible for managing the lifecycle of a user registration
 type Registration struct {
-	userEventClient event_port.UserEventClient
 	// app service can reference domain service ( but not the other way arround)
 	userAccountUseCase usecase_port.UserAccountUseCase
 	done               chan bool
 }
 
 // NewRegisteration returns a new instance of Registration application service
-func NewRegisteration(uec event_port.UserEventClient, uc usecase_port.UserAccountUseCase) *Registration {
+func NewRegisteration(uc usecase_port.UserAccountUseCase) *Registration {
 	return &Registration{
-		userEventClient:    uec,
 		userAccountUseCase: uc,
 		done:               make(chan bool),
 	}

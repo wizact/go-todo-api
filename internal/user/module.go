@@ -13,7 +13,7 @@ import (
 	app_svc_port "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	repository_port "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
-	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/events"
+	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/output/events"
 )
 
 // A UserModule is the dependency container for the User module
@@ -21,7 +21,7 @@ import (
 // implementation of the interface instead of the memory or fake implementation.
 type UserModule struct {
 	userRepository     repository_port.UserRepository
-	userEventClient    event_port.UserEventClient
+	userEventPublisher event_port.UserEventPublisher
 	appRegistrationSvc app_svc_port.Registration
 	userAccountUseCase usecase_port.UserAccountUseCase
 }
@@ -29,12 +29,12 @@ type UserModule struct {
 // New UserModule is the factory method for the UserModule container
 func NewUserModule(useDatabase bool) *UserModule {
 	userRepo := instantiateUserRepository(useDatabase)
-	userEventCli := instantiateUserEventClient()
-	userAccountUseCase := instantiateUserAccountUseCase(userRepo, userEventCli)
-	appSvc := instantiateAppSvc(userEventCli, userAccountUseCase)
+	userEventPublisher := instantiateUserEventPublisher()
+	userAccountUseCase := instantiateUserAccountUseCase(userRepo, userEventPublisher)
+	appSvc := instantiateAppSvc(userAccountUseCase)
 	return &UserModule{
 		userRepository:     userRepo,
-		userEventClient:    userEventCli,
+		userEventPublisher: userEventPublisher,
 		appRegistrationSvc: appSvc,
 		userAccountUseCase: userAccountUseCase,
 	}
@@ -58,7 +58,7 @@ func instantiateUserRepository(useDatabase bool) repository_port.UserRepository 
 	return userRepo
 }
 
-func instantiateUserEventClient() event_port.UserEventClient {
+func instantiateUserEventPublisher() event_port.UserEventPublisher {
 	nf := pubsubinfra.NatsClientFactory[event.UserEventClient, UserDomainEvent.UserDomainEvent, *event.UserEventClient]{}
 	uec, err := nf.Get()
 	if err != nil {
@@ -68,11 +68,11 @@ func instantiateUserEventClient() event_port.UserEventClient {
 	return uec
 }
 
-func instantiateAppSvc(ev event_port.UserEventClient, uc usecase_port.UserAccountUseCase) app_svc_port.Registration {
-	return app_svc.NewRegisteration(ev, uc)
+func instantiateAppSvc(uc usecase_port.UserAccountUseCase) app_svc_port.Registration {
+	return app_svc.NewRegisteration(uc)
 }
 
-func instantiateUserAccountUseCase(r repository_port.UserRepository, ev event_port.UserEventClient) usecase_port.UserAccountUseCase {
+func instantiateUserAccountUseCase(r repository_port.UserRepository, ev event_port.UserEventPublisher) usecase_port.UserAccountUseCase {
 	return usecase.NewUserAccountService(r, ev)
 }
 
