@@ -14,7 +14,7 @@ func TestUser_GetDomainEventPayload_ReturnsRegisteredEvent(t *testing.T) {
 
 	userID := uuid.New()
 	root := NewUser()
-	user := model.NewUser(
+	user := model.RehydrateUser(
 		userID,
 		"Ada",
 		"Lovelace",
@@ -58,7 +58,7 @@ func TestRehydrateUser_RestoresRegistrationStatus(t *testing.T) {
 
 	want := RegistrationStatus{IsActive: true, HasVerifiedEmail: false}
 	user := RehydrateUser(
-		model.NewEmptyUser(),
+		model.User{},
 		model.NewLocation(0, 0),
 		model.NewEmptyToken(),
 		want,

@@ -184,7 +184,7 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 
 func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	ph := model.NewPhoneNumber(dbm.ValueData.CountryCode, dbm.ValueData.AreaCode, dbm.ValueData.Number)
-	mu := model.NewUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
+	mu := model.RehydrateUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
 	tk := model.NewToken(dbm.ValueData.VerificationToken, dbm.ValueData.VerificationSalt)
 
 	dl := model.NewLocation(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)

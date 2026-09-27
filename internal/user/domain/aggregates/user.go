@@ -1,8 +1,6 @@
 package aggregate
 
 import (
-	"errors"
-
 	"github.com/google/uuid"
 	domainEvent "github.com/wizact/go-todo-api/internal/user/domain"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
@@ -23,9 +21,9 @@ type RegistrationStatus struct {
 	HasVerifiedEmail bool
 }
 
-// NewUser creates a new user with an auto generated uuid and limited role
+// NewUser creates an empty aggregate for assembling a new registration.
 func NewUser() User {
-	u := model.NewEmptyUser()
+	u := model.User{}
 	l := model.Location{}
 	t := model.NewEmptyToken()
 	return User{
@@ -70,7 +68,7 @@ func (u *User) UserId() uuid.UUID {
 // User gets the user as aggregate root
 func (u *User) User() model.User {
 	if u.user == nil {
-		um := model.NewEmptyUser()
+		um := model.User{}
 		u.user = &um
 	}
 	return *u.user
@@ -102,23 +100,6 @@ func (u *User) Email() string {
 	}
 
 	return ""
-}
-
-// SetUser sets the user
-func (u *User) SetEmail(email string) error {
-	if u.user == nil {
-		return errors.New("user is not instantiated")
-	}
-
-	cloned := u.user
-	cloned.SetEmail(email)
-
-	if !model.HasValidEmail(*cloned) {
-		return errors.New("email is not valid")
-	}
-
-	u.user.SetEmail(email)
-	return nil
 }
 
 // Location gets the user location value object
