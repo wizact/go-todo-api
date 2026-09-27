@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
+	event "github.com/wizact/go-todo-api/internal/user/ports/output/events"
 	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
-	event "github.com/wizact/go-todo-api/pkg/event-library/ports/output/events"
 )
 
 type UserAccountService struct {

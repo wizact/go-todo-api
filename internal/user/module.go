@@ -3,8 +3,8 @@ package module
 import (
 	dbinfra "github.com/wizact/go-todo-api/internal/infra/db"
 	repository "github.com/wizact/go-todo-api/internal/user/adapters/repositories"
+	user_domain "github.com/wizact/go-todo-api/internal/user/domain"
 	pubsubinfra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
-	UserDomainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 	event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
 
 	app_svc "github.com/wizact/go-todo-api/internal/user/application/services"
@@ -12,8 +12,8 @@ import (
 	usecase "github.com/wizact/go-todo-api/internal/user/domain/services"
 	app_svc_port "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	usecase_port "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
+	event_port "github.com/wizact/go-todo-api/internal/user/ports/output/events"
 	repository_port "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
-	event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/output/events"
 )
 
 // A UserModule is the dependency container for the User module
@@ -59,7 +59,7 @@ func instantiateUserRepository(useDatabase bool) repository_port.UserRepository 
 }
 
 func instantiateUserEventPublisher() event_port.UserEventPublisher {
-	nf := pubsubinfra.NatsClientFactory[event.UserEventClient, UserDomainEvent.UserDomainEvent, *event.UserEventClient]{}
+	nf := pubsubinfra.NatsClientFactory[event.UserEventClient, user_domain.UserRegisteredEvent, *event.UserEventClient]{}
 	uec, err := nf.Get()
 	if err != nil {
 		panic(err)

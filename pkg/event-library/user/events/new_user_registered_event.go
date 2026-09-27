@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -40,7 +41,7 @@ func (uv *UserEventClient) SubscribeToNewUserRegisteredEvent(ctx context.Context
 
 func (uv *UserEventClient) forwardNewUserRegisteredEvent(ctx context.Context, events chan<- ude.UserDomainEvent, message *nats.Msg) error {
 	userEvent := ude.UserDomainEvent{}
-	if err := userEvent.LoadDomainEventObject(message.Data); err != nil {
+	if err := json.Unmarshal(message.Data, &userEvent); err != nil {
 		return fmt.Errorf("decode event payload: %w", err)
 	}
 

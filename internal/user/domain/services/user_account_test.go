@@ -9,7 +9,6 @@ import (
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	svc "github.com/wizact/go-todo-api/internal/user/domain/services"
-	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
 func TestUserAccountService_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t *testing.T) {
@@ -30,7 +29,7 @@ func TestUserAccountService_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t 
 
 type userEventPublisherStub struct{}
 
-func (userEventPublisherStub) PublishNewUserRegisteredEvent(context.Context, ude.UserDomainEvent) error {
+func (userEventPublisherStub) PublishNewUserRegisteredEvent(context.Context, domain.UserRegisteredEvent) error {
 	return nil
 }
 
