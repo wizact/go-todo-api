@@ -29,3 +29,32 @@ func TestRegistration_VerifyUserRegistration_HashMismatch_ReturnsDomainError(t *
 		t.Errorf("error = %v, want %v", err, domain.ErrVerificationHashMismatch)
 	}
 }
+
+func TestRegistration_VerifyUserRegistration_PersistsVerifiedUser(t *testing.T) {
+	controller := gomock.NewController(t)
+	userAccount := mocks.NewMockUserAccountUseCase(controller)
+	user := aggregate.NewUser()
+	token := user.Token()
+	token.RefreshVerificationToken()
+	user.SetToken(token)
+	hash, err := token.CreateTokenVerificationHash()
+	if err != nil {
+		t.Fatalf("create verification hash: %v", err)
+	}
+
+	userAccount.EXPECT().
+		GetUserById(gomock.Any(), user.UserId()).
+		Return(user, nil)
+	userAccount.EXPECT().
+		UpdateUser(gomock.Any(), gomock.Cond(func(updated aggregate.User) bool {
+			return updated.IsActive() && updated.HasVerifiedEmail()
+		})).
+		Return(user, nil)
+	registration := service.NewRegisteration(userAccount)
+
+	err = registration.VerifyUserRegistration(context.Background(), user.UserId(), string(hash))
+
+	if err != nil {
+		t.Fatalf("verify registration: %v", err)
+	}
+}

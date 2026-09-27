@@ -63,8 +63,7 @@ func (r *Registration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID
 		return domain.ErrVerificationHashMismatch
 	}
 
-	u.SetIsActive(true)
-	u.SetHasVerifiedEmail(true)
+	u.VerifyRegistration()
 
 	_, e := r.userAccountUseCase.UpdateUser(ctx, u)
 	if e != nil {

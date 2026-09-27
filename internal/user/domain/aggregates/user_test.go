@@ -23,8 +23,7 @@ func TestUser_GetDomainEventPayload_ReturnsRegisteredEvent(t *testing.T) {
 		model.NewPhoneNumber("+44", "20", "12345678"),
 	)
 	root.SetUser(user)
-	root.SetIsActive(true)
-	root.SetHasVerifiedEmail(true)
+	root.VerifyRegistration()
 
 	want := domain.UserRegisteredEvent{
 		ID:               userID,
@@ -38,5 +37,38 @@ func TestUser_GetDomainEventPayload_ReturnsRegisteredEvent(t *testing.T) {
 
 	if got != want {
 		t.Fatalf("domain event = %#v, want %#v", got, want)
+	}
+}
+
+func TestUser_VerifyRegistration_ActivatesVerifiedUser(t *testing.T) {
+	t.Parallel()
+
+	user := NewUser()
+
+	user.VerifyRegistration()
+
+	want := [2]bool{true, true}
+	if got := [2]bool{user.IsActive(), user.HasVerifiedEmail()}; got != want {
+		t.Fatalf("registration state = %v, want %v", got, want)
+	}
+}
+
+func TestRehydrateUser_RestoresRegistrationStatus(t *testing.T) {
+	t.Parallel()
+
+	want := RegistrationStatus{IsActive: true, HasVerifiedEmail: false}
+	user := RehydrateUser(
+		model.NewEmptyUser(),
+		model.NewLocation(),
+		model.NewEmptyToken(),
+		want,
+	)
+
+	got := RegistrationStatus{
+		IsActive:         user.IsActive(),
+		HasVerifiedEmail: user.HasVerifiedEmail(),
+	}
+	if got != want {
+		t.Fatalf("registration status = %v, want %v", got, want)
 	}
 }
