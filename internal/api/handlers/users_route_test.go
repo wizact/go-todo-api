@@ -101,6 +101,16 @@ func TestUserRoute_VerifyRegistration_Status(t *testing.T) {
 			wantStatus: http.StatusBadRequest,
 			setupMocks: func(routeMocks) {},
 		},
+		{
+			name:       "returns bad request for mismatched verification hash",
+			query:      "?uid=" + validID.String() + "&hash=invalid-hash",
+			wantStatus: http.StatusBadRequest,
+			setupMocks: func(m routeMocks) {
+				m.registration.EXPECT().
+					VerifyUserRegistration(gomock.Any(), validID, "invalid-hash").
+					Return(domain.ErrVerificationHashMismatch)
+			},
+		},
 	}
 
 	for _, tt := range tests {

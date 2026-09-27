@@ -28,12 +28,11 @@ func NewUserController(uasuc usecase.UserAccountUseCase, rappsvc userAppSvc.Regi
 
 func (u *UserController) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) *hsm.AppError {
 	// TODO: AuthZ check (own user or admin)
-	appErr := u.registrationAppSvc.VerifyUserRegistration(ctx, uid, hash)
+	err := u.registrationAppSvc.VerifyUserRegistration(ctx, uid, hash)
 
-	if appErr != nil {
-		log.Println(appErr)
-		// return proper error
-		return &hsm.AppError{ErrorObject: appErr.ErrorObject, SanitisedMessage: appErr.SanitisedMessage, Code: appErr.Code}
+	if err != nil {
+		log.Println(err)
+		return hsm.NewAppError(err, "Failed activating the user", http.StatusBadRequest)
 	}
 
 	return nil
