@@ -10,6 +10,6 @@ import (
 
 type Registration interface {
 	GetRegistrationVerificationEmailData(uid uuid.UUID) (map[string]string, error)
-	VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) error
+	VerifyUserRegistration(ctx context.Context, uid uuid.UUID, token string) error
 	Done()
 }

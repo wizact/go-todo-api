@@ -14,6 +14,7 @@ import (
 
 	"github.com/wizact/go-todo-api/internal/api/handlers"
 	controller "github.com/wizact/go-todo-api/internal/user/adapters/controllers"
+	applicationregistration "github.com/wizact/go-todo-api/internal/user/application/registration"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
@@ -87,28 +88,34 @@ func TestUserRoute_VerifyRegistration_Status(t *testing.T) {
 	}{
 		{
 			name:       "returns OK for valid verification",
-			query:      "?uid=" + validID.String() + "&hash=verification-hash",
+			query:      "?uid=" + validID.String() + "&token=verification-token",
 			wantStatus: http.StatusOK,
 			setupMocks: func(m routeMocks) {
 				m.registration.EXPECT().
-					VerifyUserRegistration(gomock.Any(), validID, "verification-hash").
+					VerifyUserRegistration(gomock.Any(), validID, "verification-token").
 					Return(nil)
 			},
 		},
 		{
 			name:       "returns bad request for invalid user ID",
-			query:      "?uid=invalid&hash=verification-hash",
+			query:      "?uid=invalid&token=verification-token",
 			wantStatus: http.StatusBadRequest,
 			setupMocks: func(routeMocks) {},
 		},
 		{
-			name:       "returns bad request for mismatched verification hash",
-			query:      "?uid=" + validID.String() + "&hash=invalid-hash",
+			name:       "returns bad request when token is missing",
+			query:      "?uid=" + validID.String(),
+			wantStatus: http.StatusBadRequest,
+			setupMocks: func(routeMocks) {},
+		},
+		{
+			name:       "returns bad request for mismatched verification token",
+			query:      "?uid=" + validID.String() + "&token=invalid-token",
 			wantStatus: http.StatusBadRequest,
 			setupMocks: func(m routeMocks) {
 				m.registration.EXPECT().
-					VerifyUserRegistration(gomock.Any(), validID, "invalid-hash").
-					Return(domain.ErrVerificationHashMismatch)
+					VerifyUserRegistration(gomock.Any(), validID, "invalid-token").
+					Return(applicationregistration.ErrVerificationSecretMismatch)
 			},
 		},
 	}
