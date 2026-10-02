@@ -26,12 +26,17 @@ type UserModule struct {
 	userAccountUseCase usecase_port.UserAccountUseCase
 }
 
+type userRepository interface {
+	repository_port.UserRepository
+	repository_port.RegistrationRepository
+}
+
 // New UserModule is the factory method for the UserModule container
 func NewUserModule(useDatabase bool) *UserModule {
 	userRepo := instantiateUserRepository(useDatabase)
 	userEventPublisher := instantiateUserEventPublisher()
 	userAccountUseCase := instantiateUserAccountUseCase(userRepo, userEventPublisher)
-	appSvc := instantiateAppSvc(userAccountUseCase)
+	appSvc := instantiateAppSvc(userAccountUseCase, userRepo)
 	return &UserModule{
 		userRepository:     userRepo,
 		userEventPublisher: userEventPublisher,
@@ -40,8 +45,8 @@ func NewUserModule(useDatabase bool) *UserModule {
 	}
 }
 
-func instantiateUserRepository(useDatabase bool) repository_port.UserRepository {
-	var userRepo repository_port.UserRepository
+func instantiateUserRepository(useDatabase bool) userRepository {
+	var userRepo userRepository
 
 	if useDatabase {
 		rf := dbinfra.SqliteRepositoryFactory[repository.UserSqliteRepository, *repository.UserSqliteRepository]{}
@@ -68,8 +73,11 @@ func instantiateUserEventPublisher() event_port.UserEventPublisher {
 	return uec
 }
 
-func instantiateAppSvc(uc usecase_port.UserAccountUseCase) app_svc_port.Registration {
-	return app_svc.NewRegisteration(uc)
+func instantiateAppSvc(
+	uc usecase_port.UserAccountUseCase,
+	repository repository_port.RegistrationRepository,
+) app_svc_port.Registration {
+	return app_svc.NewRegistration(uc, repository)
 }
 
 func instantiateUserAccountUseCase(r repository_port.UserRepository, ev event_port.UserEventPublisher) usecase_port.UserAccountUseCase {

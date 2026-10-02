@@ -44,17 +44,17 @@ func (ur UserRoute) SetupRoutes(routePath string, router *mux.Router) {
 func (ur UserRoute) VerifyRegistration() middleware.AppHandler {
 	fn := func(w http.ResponseWriter, r *http.Request) *hsm.AppError {
 		var uid uuid.UUID
-		var hash string
+		var token string
 		var err error
 		if uid, err = uuid.Parse(r.URL.Query().Get("uid")); err != nil || uid == uuid.Nil {
 			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
 		}
 
-		if hash = r.URL.Query().Get("hash"); hash == "" {
+		if token = r.URL.Query().Get("token"); token == "" {
 			return &hsm.AppError{ErrorObject: err, SanitisedMessage: "Bad Request", Code: http.StatusBadRequest}
 		}
 
-		err = ur.UserController.VerifyUserRegistration(r.Context(), uid, hash)
+		err = ur.UserController.VerifyUserRegistration(r.Context(), uid, token)
 		e, a := err.(*hsm.AppError)
 		if e != nil && a {
 			return e

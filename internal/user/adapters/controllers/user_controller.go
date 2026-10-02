@@ -26,9 +26,9 @@ func NewUserController(uasuc usecase.UserAccountUseCase, rappsvc userAppSvc.Regi
 	}
 }
 
-func (u *UserController) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) *hsm.AppError {
+func (u *UserController) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, token string) *hsm.AppError {
 	// TODO: AuthZ check (own user or admin)
-	err := u.registrationAppSvc.VerifyUserRegistration(ctx, uid, hash)
+	err := u.registrationAppSvc.VerifyUserRegistration(ctx, uid, token)
 
 	if err != nil {
 		log.Println(err)

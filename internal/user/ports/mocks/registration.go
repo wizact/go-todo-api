@@ -69,15 +69,15 @@ func (mr *MockRegistrationMockRecorder) GetRegistrationVerificationEmailData(uid
 }
 
 // VerifyUserRegistration mocks base method.
-func (m *MockRegistration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, hash string) error {
+func (m *MockRegistration) VerifyUserRegistration(ctx context.Context, uid uuid.UUID, token string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyUserRegistration", ctx, uid, hash)
+	ret := m.ctrl.Call(m, "VerifyUserRegistration", ctx, uid, token)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VerifyUserRegistration indicates an expected call of VerifyUserRegistration.
-func (mr *MockRegistrationMockRecorder) VerifyUserRegistration(ctx, uid, hash any) *gomock.Call {
+func (mr *MockRegistrationMockRecorder) VerifyUserRegistration(ctx, uid, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyUserRegistration", reflect.TypeOf((*MockRegistration)(nil).VerifyUserRegistration), ctx, uid, hash)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyUserRegistration", reflect.TypeOf((*MockRegistration)(nil).VerifyUserRegistration), ctx, uid, token)
 }
