@@ -8,38 +8,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/application/registration"
+	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 )
 
-type registrationCompletionState struct {
-	Active               bool
-	AggregateEmail       bool
-	ProjectionEmail      bool
-	CredentialWasRemoved bool
-}
-
-type registrationRollbackState struct {
-	ErrorWasNotFound      bool
-	Active                bool
-	AggregateEmail        bool
-	ProjectionEmail       bool
-	CredentialWasRetained bool
-}
-
-func TestSqliteRegistrationVerification_TableName_ReturnsRegistrationVerificationTable(t *testing.T) {
+func TestUserMemoryRepository_FindRegistrationVerification_Missing_ReturnsNotFound(t *testing.T) {
 	t.Parallel()
 
-	got := (SqliteRegistrationVerification{}).TableName()
-	want := "user_registration_verifications"
-	if got != want {
-		t.Fatalf("TableName() = %q, want %q", got, want)
-	}
-}
-
-func TestUserSqliteRepository_FindRegistrationVerification_Missing_ReturnsNotFound(t *testing.T) {
-	t.Parallel()
-
-	repository, _ := newUserSqliteRepository(t, &SqliteRegistrationVerification{})
+	repository := NewUserMemoryRepository(nil)
 
 	_, err := repository.FindRegistrationVerification(context.Background(), uuid.New())
 
@@ -48,33 +24,10 @@ func TestUserSqliteRepository_FindRegistrationVerification_Missing_ReturnsNotFou
 	}
 }
 
-func TestUserSqliteRepository_SaveRegistrationVerification_PersistsCredential(t *testing.T) {
+func TestUserMemoryRepository_SaveRegistrationVerification_ReplacesCredential(t *testing.T) {
 	t.Parallel()
 
-	repository, _ := newUserSqliteRepository(t, &SqliteRegistrationVerification{})
-	want := registration.Verification{
-		UserID:       uuid.New(),
-		SecretDigest: "verification-digest",
-		ExpiresAt:    time.Date(2026, time.September, 29, 12, 0, 0, 0, time.UTC),
-	}
-
-	if err := repository.SaveRegistrationVerification(context.Background(), want); err != nil {
-		t.Fatalf("SaveRegistrationVerification() error = %v", err)
-	}
-	got, err := repository.FindRegistrationVerification(context.Background(), want.UserID)
-	if err != nil {
-		t.Fatalf("FindRegistrationVerification() error = %v", err)
-	}
-
-	if got != want {
-		t.Fatalf("FindRegistrationVerification() = %#v, want %#v", got, want)
-	}
-}
-
-func TestUserSqliteRepository_SaveRegistrationVerification_ReplacesCredential(t *testing.T) {
-	t.Parallel()
-
-	repository, _ := newUserSqliteRepository(t, &SqliteRegistrationVerification{})
+	repository := NewUserMemoryRepository(nil)
 	userID := uuid.New()
 	original := registration.Verification{
 		UserID:       userID,
@@ -103,20 +56,11 @@ func TestUserSqliteRepository_SaveRegistrationVerification_ReplacesCredential(t 
 	}
 }
 
-func TestUserSqliteRepository_CompleteRegistration_UpdatesStateAndConsumesCredential(t *testing.T) {
+func TestUserMemoryRepository_CompleteRegistration_UpdatesStateAndConsumesCredential(t *testing.T) {
 	t.Parallel()
 
-	repository, database := newUserSqliteRepository(
-		t,
-		&SqliteUserAggregate{},
-		&SqliteUserEmailView{},
-		&SqliteUserTokenView{},
-		&SqliteRegistrationVerification{},
-	)
-	user, err := repository.Create(context.Background(), newUserAggregate(t))
-	if err != nil {
-		t.Fatalf("Create() error = %v", err)
-	}
+	user := newUserAggregate(t)
+	repository := NewUserMemoryRepository([]aggregate.User{user})
 	verification := registration.Verification{
 		UserID:       user.UserId(),
 		SecretDigest: "verified-digest",
@@ -134,16 +78,12 @@ func TestUserSqliteRepository_CompleteRegistration_UpdatesStateAndConsumesCreden
 	if err != nil {
 		t.Fatalf("FindById() error = %v", err)
 	}
-	var emailView SqliteUserEmailView
-	if err := database.First(&emailView, "user_id = ?", user.UserId().String()).Error; err != nil {
-		t.Fatalf("find user email view: %v", err)
-	}
 	_, credentialError := repository.FindRegistrationVerification(context.Background(), user.UserId())
 
 	got := registrationCompletionState{
 		Active:               persistedUser.IsActive(),
 		AggregateEmail:       persistedUser.HasVerifiedEmail(),
-		ProjectionEmail:      emailView.HasVerifiedEmail,
+		ProjectionEmail:      persistedUser.HasVerifiedEmail(),
 		CredentialWasRemoved: errors.Is(credentialError, repositoryport.ErrRegistrationVerificationNotFound),
 	}
 	want := registrationCompletionState{true, true, true, true}
@@ -152,20 +92,11 @@ func TestUserSqliteRepository_CompleteRegistration_UpdatesStateAndConsumesCreden
 	}
 }
 
-func TestUserSqliteRepository_CompleteRegistration_StaleDigestRollsBack(t *testing.T) {
+func TestUserMemoryRepository_CompleteRegistration_StaleDigestPreservesState(t *testing.T) {
 	t.Parallel()
 
-	repository, database := newUserSqliteRepository(
-		t,
-		&SqliteUserAggregate{},
-		&SqliteUserEmailView{},
-		&SqliteUserTokenView{},
-		&SqliteRegistrationVerification{},
-	)
-	user, err := repository.Create(context.Background(), newUserAggregate(t))
-	if err != nil {
-		t.Fatalf("Create() error = %v", err)
-	}
+	user := newUserAggregate(t)
+	repository := NewUserMemoryRepository([]aggregate.User{user})
 	verification := registration.Verification{
 		UserID:       user.UserId(),
 		SecretDigest: "current-digest",
@@ -181,10 +112,6 @@ func TestUserSqliteRepository_CompleteRegistration_StaleDigestRollsBack(t *testi
 	if err != nil {
 		t.Fatalf("FindById() error = %v", err)
 	}
-	var emailView SqliteUserEmailView
-	if err := database.First(&emailView, "user_id = ?", user.UserId().String()).Error; err != nil {
-		t.Fatalf("find user email view: %v", err)
-	}
 	persistedVerification, err := repository.FindRegistrationVerification(context.Background(), user.UserId())
 	if err != nil {
 		t.Fatalf("FindRegistrationVerification() error = %v", err)
@@ -194,7 +121,7 @@ func TestUserSqliteRepository_CompleteRegistration_StaleDigestRollsBack(t *testi
 		ErrorWasNotFound:      errors.Is(completionError, repositoryport.ErrRegistrationVerificationNotFound),
 		Active:                persistedUser.IsActive(),
 		AggregateEmail:        persistedUser.HasVerifiedEmail(),
-		ProjectionEmail:       emailView.HasVerifiedEmail,
+		ProjectionEmail:       persistedUser.HasVerifiedEmail(),
 		CredentialWasRetained: persistedVerification == verification,
 	}
 	want := registrationRollbackState{ErrorWasNotFound: true, CredentialWasRetained: true}
