@@ -110,7 +110,6 @@ func TestUserSqliteRepository_CompleteRegistration_UpdatesStateAndConsumesCreden
 		t,
 		&SqliteUserAggregate{},
 		&SqliteUserEmailView{},
-		&SqliteUserTokenView{},
 		&SqliteRegistrationVerification{},
 	)
 	user, err := repository.Create(context.Background(), newUserAggregate(t))
@@ -159,7 +158,6 @@ func TestUserSqliteRepository_CompleteRegistration_StaleDigestRollsBack(t *testi
 		t,
 		&SqliteUserAggregate{},
 		&SqliteUserEmailView{},
-		&SqliteUserTokenView{},
 		&SqliteRegistrationVerification{},
 	)
 	user, err := repository.Create(context.Background(), newUserAggregate(t))
