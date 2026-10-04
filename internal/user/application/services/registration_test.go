@@ -30,6 +30,7 @@ type registrationVerificationState struct {
 	Active             bool
 	EmailVerified      bool
 	CredentialRetained bool
+	ReplayWasRejected  bool
 }
 
 func TestRegistration_GetRegistrationVerificationEmailData_IssuesStoredCredential(t *testing.T) {
@@ -90,6 +91,7 @@ func TestRegistration_VerifyUserRegistration_ValidTokenCompletesRegistration(t *
 	registration.now = func() time.Time { return now }
 
 	err := registration.VerifyUserRegistration(context.Background(), userID, token)
+	replayError := registration.VerifyUserRegistration(context.Background(), userID, token)
 	persistedUser, findUserError := repository.FindById(context.Background(), userID)
 	if findUserError != nil {
 		t.Fatalf("FindById() error = %v", findUserError)
@@ -101,8 +103,14 @@ func TestRegistration_VerifyUserRegistration_ValidTokenCompletesRegistration(t *
 		Active:             persistedUser.IsActive(),
 		EmailVerified:      persistedUser.HasVerifiedEmail(),
 		CredentialRetained: !errors.Is(credentialError, repositoryport.ErrRegistrationVerificationNotFound),
+		ReplayWasRejected:  errors.Is(replayError, repositoryport.ErrRegistrationVerificationNotFound),
 	}
-	want := registrationVerificationState{ErrorMatches: true, Active: true, EmailVerified: true}
+	want := registrationVerificationState{
+		ErrorMatches:      true,
+		Active:            true,
+		EmailVerified:     true,
+		ReplayWasRejected: true,
+	}
 	if got != want {
 		t.Fatalf("registration verification state = %#v, want %#v", got, want)
 	}
