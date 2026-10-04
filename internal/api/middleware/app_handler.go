@@ -10,18 +10,18 @@ import (
 
 type AppHandler func(http.ResponseWriter, *http.Request) *hsm.AppError
 
-func (fm AppHandler) Config(requiresAuth bool) http.HandlerFunc {
+func (fn AppHandler) Config(requiresAuth bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		if requiresAuth {
-			if authz := fm.authorise(w, r); !authz {
+			if authz := fn.authorise(w, r); !authz {
 				// terminate the request if the user is not authorized
 				return
 			}
 		}
 
-		fm.serveHTTP(w, r)
+		fn.serveHTTP(w, r)
 	}
 }
 

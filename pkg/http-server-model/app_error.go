@@ -20,6 +20,11 @@ func (a *AppError) Error() string {
 	return a.ErrorObject.Error()
 }
 
+// Unwrap returns the underlying error object
+func (a *AppError) Unwrap() error {
+	return a.ErrorObject
+}
+
 // FriendlyError is sanitised error message sent back to the user
 type FriendlyError struct {
 	Message string `json:"message"`
