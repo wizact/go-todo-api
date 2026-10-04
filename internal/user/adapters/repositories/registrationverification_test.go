@@ -16,6 +16,7 @@ type registrationCompletionState struct {
 	AggregateEmail       bool
 	ProjectionEmail      bool
 	CredentialWasRemoved bool
+	ReplayWasRejected    bool
 }
 
 type registrationRollbackState struct {
@@ -129,6 +130,7 @@ func TestUserSqliteRepository_CompleteRegistration_UpdatesStateAndConsumesCreden
 	if _, err := repository.CompleteRegistration(context.Background(), user, verification.SecretDigest); err != nil {
 		t.Fatalf("CompleteRegistration() error = %v", err)
 	}
+	_, replayError := repository.CompleteRegistration(context.Background(), user, verification.SecretDigest)
 	persistedUser, err := repository.FindById(context.Background(), user.UserId())
 	if err != nil {
 		t.Fatalf("FindById() error = %v", err)
@@ -144,8 +146,9 @@ func TestUserSqliteRepository_CompleteRegistration_UpdatesStateAndConsumesCreden
 		AggregateEmail:       persistedUser.HasVerifiedEmail(),
 		ProjectionEmail:      emailView.HasVerifiedEmail,
 		CredentialWasRemoved: errors.Is(credentialError, repositoryport.ErrRegistrationVerificationNotFound),
+		ReplayWasRejected:    errors.Is(replayError, repositoryport.ErrRegistrationVerificationNotFound),
 	}
-	want := registrationCompletionState{true, true, true, true}
+	want := registrationCompletionState{true, true, true, true, true}
 	if got != want {
 		t.Fatalf("registration completion state = %#v, want %#v", got, want)
 	}

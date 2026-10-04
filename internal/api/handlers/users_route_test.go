@@ -19,6 +19,7 @@ import (
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
 	model "github.com/wizact/go-todo-api/internal/user/domain/models"
 	"github.com/wizact/go-todo-api/internal/user/ports/mocks"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repositories"
 )
 
 const registeredUserID = "50dff1d7-957c-4498-b286-a3f6c8f517a2"
@@ -116,6 +117,16 @@ func TestUserRoute_VerifyRegistration_Status(t *testing.T) {
 				m.registration.EXPECT().
 					VerifyUserRegistration(gomock.Any(), validID, "invalid-token").
 					Return(applicationregistration.ErrVerificationSecretMismatch)
+			},
+		},
+		{
+			name:       "returns bad request for consumed verification token",
+			query:      "?uid=" + validID.String() + "&token=consumed-token",
+			wantStatus: http.StatusBadRequest,
+			setupMocks: func(m routeMocks) {
+				m.registration.EXPECT().
+					VerifyUserRegistration(gomock.Any(), validID, "consumed-token").
+					Return(repositoryport.ErrRegistrationVerificationNotFound)
 			},
 		},
 	}
