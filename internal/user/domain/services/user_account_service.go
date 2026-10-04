@@ -44,11 +44,6 @@ func (ua *UserAccountService) RegisterNewUser(ctx context.Context, user aggregat
 		return user, domain.ErrEmailAlreadyExists
 	}
 
-	t := user.Token()
-	t.RefreshVerificationToken()
-	t.RefreshVerificationSalt()
-	user.SetToken(t)
-
 	u, e = ua.userRepository.Create(ctx, user)
 	if e != nil {
 		return user, fmt.Errorf("%w: create user: %w", domain.ErrUserPersistence, e)

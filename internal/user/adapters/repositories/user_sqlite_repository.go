@@ -102,9 +102,6 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 		if _, err := r.createOrUpdateUserEmailView(ctx, tx, persistedUser); err != nil {
 			return err
 		}
-		if _, err := r.createOrUpdateUserTokenView(ctx, tx, persistedUser); err != nil {
-			return err
-		}
 
 		return nil
 	})
@@ -143,9 +140,6 @@ type SqliteUserModel struct {
 
 	HasVerifiedEmail bool
 	IsActive         bool
-
-	VerificationToken string
-	VerificationSalt  string
 }
 
 // TableName overrides grom default table name
@@ -160,29 +154,25 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 	location := de.Location()
 	longitude, latitude := location.Coordinates()
 	fn, ln := deu.Name()
-	tk := de.Token()
 	dbm.ValueData = SqliteUserModel{
-		ID:                de.UserId().String(),
-		FirstName:         fn,
-		LastName:          ln,
-		DateOfBirth:       deu.DateOfBirth(),
-		Email:             deu.Email(),
-		CountryCode:       deup.CountryCode(),
-		AreaCode:          deup.AreaCode(),
-		Number:            deup.Number(),
-		LocationLong:      longitude,
-		LocationLat:       latitude,
-		HasVerifiedEmail:  de.HasVerifiedEmail(),
-		IsActive:          de.IsActive(),
-		VerificationToken: tk.VerificationToken(),
-		VerificationSalt:  tk.VerificationSalt(),
+		ID:               de.UserId().String(),
+		FirstName:        fn,
+		LastName:         ln,
+		DateOfBirth:      deu.DateOfBirth(),
+		Email:            deu.Email(),
+		CountryCode:      deup.CountryCode(),
+		AreaCode:         deup.AreaCode(),
+		Number:           deup.Number(),
+		LocationLong:     longitude,
+		LocationLat:      latitude,
+		HasVerifiedEmail: de.HasVerifiedEmail(),
+		IsActive:         de.IsActive(),
 	}
 }
 
 func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 	ph := model.NewPhoneNumber(dbm.ValueData.CountryCode, dbm.ValueData.AreaCode, dbm.ValueData.Number)
 	mu := model.RehydrateUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
-	tk := model.NewToken(dbm.ValueData.VerificationToken, dbm.ValueData.VerificationSalt)
 
 	dl := model.NewLocation(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
 
@@ -190,5 +180,5 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 		IsActive:         dbm.ValueData.IsActive,
 		HasVerifiedEmail: dbm.ValueData.HasVerifiedEmail,
 	}
-	return ua.RehydrateUser(mu, dl, tk, status)
+	return ua.RehydrateUser(mu, dl, status)
 }
