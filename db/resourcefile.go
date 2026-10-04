@@ -2,6 +2,8 @@
 // sources:
 // db/migrations/10_create_table_user_registration_verifications.down.sql
 // db/migrations/10_create_table_user_registration_verifications.up.sql
+// db/migrations/11_drop_users_token_view.down.sql
+// db/migrations/11_drop_users_token_view.up.sql
 // db/migrations/1_create_table.down.sql
 // db/migrations/1_create_table.up.sql
 // db/migrations/2_alter_table.down.sql
@@ -132,6 +134,46 @@ func _10_create_table_user_registration_verificationsUpSql() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "10_create_table_user_registration_verifications.up.sql", size: 248, mode: os.FileMode(420), modTime: time.Unix(1790535070, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __11_drop_users_token_viewDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x7c\x90\xc1\x4a\xc4\x30\x14\x45\xf7\xf9\x8a\xbb\x74\xc0\x3f\x98\x55\x9c\x89\x18\xac\x89\xa4\x6f\x98\x76\x15\x42\xf3\x84\x60\x69\xa5\x49\xeb\xef\x0b\xd5\x85\xda\xea\x36\xe7\xdc\xc0\x3b\x27\xa7\x24\x29\x90\xbc\xab\x14\xf4\x3d\x8c\x25\xa8\x46\xd7\x54\x63\xce\x3c\x65\x5f\xc6\x57\x1e\xfc\x92\xf8\x1d\x37\x02\xc0\xfa\xec\x53\x04\xa9\x86\x56\xdd\x5c\xaa\x0a\xcf\x4e\x3f\x49\xd7\xe2\x51\xb5\xb7\xab\xb6\xf0\x94\x5e\x52\x17\x4a\x1a\x87\xcf\x4f\x7e\x2e\x76\xac\x1c\xfa\xb2\x27\x75\x13\x87\xc2\xd1\x87\x5d\x3a\xbf\xc5\x7f\x68\xe4\x9e\xbf\x51\x71\xc0\x55\xd3\x83\xbd\x10\x9c\xbd\xea\xf3\x51\x88\xaf\x02\xda\x9c\x55\xf3\xab\xc0\xf6\x06\x1f\x72\x07\x6b\xfe\x6a\xb3\x1d\x40\xd6\xa7\xc3\x51\x7c\x0c\x00\xd0\x58\xee\xb0\x67\x01\x00\x00")
+
+func _11_drop_users_token_viewDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__11_drop_users_token_viewDownSql,
+		"11_drop_users_token_view.down.sql",
+	)
+}
+
+func _11_drop_users_token_viewDownSql() (*asset, error) {
+	bytes, err := _11_drop_users_token_viewDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "11_drop_users_token_view.down.sql", size: 359, mode: os.FileMode(420), modTime: time.Unix(1791104997, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __11_drop_users_token_viewUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x00\x54\x00\xab\xff\x44\x52\x4f\x50\x20\x49\x4e\x44\x45\x58\x20\x49\x46\x20\x45\x58\x49\x53\x54\x53\x20\x76\x65\x72\x69\x66\x69\x63\x61\x74\x69\x6f\x6e\x5f\x74\x6f\x6b\x65\x6e\x5f\x61\x73\x63\x3b\x0a\x44\x52\x4f\x50\x20\x54\x41\x42\x4c\x45\x20\x49\x46\x20\x45\x58\x49\x53\x54\x53\x20\x75\x73\x65\x72\x73\x5f\x74\x6f\x6b\x65\x6e\x5f\x76\x69\x65\x77\x3b\x0a\x03\x00\x06\xfa\xcb\x32\x54\x00\x00\x00")
+
+func _11_drop_users_token_viewUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__11_drop_users_token_viewUpSql,
+		"11_drop_users_token_view.up.sql",
+	)
+}
+
+func _11_drop_users_token_viewUpSql() (*asset, error) {
+	bytes, err := _11_drop_users_token_viewUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "11_drop_users_token_view.up.sql", size: 84, mode: os.FileMode(420), modTime: time.Unix(1791104997, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -550,6 +592,8 @@ func AssetNames() []string {
 var _bindata = map[string]func() (*asset, error){
 	"10_create_table_user_registration_verifications.down.sql":    _10_create_table_user_registration_verificationsDownSql,
 	"10_create_table_user_registration_verifications.up.sql":      _10_create_table_user_registration_verificationsUpSql,
+	"11_drop_users_token_view.down.sql":                           _11_drop_users_token_viewDownSql,
+	"11_drop_users_token_view.up.sql":                             _11_drop_users_token_viewUpSql,
 	"1_create_table.down.sql":                                     _1_create_tableDownSql,
 	"1_create_table.up.sql":                                       _1_create_tableUpSql,
 	"2_alter_table.down.sql":                                      _2_alter_tableDownSql,
@@ -613,6 +657,8 @@ type bintree struct {
 var _bintree = &bintree{nil, map[string]*bintree{
 	"10_create_table_user_registration_verifications.down.sql":    &bintree{_10_create_table_user_registration_verificationsDownSql, map[string]*bintree{}},
 	"10_create_table_user_registration_verifications.up.sql":      &bintree{_10_create_table_user_registration_verificationsUpSql, map[string]*bintree{}},
+	"11_drop_users_token_view.down.sql":                           &bintree{_11_drop_users_token_viewDownSql, map[string]*bintree{}},
+	"11_drop_users_token_view.up.sql":                             &bintree{_11_drop_users_token_viewUpSql, map[string]*bintree{}},
 	"1_create_table.down.sql":                                     &bintree{_1_create_tableDownSql, map[string]*bintree{}},
 	"1_create_table.up.sql":                                       &bintree{_1_create_tableUpSql, map[string]*bintree{}},
 	"2_alter_table.down.sql":                                      &bintree{_2_alter_tableDownSql, map[string]*bintree{}},
