@@ -1,46 +1,68 @@
-# Database Migration
+# Database migrations
 
-## Requirements:
-This process requires go-bindata to be installed and accessible in the user path:
+SQLite schema changes are stored as ordered `up` and `down` scripts under `db/migrations`. The scripts are embedded in `db/resourcefile.go` and applied by the `cmd/db-migration` executable through `golang-migrate`.
 
-### Install go-bindata
+## Requirements
+
+Use the Go 1.27 toolchain configured by the project. Resource generation requires `go-bindata`; `build/migration.sh` installs it when it is not available.
+
+## Create a migration
+
+Add two files using the existing naming convention:
+
+```text
+<sequence>_<description>.up.sql
+<sequence>_<description>.down.sql
 ```
-go install github.com/go-bindata/go-bindata/go-bindata
-```
 
-### Step 1: Create migration files
-In the `./db/migrations` create a two files for each change. The naming of the files should follow the following format:
+The `up` script applies one schema change. The `down` script reverses that change when reversal is safe. Sequence numbers must be monotonically increasing.
 
-`[sequence_number]_description_[up|down].sql`
+Migration scripts do not require test-first development. Review both directions, regenerate the embedded resource, and execute the migration against a disposable database before using it on persistent data.
 
-`sequence_number` is an incremental integer value that is used for tracking the current state of our migration. After successful migration, the maximum sequence number is persisted in the database versioning table.
+## Generate the embedded resource
 
-`up` indicates the scripts that will be called in the migration upgrade process. `down` scripts indicates the rollback process - if necessary.
-
-### Step 2: Create resource file
-tl;dr:
-
-```
+```sh
 make gen-db-resource
 ```
 
-We use `go-bindata` to embed the migration files in a go file. This enables us to build a standalone executable, deploy it to a environment, and execute the migration process remotely.
+This recreates `db/resourcefile.go` from every SQL file under `db/migrations`. Commit the generated resource whenever migration inputs change.
 
-In order to create the resource files, execute the following command:
+## Apply migrations
 
-```
-./db/migration.sh
-```
+Apply all pending migrations to the repository's development database:
 
-### Step 3: Execute the migration
-You can execute the migration, or create the binrary file using the `cmd/db-migration` entrypoint.
-
-```
-go run ./cmd/db-migration.go
+```sh
+make run-db-migration
 ```
 
-To generate the executable script, you can use the following command and copy the executable to the right environment:
+To select another database explicitly:
 
+```sh
+TODOAPI_DBPATH=/path/to/todo.db go run ./cmd/db-migration
 ```
-make build-db-migration  OS=linux ARCH=amd64
+
+The migration command treats `no change` as a successful no-op.
+
+## Build the migration executable
+
+```sh
+make build-db-migration OS=linux ARCH=amd64
 ```
+
+## Registration verification schema
+
+Migration 10 introduced `user_registration_verifications`:
+
+| Column | Purpose |
+| --- | --- |
+| `user_id` | Primary key and aggregate identity |
+| `secret_digest` | Bcrypt digest; the raw secret is never stored |
+| `expires_at` | Expiry as a Unix millisecond timestamp |
+| `created_at` | Creation time as a Unix millisecond timestamp |
+| `updated_at` | Replacement time as a Unix millisecond timestamp |
+
+One row per user allows issuing a new credential to replace the previous credential.
+
+Migration 11 dropped the legacy `users_token_view` and its token index. Legacy raw credentials are intentionally invalidated rather than migrated; affected users must receive a newly issued credential.
+
+Runtime verification completion is separate from schema migration. `UserSqliteRepository.CompleteRegistration` updates `users_aggregate.value_data`, updates `users_email_view.has_verified_email`, and deletes the matching verification row in one database transaction.
