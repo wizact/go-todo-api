@@ -53,6 +53,25 @@ func TestUser_VerifyRegistration_ActivatesVerifiedUser(t *testing.T) {
 	}
 }
 
+func TestUser_IsValid_DoesNotRequireRegistrationCredential(t *testing.T) {
+	t.Parallel()
+
+	user := model.RehydrateUser(
+		uuid.New(),
+		"Ada",
+		"Lovelace",
+		time.Date(1815, time.December, 10, 0, 0, 0, 0, time.UTC),
+		"ada@example.com",
+		model.NewPhoneNumber("+44", "20", "12345678"),
+	)
+	location := model.NewLocation(0, 0)
+	root := User{user: &user, location: &location}
+
+	if !root.IsValid() {
+		t.Fatal("IsValid() = false, want true without registration credential")
+	}
+}
+
 func TestRehydrateUser_RestoresRegistrationStatus(t *testing.T) {
 	t.Parallel()
 
@@ -60,7 +79,6 @@ func TestRehydrateUser_RestoresRegistrationStatus(t *testing.T) {
 	user := RehydrateUser(
 		model.User{},
 		model.NewLocation(0, 0),
-		model.NewEmptyToken(),
 		want,
 	)
 

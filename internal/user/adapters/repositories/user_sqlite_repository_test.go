@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"path/filepath"
 	"testing"
 	"time"
@@ -12,7 +13,31 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestUserSqliteRepository_Create_TokenViewFailureReturnsError(t *testing.T) {
+func TestSqliteUserModel_LegacyVerificationFieldsAreDropped(t *testing.T) {
+	t.Parallel()
+
+	legacy := []byte(`{"ID":"user-id","VerificationToken":"legacy-token","VerificationSalt":"legacy-salt"}`)
+	var user SqliteUserModel
+	if err := json.Unmarshal(legacy, &user); err != nil {
+		t.Fatalf("unmarshal legacy user: %v", err)
+	}
+	reencoded, err := json.Marshal(user)
+	if err != nil {
+		t.Fatalf("marshal user: %v", err)
+	}
+	var fields map[string]any
+	if err := json.Unmarshal(reencoded, &fields); err != nil {
+		t.Fatalf("unmarshal reencoded user: %v", err)
+	}
+	_, tokenExists := fields["VerificationToken"]
+	_, saltExists := fields["VerificationSalt"]
+
+	if tokenExists || saltExists {
+		t.Fatalf("reencoded fields = %v, want legacy verification fields omitted", fields)
+	}
+}
+
+func TestUserSqliteRepository_Create_DoesNotRequireTokenView(t *testing.T) {
 	t.Parallel()
 
 	repository, _ := newUserSqliteRepository(t, &SqliteUserAggregate{}, &SqliteUserEmailView{})
@@ -20,29 +45,8 @@ func TestUserSqliteRepository_Create_TokenViewFailureReturnsError(t *testing.T) 
 
 	_, err := repository.Create(context.Background(), user)
 
-	if err == nil {
-		t.Fatal("Create() error = nil, want token view persistence error")
-	}
-}
-
-func TestUserSqliteRepository_Create_TokenViewFailureRollsBackAggregate(t *testing.T) {
-	t.Parallel()
-
-	repository, database := newUserSqliteRepository(t, &SqliteUserAggregate{}, &SqliteUserEmailView{})
-	user := newUserAggregate(t)
-
-	_, _ = repository.Create(context.Background(), user)
-
-	var aggregateCount int64
-	result := database.Unscoped().
-		Model(&SqliteUserAggregate{}).
-		Where("user_id = ?", user.UserId().String()).
-		Count(&aggregateCount)
-	if result.Error != nil {
-		t.Fatalf("count user aggregates: %v", result.Error)
-	}
-	if aggregateCount != 0 {
-		t.Fatalf("persisted aggregate count = %d, want 0", aggregateCount)
+	if err != nil {
+		t.Fatalf("Create() error = %v, want nil", err)
 	}
 }
 
@@ -59,14 +63,13 @@ func TestUserSqliteRepository_Create_EmailViewFailureReturnsError(t *testing.T) 
 	}
 }
 
-func TestUserSqliteRepository_Create_PersistsAggregateAndViews(t *testing.T) {
+func TestUserSqliteRepository_Create_PersistsAggregateAndEmailView(t *testing.T) {
 	t.Parallel()
 
 	repository, database := newUserSqliteRepository(
 		t,
 		&SqliteUserAggregate{},
 		&SqliteUserEmailView{},
-		&SqliteUserTokenView{},
 	)
 	user := newUserAggregate(t)
 
@@ -74,8 +77,8 @@ func TestUserSqliteRepository_Create_PersistsAggregateAndViews(t *testing.T) {
 		t.Fatalf("Create() error = %v", err)
 	}
 
-	models := []any{&SqliteUserAggregate{}, &SqliteUserEmailView{}, &SqliteUserTokenView{}}
-	var got [3]int64
+	models := []any{&SqliteUserAggregate{}, &SqliteUserEmailView{}}
+	var got [2]int64
 	for index, model := range models {
 		result := database.Model(model).
 			Where("user_id = ?", user.UserId().String()).
@@ -85,7 +88,7 @@ func TestUserSqliteRepository_Create_PersistsAggregateAndViews(t *testing.T) {
 		}
 	}
 
-	want := [3]int64{1, 1, 1}
+	want := [2]int64{1, 1}
 	if got != want {
 		t.Fatalf("persisted row counts = %v, want %v", got, want)
 	}
