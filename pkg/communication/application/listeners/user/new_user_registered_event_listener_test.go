@@ -20,6 +20,7 @@ func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 	subscriber := &userEventSubscriberStub{unsubscribed: make(chan struct{})}
 	emailer := &emailerSpy{calls: make(chan templateEmail, 1)}
 	userID := uuid.New()
+	listenerContext := context.WithValue(context.Background(), listenerContextKey{}, "registration")
 	event := ude.UserDomainEvent{
 		ID:        userID,
 		Email:     "ada@example.com",
@@ -29,11 +30,11 @@ func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 	templateData := map[string]string{"hash": "verification-hash"}
 
 	registration.EXPECT().
-		GetRegistrationVerificationEmailData(userID).
+		GetRegistrationVerificationEmailData(listenerContext, userID).
 		Return(templateData, nil)
 
 	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer)
-	if err := listener.Listen(); err != nil {
+	if err := listener.Listen(listenerContext); err != nil {
 		t.Fatalf("listen: %v", err)
 	}
 
@@ -64,6 +65,30 @@ func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 		t.Fatal("event subscription was not cancelled")
 	}
 }
+
+func TestNewUserRegisteredEventListener_CancelledContextUnsubscribes(t *testing.T) {
+	t.Parallel()
+
+	controller := gomock.NewController(t)
+	registration := user_app_svc_mocks.NewMockRegistration(controller)
+	subscriber := &userEventSubscriberStub{unsubscribed: make(chan struct{})}
+	emailer := &emailerSpy{calls: make(chan templateEmail, 1)}
+	listenerContext, cancel := context.WithCancel(context.Background())
+	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer)
+	if err := listener.Listen(listenerContext); err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+
+	cancel()
+
+	select {
+	case <-subscriber.unsubscribed:
+	case <-time.After(time.Second):
+		t.Fatal("event subscription was not cancelled")
+	}
+}
+
+type listenerContextKey struct{}
 
 type userEventSubscriberStub struct {
 	events       chan<- ude.UserDomainEvent

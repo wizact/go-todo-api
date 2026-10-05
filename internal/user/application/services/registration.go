@@ -39,9 +39,9 @@ func (r *Registration) Done() {
 }
 
 // GetRegistrationVerificationEmailData returns the data required to send a registration verification email
-func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[string]string, error) {
+func (r *Registration) GetRegistrationVerificationEmailData(ctx context.Context, uid uuid.UUID) (map[string]string, error) {
 	em := make(map[string]string)
-	u, err := r.userAccountUseCase.GetUserById(context.Background(), uid)
+	u, err := r.userAccountUseCase.GetUserById(ctx, uid)
 	if err != nil {
 		return em, fmt.Errorf("get user for registration verification email: %w", err)
 	}
@@ -55,7 +55,7 @@ func (r *Registration) GetRegistrationVerificationEmailData(uid uuid.UUID) (map[
 		SecretDigest: digest,
 		ExpiresAt:    r.now().UTC().Add(registrationVerificationLifetime),
 	}
-	if err := r.registrationRepository.SaveRegistrationVerification(context.Background(), verification); err != nil {
+	if err := r.registrationRepository.SaveRegistrationVerification(ctx, verification); err != nil {
 		return em, fmt.Errorf("save registration verification: %w", err)
 	}
 
