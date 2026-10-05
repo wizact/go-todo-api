@@ -18,11 +18,12 @@ import (
 )
 
 type registrationIssuanceState struct {
-	TokenPresent     bool
-	LegacyHashAbsent bool
-	Link             string
-	DigestMatches    bool
-	ExpiresAt        time.Time
+	TokenPresent          bool
+	LegacyHashAbsent      bool
+	Link                  string
+	DigestMatches         bool
+	ExpiresAt             time.Time
+	RepositoryReceivedCtx bool
 }
 
 type registrationVerificationState struct {
@@ -38,41 +39,60 @@ func TestRegistration_GetRegistrationVerificationEmailData_IssuesStoredCredentia
 	userAccount := mocks.NewMockUserAccountUseCase(controller)
 	userID := uuid.New()
 	user := registrationTestUser(userID)
+	requestContext := context.WithValue(context.Background(), registrationContextKey{}, "issuance")
 	now := time.Date(2026, time.October, 3, 12, 0, 0, 0, time.UTC)
-	repository := repositoryadapter.NewUserMemoryRepository(nil)
+	memoryRepository := repositoryadapter.NewUserMemoryRepository(nil)
+	repository := &registrationRepositoryContextSpy{RegistrationRepository: memoryRepository}
 	userAccount.EXPECT().
-		GetUserById(gomock.Any(), userID).
+		GetUserById(requestContext, userID).
 		Return(user, nil)
 	registration := NewRegistration(userAccount, repository)
 	registration.now = func() time.Time { return now }
 
-	emailData, err := registration.GetRegistrationVerificationEmailData(userID)
+	emailData, err := registration.GetRegistrationVerificationEmailData(requestContext, userID)
 	if err != nil {
 		t.Fatalf("GetRegistrationVerificationEmailData() error = %v", err)
 	}
-	verification, err := repository.FindRegistrationVerification(context.Background(), userID)
+	verification, err := memoryRepository.FindRegistrationVerification(context.Background(), userID)
 	if err != nil {
 		t.Fatalf("FindRegistrationVerification() error = %v", err)
 	}
 	token := emailData["token"]
 
 	got := registrationIssuanceState{
-		TokenPresent:     token != "",
-		LegacyHashAbsent: emailData["hash"] == "",
-		Link:             emailData["verify_email_link"],
-		DigestMatches:    matchesRegistrationVerification(verification.SecretDigest, token),
-		ExpiresAt:        verification.ExpiresAt,
+		TokenPresent:          token != "",
+		LegacyHashAbsent:      emailData["hash"] == "",
+		Link:                  emailData["verify_email_link"],
+		DigestMatches:         matchesRegistrationVerification(verification.SecretDigest, token),
+		ExpiresAt:             verification.ExpiresAt,
+		RepositoryReceivedCtx: repository.saveContext == requestContext,
 	}
 	want := registrationIssuanceState{
-		TokenPresent:     true,
-		LegacyHashAbsent: true,
-		Link:             "http://localhost:8080/users/verify-registration?uid=" + userID.String() + "&token=" + token,
-		DigestMatches:    true,
-		ExpiresAt:        now.Add(24 * time.Hour),
+		TokenPresent:          true,
+		LegacyHashAbsent:      true,
+		Link:                  "http://localhost:8080/users/verify-registration?uid=" + userID.String() + "&token=" + token,
+		DigestMatches:         true,
+		ExpiresAt:             now.Add(24 * time.Hour),
+		RepositoryReceivedCtx: true,
 	}
 	if got != want {
 		t.Fatalf("registration issuance state = %#v, want %#v", got, want)
 	}
+}
+
+type registrationContextKey struct{}
+
+type registrationRepositoryContextSpy struct {
+	repositoryport.RegistrationRepository
+	saveContext context.Context
+}
+
+func (repository *registrationRepositoryContextSpy) SaveRegistrationVerification(
+	ctx context.Context,
+	verification applicationregistration.Verification,
+) error {
+	repository.saveContext = ctx
+	return repository.RegistrationRepository.SaveRegistrationVerification(ctx, verification)
 }
 
 func TestRegistration_VerifyUserRegistration_ValidTokenCompletesRegistration(t *testing.T) {

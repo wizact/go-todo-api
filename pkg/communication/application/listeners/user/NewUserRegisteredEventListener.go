@@ -36,21 +36,26 @@ func (r *NewUserRegisteredEventListener) Done() {
 }
 
 // Listen listens to the event and trigger the lifecycle required for user approval process
-func (r *NewUserRegisteredEventListener) Listen() error {
+func (r *NewUserRegisteredEventListener) Listen(ctx context.Context) error {
 	nuc := make(chan de.UserDomainEvent)
 
-	unsubcb, err := r.userEventClient.SubscribeToNewUserRegisteredEvent(context.Background(), nuc)
+	unsubcb, err := r.userEventClient.SubscribeToNewUserRegisteredEvent(ctx, nuc)
 
 	if err != nil {
 		return err
 	}
 
-	go r.sendUserEmailVerificationMessage(nuc, r.done, unsubcb)
+	go r.sendUserEmailVerificationMessage(ctx, nuc, r.done, unsubcb)
 
 	return nil
 }
 
-func (r *NewUserRegisteredEventListener) sendUserEmailVerificationMessage(nuc <-chan de.UserDomainEvent, done chan bool, unsubcb event_input.Unsubscribe) error {
+func (r *NewUserRegisteredEventListener) sendUserEmailVerificationMessage(
+	ctx context.Context,
+	nuc <-chan de.UserDomainEvent,
+	done chan bool,
+	unsubcb event_input.Unsubscribe,
+) error {
 L:
 	for {
 		select {
@@ -64,7 +69,7 @@ L:
 			log.Println("communication > Preparing email verification message for:", ude.Email)
 
 			// Call user app service to get the user info required to send the email
-			ed, err := r.userRegAppSvc.GetRegistrationVerificationEmailData(ude.ID)
+			ed, err := r.userRegAppSvc.GetRegistrationVerificationEmailData(ctx, ude.ID)
 			if err != nil {
 				log.Println("communication > new user registered event listener app service > send email confirmation: ", err)
 			}
@@ -74,6 +79,10 @@ L:
 
 		case <-done:
 			log.Println("communication > unsubscribing NewUserRegisteredListener")
+			unsubcb()
+			break L
+		case <-ctx.Done():
+			log.Println("communication > cancelling NewUserRegisteredListener")
 			unsubcb()
 			break L
 		}
