@@ -8,20 +8,25 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/wizact/go-todo-api/internal/api/middleware"
-	umf "github.com/wizact/go-todo-api/internal/domain-factory"
 	controller "github.com/wizact/go-todo-api/internal/user/adapters/controllers"
 	httpModel "github.com/wizact/go-todo-api/internal/user/adapters/controllers/models"
+	applicationport "github.com/wizact/go-todo-api/internal/user/ports/applications"
+	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	hsm "github.com/wizact/go-todo-api/pkg/http-server-model"
 )
 
 type UserRouteFactory struct {
+	UserAccountUseCase usecaseport.UserAccountUseCase
+	Registration       applicationport.Registration
 }
 
-func (urf UserRouteFactory) CreateUserRoute() UserRoute {
-	um := umf.CreateNewUserModule()
+func (factory UserRouteFactory) CreateUserRoute() UserRoute {
 	return NewUserRoute(
 		controller.NewUserController(
-			um.UserAccountUseCase(), um.UserRegistrationAppService()))
+			factory.UserAccountUseCase,
+			factory.Registration,
+		),
+	)
 }
 
 type UserRoute struct {

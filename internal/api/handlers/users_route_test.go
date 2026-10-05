@@ -29,6 +29,30 @@ type routeMocks struct {
 	registration *mocks.MockRegistration
 }
 
+func TestUserRouteFactory_CreateUserRoute_UsesProvidedDependencies(t *testing.T) {
+	gomockController := gomock.NewController(t)
+	userAccount := mocks.NewMockUserAccountUseCase(gomockController)
+	registration := mocks.NewMockRegistration(gomockController)
+	userAccount.EXPECT().
+		RegisterNewUser(gomock.Any(), gomock.Any()).
+		Return(registeredUser(), nil)
+
+	userRoute := handlers.UserRouteFactory{
+		UserAccountUseCase: userAccount,
+		Registration:       registration,
+	}.CreateUserRoute()
+	router := mux.NewRouter()
+	userRoute.SetupRoutes("/users", router)
+	request := httptest.NewRequest(http.MethodPost, "/users", loadFixture(t, "register_user.json"))
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusCreated {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusCreated)
+	}
+}
+
 func TestUserRoute_RegisterUser_Status(t *testing.T) {
 	tests := []struct {
 		name       string
