@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	umf "github.com/wizact/go-todo-api/internal/domain-factory"
+	applicationport "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	user_domain_listener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
 	app_svc "github.com/wizact/go-todo-api/pkg/communication/application/services"
 	ports "github.com/wizact/go-todo-api/pkg/communication/ports/applications"
@@ -29,11 +29,11 @@ type CommsModule struct {
 }
 
 // New CommsModule is the factory method for the comms container
-func NewCommsModule(useSendGrid bool) *CommsModule {
+func NewCommsModule(useSendGrid bool, registration applicationport.Registration) *CommsModule {
 	userEventCli := instantiateUserEventClient()
 	emailClientAppSvc := instantiateAppSvc(useSendGrid)
 
-	udl := instantiateUserDomainListenersAndListen(userEventCli, emailClientAppSvc)
+	udl := instantiateUserDomainListenersAndListen(userEventCli, registration, emailClientAppSvc)
 
 	return &CommsModule{
 		userEventClient:           userEventCli,
@@ -66,10 +66,12 @@ func instantiateAppSvc(useSendGrid bool) ports.Emailer {
 	return app_svc.NewSendGridEmailClient(sg.SendGridKey, sg.SendGridFromName, sg.SendGridFromEmail)
 }
 
-func instantiateUserDomainListenersAndListen(uec user_event_port.UserEventClientInput, ecas ports.Emailer) *user_domain_listener.NewUserRegisteredEventListener {
-
-	um := umf.CreateNewUserModule()
-	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, um.UserRegistrationAppService(), ecas)
+func instantiateUserDomainListenersAndListen(
+	uec user_event_port.UserEventClientInput,
+	registration applicationport.Registration,
+	ecas ports.Emailer,
+) *user_domain_listener.NewUserRegisteredEventListener {
+	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, registration, ecas)
 	err := nurel.Listen(context.Background())
 	if err != nil {
 		panic(err)

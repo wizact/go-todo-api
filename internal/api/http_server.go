@@ -7,6 +7,9 @@ import (
 
 	"github.com/gorilla/mux"
 	hndl "github.com/wizact/go-todo-api/internal/api/handlers"
+	usermodule "github.com/wizact/go-todo-api/internal/user"
+	applicationport "github.com/wizact/go-todo-api/internal/user/ports/applications"
+	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/input/use_cases"
 	comms "github.com/wizact/go-todo-api/pkg/communication"
 )
 
@@ -23,12 +26,15 @@ func StartServer(address, port string, tls bool) {
 
 	router := mux.NewRouter()
 	// router.Use(commonMiddleware)
+	userModule := usermodule.NewUserModule(true)
+	userAccount := userModule.UserAccountUseCase()
+	registration := userModule.UserRegistrationAppService()
 
 	// Register services
-	registerBackgroundServices()
+	registerBackgroundServices(registration)
 
 	// Register all the routes
-	registerRoutes(router)
+	registerRoutes(router, userAccount, registration)
 
 	if tls {
 		log.Fatal(http.ListenAndServeTLS(serverAddress,
@@ -40,17 +46,24 @@ func StartServer(address, port string, tls bool) {
 	}
 }
 
-func registerBackgroundServices() {
-	comms.NewCommsModule(false)
+func registerBackgroundServices(registration applicationport.Registration) {
+	comms.NewCommsModule(false, registration)
 }
 
-func registerRoutes(router *mux.Router) {
+func registerRoutes(
+	router *mux.Router,
+	userAccount usecaseport.UserAccountUseCase,
+	registration applicationport.Registration,
+) {
 	// HealthCheck route setup
 	hcr := hndl.HealthCheckRoute{}
 	hcr.SetupRoutes(HealthCheckRoute, router)
 
 	// User route setup
-	ur := hndl.UserRouteFactory{}.CreateUserRoute()
+	ur := hndl.UserRouteFactory{
+		UserAccountUseCase: userAccount,
+		Registration:       registration,
+	}.CreateUserRoute()
 	ur.SetupRoutes(UserRoute, router)
 
 }
