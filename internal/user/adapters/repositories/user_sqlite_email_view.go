@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregates"
@@ -22,7 +22,7 @@ func (SqliteUserEmailView) TableName() string {
 	return "users_email_view"
 }
 
-func (r *UserSqliteRepository) createOrUpdateUserEmailView(ctx context.Context, tx *gorm.DB, user ua.User) (ua.UserEmailView, error) {
+func (r *UserSqliteRepository) createOrUpdateUserEmailView(tx *gorm.DB, user ua.User) (ua.UserEmailView, error) {
 	emptyUserEmailView := ua.UserEmailView{}
 
 	uev := &SqliteUserEmailView{}
@@ -34,7 +34,7 @@ func (r *UserSqliteRepository) createOrUpdateUserEmailView(ctx context.Context, 
 		FirstOrCreate(&uev)
 
 	if result.Error != nil {
-		return emptyUserEmailView, result.Error
+		return emptyUserEmailView, fmt.Errorf("persist user email view: %w", result.Error)
 	}
 
 	return uev.FromDbModelToDomainEntity(), nil

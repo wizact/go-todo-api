@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -48,7 +49,7 @@ func (slc *SqliteConnection) Open(cnf gorm.Config) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(slc.connectionString), &cnf)
 
 	if err != nil {
-		return nil, ErrFailedToConnectToDb
+		return nil, fmt.Errorf("%w: %w", ErrFailedToConnectToDb, err)
 	}
 
 	return db, nil

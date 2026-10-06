@@ -203,3 +203,24 @@ func TestUserSqliteRepository_CompleteRegistration_StaleDigestRollsBack(t *testi
 		t.Fatalf("registration rollback state = %#v, want %#v", got, want)
 	}
 }
+
+func TestUserSqliteRepository_CompleteRegistration_StaleDigestWithoutUserReturnsNotFound(t *testing.T) {
+	t.Parallel()
+
+	repository, _ := newUserSqliteRepository(
+		t,
+		&SqliteUserAggregate{},
+		&SqliteUserEmailView{},
+		&SqliteRegistrationVerification{},
+	)
+
+	_, err := repository.CompleteRegistration(
+		context.Background(),
+		newUserAggregate(t),
+		"stale-digest",
+	)
+
+	if !errors.Is(err, repositoryport.ErrRegistrationVerificationNotFound) {
+		t.Fatalf("CompleteRegistration() error = %v, want %v", err, repositoryport.ErrRegistrationVerificationNotFound)
+	}
+}
