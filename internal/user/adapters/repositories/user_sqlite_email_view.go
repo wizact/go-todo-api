@@ -22,7 +22,7 @@ func (SqliteUserEmailView) TableName() string {
 	return "users_email_view"
 }
 
-func (r *UserSqliteRepository) createOrUpdateUserEmailView(tx *gorm.DB, user ua.User) (ua.UserEmailView, error) {
+func (r *UserSqliteRepository) saveUserEmailView(tx *gorm.DB, user ua.User) (ua.UserEmailView, error) {
 	emptyUserEmailView := ua.UserEmailView{}
 
 	uev := &SqliteUserEmailView{}

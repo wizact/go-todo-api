@@ -29,6 +29,20 @@ func TestUserAccountService_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t 
 	}
 }
 
+func TestUserAccountService_UpdateUser_RepositoryFailureReturnsPersistenceError(t *testing.T) {
+	t.Parallel()
+
+	user := init_users(t)[0]
+	repository := repository.NewUserMemoryRepository(nil)
+	service := svc.NewUserAccountService(repository, userEventPublisherStub{})
+
+	_, err := service.UpdateUser(context.Background(), user)
+
+	if !errors.Is(err, domain.ErrUserPersistence) {
+		t.Fatalf("UpdateUser() error = %v, want %v", err, domain.ErrUserPersistence)
+	}
+}
+
 type userEventPublisherStub struct{}
 
 func (userEventPublisherStub) PublishNewUserRegisteredEvent(context.Context, domain.UserRegisteredEvent) error {
