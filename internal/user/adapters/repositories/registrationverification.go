@@ -78,6 +78,19 @@ func (SqliteRegistrationVerification) TableName() string {
 	return "user_registration_verifications"
 }
 
+func (record SqliteRegistrationVerification) toDomain() (registration.Verification, error) {
+	userID, err := uuid.Parse(record.UserID)
+	if err != nil {
+		return registration.Verification{}, fmt.Errorf("parse persisted registration verification user ID: %w", err)
+	}
+
+	return registration.Verification{
+		UserID:       userID,
+		SecretDigest: record.SecretDigest,
+		ExpiresAt:    time.UnixMilli(record.ExpiresAt).UTC(),
+	}, nil
+}
+
 func (r *UserSqliteRepository) SaveRegistrationVerification(
 	ctx context.Context,
 	verification registration.Verification,
@@ -123,9 +136,10 @@ func (r *UserSqliteRepository) FindRegistrationVerification(
 		return emptyVerification, fmt.Errorf("find registration verification: %w", err)
 	}
 
-	return registration.Verification{
-		UserID:       uuid.MustParse(record.UserID),
-		SecretDigest: record.SecretDigest,
-		ExpiresAt:    time.UnixMilli(record.ExpiresAt).UTC(),
-	}, nil
+	verification, err := record.toDomain()
+	if err != nil {
+		return emptyVerification, fmt.Errorf("map registration verification: %w", err)
+	}
+
+	return verification, nil
 }

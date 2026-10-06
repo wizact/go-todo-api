@@ -37,7 +37,7 @@ func (r *UserSqliteRepository) saveUserEmailView(tx *gorm.DB, user ua.User) (ua.
 		return emptyUserEmailView, fmt.Errorf("persist user email view: %w", result.Error)
 	}
 
-	return uev.FromDbModelToDomainEntity(), nil
+	return uev.toDomain()
 }
 
 func (dbm *SqliteUserEmailView) FromDomainEntityToDbModel(de ua.User) {
@@ -46,7 +46,11 @@ func (dbm *SqliteUserEmailView) FromDomainEntityToDbModel(de ua.User) {
 	dbm.HasVerifiedEmail = de.HasVerifiedEmail()
 }
 
-func (dbm SqliteUserEmailView) FromDbModelToDomainEntity() ua.UserEmailView {
-	de := ua.NewUserEmailView(uuid.MustParse(dbm.UserID), dbm.Email, dbm.HasVerifiedEmail)
-	return de
+func (dbm SqliteUserEmailView) toDomain() (ua.UserEmailView, error) {
+	userID, err := uuid.Parse(dbm.UserID)
+	if err != nil {
+		return ua.UserEmailView{}, fmt.Errorf("parse persisted user email view ID: %w", err)
+	}
+
+	return ua.NewUserEmailView(userID, dbm.Email, dbm.HasVerifiedEmail), nil
 }

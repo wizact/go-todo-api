@@ -37,6 +37,16 @@ func TestSqliteRegistrationVerification_TableName_ReturnsRegistrationVerificatio
 	}
 }
 
+func TestSqliteRegistrationVerification_toDomain_MalformedUserIDReturnsError(t *testing.T) {
+	t.Parallel()
+
+	_, err := (SqliteRegistrationVerification{UserID: "not-a-uuid"}).toDomain()
+
+	if err == nil {
+		t.Fatal("ToDomain() error = nil, want malformed user ID error")
+	}
+}
+
 func TestUserSqliteRepository_FindRegistrationVerification_Missing_ReturnsNotFound(t *testing.T) {
 	t.Parallel()
 
