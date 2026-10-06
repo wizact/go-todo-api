@@ -77,8 +77,7 @@ func (ua *UserAccountService) UpdateUser(ctx context.Context, user aggregate.Use
 	u, e := ua.userRepository.Update(ctx, user)
 
 	if e != nil {
-		// Fallback to generic error
-		return u, fmt.Errorf("%w: update user: %w", domain.ErrUserLookupFailed, e)
+		return u, fmt.Errorf("%w: update user: %w", domain.ErrUserPersistence, e)
 	}
 
 	return u, nil

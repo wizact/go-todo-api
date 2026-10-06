@@ -100,7 +100,7 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 		}
 
 		persistedUser = record.FromDbModelToDomainEntity()
-		if _, err := r.createOrUpdateUserEmailView(tx, persistedUser); err != nil {
+		if _, err := r.saveUserEmailView(tx, persistedUser); err != nil {
 			return err
 		}
 
@@ -114,8 +114,42 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 }
 
 func (r *UserSqliteRepository) Update(ctx context.Context, user ua.User) (ua.User, error) {
-	// TODO: Implement
-	return ua.User{}, nil
+	emptyUser := ua.User{}
+
+	db, err := r.connection.Open(gorm.Config{})
+	if err != nil {
+		return emptyUser, fmt.Errorf("open user database: %w", err)
+	}
+
+	var persistedUser ua.User
+	err = db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		record := SqliteUserAggregate{UserID: user.UserId().String()}
+		if err := tx.First(&record).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return domain.ErrUserIDNotFound
+			}
+			return fmt.Errorf("find user aggregate for update: %w", err)
+		}
+
+		updatedRecord := SqliteUserAggregate{}
+		updatedRecord.FromDomainEntityToDbModel(user)
+		record.ValueData = updatedRecord.ValueData
+		if err := tx.Save(&record).Error; err != nil {
+			return fmt.Errorf("persist user aggregate update: %w", err)
+		}
+
+		persistedUser = record.FromDbModelToDomainEntity()
+		if _, err := r.saveUserEmailView(tx, persistedUser); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return emptyUser, fmt.Errorf("update user: %w", err)
+	}
+
+	return persistedUser, nil
 }
 
 type SqliteUserAggregate struct {
