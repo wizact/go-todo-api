@@ -39,6 +39,26 @@ func TestSqliteUserModel_LegacyVerificationFieldsAreDropped(t *testing.T) {
 	}
 }
 
+func TestSqliteUserAggregate_toDomain_MalformedUserIDReturnsError(t *testing.T) {
+	t.Parallel()
+
+	_, err := (SqliteUserAggregate{UserID: "not-a-uuid"}).toDomain()
+
+	if err == nil {
+		t.Fatal("ToDomain() error = nil, want malformed user ID error")
+	}
+}
+
+func TestSqliteUserEmailView_toDomain_MalformedUserIDReturnsError(t *testing.T) {
+	t.Parallel()
+
+	_, err := (SqliteUserEmailView{UserID: "not-a-uuid"}).toDomain()
+
+	if err == nil {
+		t.Fatal("ToDomain() error = nil, want malformed user ID error")
+	}
+}
+
 func TestUserSqliteRepository_Create_DoesNotRequireTokenView(t *testing.T) {
 	t.Parallel()
 

@@ -47,7 +47,10 @@ func (r *UserSqliteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.U
 		return emptyUser, fmt.Errorf("find user by ID: %w", result.Error)
 	}
 
-	de := u.FromDbModelToDomainEntity()
+	de, err := u.toDomain()
+	if err != nil {
+		return emptyUser, fmt.Errorf("map user aggregate: %w", err)
+	}
 
 	return de, nil
 }
@@ -71,7 +74,10 @@ func (r *UserSqliteRepository) FindByEmail(ctx context.Context, email string) (u
 		return emptyUser, fmt.Errorf("find user by email: %w", result.Error)
 	}
 
-	de := uev.FromDbModelToDomainEntity()
+	de, err := uev.toDomain()
+	if err != nil {
+		return emptyUser, fmt.Errorf("map user email view: %w", err)
+	}
 
 	u, err := r.FindById(ctx, de.Id())
 
@@ -99,7 +105,11 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 			return fmt.Errorf("persist user aggregate: %w", err)
 		}
 
-		persistedUser = record.FromDbModelToDomainEntity()
+		mappedUser, err := record.toDomain()
+		if err != nil {
+			return fmt.Errorf("map persisted user aggregate: %w", err)
+		}
+		persistedUser = mappedUser
 		if _, err := r.saveUserEmailView(tx, persistedUser); err != nil {
 			return err
 		}
@@ -138,7 +148,11 @@ func (r *UserSqliteRepository) Update(ctx context.Context, user ua.User) (ua.Use
 			return fmt.Errorf("persist user aggregate update: %w", err)
 		}
 
-		persistedUser = record.FromDbModelToDomainEntity()
+		mappedUser, err := record.toDomain()
+		if err != nil {
+			return fmt.Errorf("map persisted user aggregate: %w", err)
+		}
+		persistedUser = mappedUser
 		if _, err := r.saveUserEmailView(tx, persistedUser); err != nil {
 			return err
 		}
@@ -205,9 +219,14 @@ func (dbm *SqliteUserAggregate) FromDomainEntityToDbModel(de ua.User) {
 	}
 }
 
-func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
+func (dbm SqliteUserAggregate) toDomain() (ua.User, error) {
+	userID, err := uuid.Parse(dbm.UserID)
+	if err != nil {
+		return ua.User{}, fmt.Errorf("parse persisted user ID: %w", err)
+	}
+
 	ph := model.NewPhoneNumber(dbm.ValueData.CountryCode, dbm.ValueData.AreaCode, dbm.ValueData.Number)
-	mu := model.RehydrateUser(uuid.MustParse(dbm.UserID), dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
+	mu := model.RehydrateUser(userID, dbm.ValueData.FirstName, dbm.ValueData.LastName, dbm.ValueData.DateOfBirth, dbm.ValueData.Email, ph)
 
 	dl := model.NewLocation(dbm.ValueData.LocationLong, dbm.ValueData.LocationLat)
 
@@ -215,5 +234,5 @@ func (dbm SqliteUserAggregate) FromDbModelToDomainEntity() ua.User {
 		IsActive:         dbm.ValueData.IsActive,
 		HasVerifiedEmail: dbm.ValueData.HasVerifiedEmail,
 	}
-	return ua.RehydrateUser(mu, dl, status)
+	return ua.RehydrateUser(mu, dl, status), nil
 }
