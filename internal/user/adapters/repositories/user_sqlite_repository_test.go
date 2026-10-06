@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -53,13 +55,54 @@ func TestUserSqliteRepository_Create_DoesNotRequireTokenView(t *testing.T) {
 func TestUserSqliteRepository_Create_EmailViewFailureReturnsError(t *testing.T) {
 	t.Parallel()
 
-	repository, _ := newUserSqliteRepository(t, &SqliteUserAggregate{})
+	repository, database := newUserSqliteRepository(t, &SqliteUserAggregate{})
 	user := newUserAggregate(t)
 
 	_, err := repository.Create(context.Background(), user)
+	var aggregateCount int64
+	countError := database.Model(&SqliteUserAggregate{}).
+		Where("user_id = ?", user.UserId().String()).
+		Count(&aggregateCount).
+		Error
 
-	if err == nil {
-		t.Fatal("Create() error = nil, want email view persistence error")
+	if err == nil || !strings.Contains(err.Error(), "persist user email view") || countError != nil || aggregateCount != 0 {
+		t.Fatalf("Create() error = %v, aggregate count = %d, count error = %v; want contextual error and rolled-back aggregate", err, aggregateCount, countError)
+	}
+}
+
+func TestUserSqliteRepository_FindById_CanceledContextReturnsError(t *testing.T) {
+	t.Parallel()
+
+	repository, _ := newUserSqliteRepository(t, &SqliteUserAggregate{}, &SqliteUserEmailView{})
+	user, err := repository.Create(context.Background(), newUserAggregate(t))
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err = repository.FindById(ctx, user.UserId())
+
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("FindById() error = %v, want %v", err, context.Canceled)
+	}
+}
+
+func TestUserSqliteRepository_FindByEmail_CanceledContextReturnsError(t *testing.T) {
+	t.Parallel()
+
+	repository, _ := newUserSqliteRepository(t, &SqliteUserAggregate{}, &SqliteUserEmailView{})
+	user, err := repository.Create(context.Background(), newUserAggregate(t))
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err = repository.FindByEmail(ctx, user.Email())
+
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("FindByEmail() error = %v, want %v", err, context.Canceled)
 	}
 }
 

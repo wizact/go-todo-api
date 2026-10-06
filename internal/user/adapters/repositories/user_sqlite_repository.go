@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,19 +32,19 @@ func (r *UserSqliteRepository) FindById(ctx context.Context, id uuid.UUID) (ua.U
 	db, err := r.connection.Open(gorm.Config{})
 
 	if err != nil {
-		return emptyUser, err
+		return emptyUser, fmt.Errorf("open user database: %w", err)
 	}
 
 	u := &SqliteUserAggregate{UserID: id.String()}
 
-	result := db.Limit(1).First(u)
+	result := db.WithContext(ctx).Limit(1).First(u)
 
 	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return emptyUser, domain.ErrUserIDNotFound
 	}
 
 	if result.Error != nil {
-		return emptyUser, result.Error
+		return emptyUser, fmt.Errorf("find user by ID: %w", result.Error)
 	}
 
 	de := u.FromDbModelToDomainEntity()
@@ -56,18 +57,18 @@ func (r *UserSqliteRepository) FindByEmail(ctx context.Context, email string) (u
 	db, err := r.connection.Open(gorm.Config{})
 
 	if err != nil {
-		return emptyUser, err
+		return emptyUser, fmt.Errorf("open user database: %w", err)
 	}
 
 	uev := &SqliteUserEmailView{Email: email}
-	result := db.Where(uev).First(uev)
+	result := db.WithContext(ctx).Where(uev).First(uev)
 
 	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return emptyUser, domain.ErrUserEmailNotFound
 	}
 
 	if result.Error != nil {
-		return emptyUser, result.Error
+		return emptyUser, fmt.Errorf("find user by email: %w", result.Error)
 	}
 
 	de := uev.FromDbModelToDomainEntity()
@@ -86,7 +87,7 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 
 	db, err := r.connection.Open(gorm.Config{})
 	if err != nil {
-		return emptyUser, err
+		return emptyUser, fmt.Errorf("open user database: %w", err)
 	}
 
 	var persistedUser ua.User
@@ -95,18 +96,18 @@ func (r *UserSqliteRepository) Create(ctx context.Context, user ua.User) (ua.Use
 		record.FromDomainEntityToDbModel(user)
 
 		if err := tx.Create(record).Error; err != nil {
-			return err
+			return fmt.Errorf("persist user aggregate: %w", err)
 		}
 
 		persistedUser = record.FromDbModelToDomainEntity()
-		if _, err := r.createOrUpdateUserEmailView(ctx, tx, persistedUser); err != nil {
+		if _, err := r.createOrUpdateUserEmailView(tx, persistedUser); err != nil {
 			return err
 		}
 
 		return nil
 	})
 	if err != nil {
-		return emptyUser, err
+		return emptyUser, fmt.Errorf("create user: %w", err)
 	}
 
 	return persistedUser, nil

@@ -34,6 +34,16 @@ func (r *UserSqliteRepository) CompleteRegistration(
 	}
 
 	err = database.WithContext(ctx).Transaction(func(transaction *gorm.DB) error {
+		result := transaction.
+			Where("user_id = ? AND secret_digest = ?", user.UserId().String(), verificationDigest).
+			Delete(&SqliteRegistrationVerification{})
+		if result.Error != nil {
+			return fmt.Errorf("consume registration verification: %w", result.Error)
+		}
+		if result.RowsAffected != 1 {
+			return repositoryport.ErrRegistrationVerificationNotFound
+		}
+
 		persistedAggregate := SqliteUserAggregate{UserID: user.UserId().String()}
 		if err := transaction.First(&persistedAggregate).Error; err != nil {
 			return fmt.Errorf("find user aggregate for registration completion: %w", err)
@@ -52,16 +62,6 @@ func (r *UserSqliteRepository) CompleteRegistration(
 		emailView.HasVerifiedEmail = user.HasVerifiedEmail()
 		if err := transaction.Save(&emailView).Error; err != nil {
 			return fmt.Errorf("update user email view for registration completion: %w", err)
-		}
-
-		result := transaction.
-			Where("user_id = ? AND secret_digest = ?", user.UserId().String(), verificationDigest).
-			Delete(&SqliteRegistrationVerification{})
-		if result.Error != nil {
-			return fmt.Errorf("consume registration verification: %w", result.Error)
-		}
-		if result.RowsAffected != 1 {
-			return repositoryport.ErrRegistrationVerificationNotFound
 		}
 
 		return nil
