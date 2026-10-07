@@ -45,6 +45,18 @@ func TestLoadConfig_MapsVerificationDeliverySettings(t *testing.T) {
 	}
 }
 
+func TestLoadConfig_PublicBaseURLWithWhitespace_Normalizes(t *testing.T) {
+	t.Setenv("TODOAPI_PUBLICBASEURL", " https://todo.example.com/app/ ")
+
+	config, err := LoadConfig()
+	if err != nil {
+		t.Fatalf("LoadConfig() error = %v", err)
+	}
+	if got, want := config.registrationConfig().PublicBaseURL, "https://todo.example.com/app/"; got != want {
+		t.Fatalf("PublicBaseURL = %q, want %q", got, want)
+	}
+}
+
 func TestLoadConfig_InvalidDeliverySettingsReturnsError(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -54,6 +66,8 @@ func TestLoadConfig_InvalidDeliverySettingsReturnsError(t *testing.T) {
 	}{
 		{name: "missing public base URL", sendGridEnabled: "false"},
 		{name: "non-HTTP public base URL", publicBaseURL: "ftp://todo.example.com", sendGridEnabled: "false"},
+		{name: "public base URL with query", publicBaseURL: "https://todo.example.com/app?tenant=x", sendGridEnabled: "false"},
+		{name: "public base URL with fragment", publicBaseURL: "https://todo.example.com/app#welcome", sendGridEnabled: "false"},
 		{name: "enabled SendGrid without key", publicBaseURL: "https://todo.example.com", sendGridEnabled: "true"},
 	}
 

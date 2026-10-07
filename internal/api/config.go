@@ -28,6 +28,7 @@ func LoadConfig() (Config, error) {
 	if err := envconfig.Process(version.APPNAME, &config); err != nil {
 		return Config{}, fmt.Errorf("load application configuration: %w", err)
 	}
+	config.PublicBaseURL = strings.TrimSpace(config.PublicBaseURL)
 	if err := config.Validate(); err != nil {
 		return Config{}, fmt.Errorf("validate application configuration: %w", err)
 	}
@@ -43,6 +44,9 @@ func (c Config) Validate() error {
 	}
 	if publicBaseURL.Host == "" || (publicBaseURL.Scheme != "http" && publicBaseURL.Scheme != "https") {
 		return errors.New("public base URL must be an absolute HTTP or HTTPS URL")
+	}
+	if publicBaseURL.RawQuery != "" || publicBaseURL.ForceQuery || strings.Contains(c.PublicBaseURL, "#") {
+		return errors.New("public base URL must not contain a query or fragment")
 	}
 	if err := c.communicationConfig().Validate(); err != nil {
 		return fmt.Errorf("validate communication configuration: %w", err)
