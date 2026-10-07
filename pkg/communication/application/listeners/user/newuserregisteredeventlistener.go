@@ -10,23 +10,27 @@ import (
 	de "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 )
 
-// TODO: Replace with actual template id
-const VERIFY_REGISTRATION_TEMPLATE_ID = ""
-
 // NewUserRegisteredEventListener application service responsible for managing the lifecycle of a user registration
 type NewUserRegisteredEventListener struct {
 	emailClientAppSvc comms_app_svc_port.Emailer
 	userEventClient   event_input.UserEventClientInput
 	userRegAppSvc     user_app_svc_port.Registration
+	templateID        string
 	done              chan bool
 }
 
 // NewNewUserRegisteredEventListene returns a new instance of NewUserRegisteredEventListener application service
-func NewNewUserRegisteredEventListener(uec event_input.UserEventClientInput, userRegAppSvc user_app_svc_port.Registration, emailClientAppSvc comms_app_svc_port.Emailer) *NewUserRegisteredEventListener {
+func NewNewUserRegisteredEventListener(
+	uec event_input.UserEventClientInput,
+	userRegAppSvc user_app_svc_port.Registration,
+	emailClientAppSvc comms_app_svc_port.Emailer,
+	templateID string,
+) *NewUserRegisteredEventListener {
 	return &NewUserRegisteredEventListener{
 		emailClientAppSvc: emailClientAppSvc,
 		userEventClient:   uec,
 		userRegAppSvc:     userRegAppSvc,
+		templateID:        templateID,
 		done:              make(chan bool),
 	}
 }
@@ -76,7 +80,7 @@ L:
 			}
 
 			// Send the email
-			if err := r.emailClientAppSvc.SendUsingTemplate(ude.ID.String(), ude.Email, "User Registration Verification", VERIFY_REGISTRATION_TEMPLATE_ID, ed); err != nil {
+			if err := r.emailClientAppSvc.SendUsingTemplate(ude.ID.String(), ude.Email, "User Registration Verification", r.templateID, ed); err != nil {
 				log.Println("communication > send registration verification email:", err)
 			}
 

@@ -47,7 +47,9 @@ func StartServer(address, port string, tls bool) {
 }
 
 func registerBackgroundServices(registration applicationport.Registration) {
-	comms.NewCommsModule(false, registration)
+	if _, err := comms.NewCommsModule(comms.Config{}, registration); err != nil {
+		panic(err)
+	}
 }
 
 func registerRoutes(
