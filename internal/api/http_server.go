@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -19,37 +18,45 @@ const (
 )
 
 // StartServer starts the http server
-func StartServer(address, port string, tls bool) {
+func StartServer(address, port string, tls bool, config Config) error {
 	serverAddress := fmt.Sprintf("%s:%s", address, port)
 
 	fmt.Println("Listening to requests from: " + serverAddress)
 
 	router := mux.NewRouter()
 	// router.Use(commonMiddleware)
-	userModule := usermodule.NewUserModule(true)
+	userModule := usermodule.NewUserModule(true, config.registrationConfig())
 	userAccount := userModule.UserAccountUseCase()
 	registration := userModule.UserRegistrationAppService()
 
 	// Register services
-	registerBackgroundServices(registration)
+	if err := registerBackgroundServices(registration, config.communicationConfig()); err != nil {
+		return fmt.Errorf("register background services: %w", err)
+	}
 
 	// Register all the routes
 	registerRoutes(router, userAccount, registration)
 
 	if tls {
-		log.Fatal(http.ListenAndServeTLS(serverAddress,
+		if err := http.ListenAndServeTLS(serverAddress,
 			"certs/server.crt",
 			"certs/server.key",
-			router))
-	} else {
-		log.Fatal(http.ListenAndServe(serverAddress, router))
+			router); err != nil {
+			return fmt.Errorf("serve HTTPS: %w", err)
+		}
+		return nil
 	}
+	if err := http.ListenAndServe(serverAddress, router); err != nil {
+		return fmt.Errorf("serve HTTP: %w", err)
+	}
+	return nil
 }
 
-func registerBackgroundServices(registration applicationport.Registration) {
-	if _, err := comms.NewCommsModule(comms.Config{}, registration); err != nil {
-		panic(err)
+func registerBackgroundServices(registration applicationport.Registration, config comms.Config) error {
+	if _, err := comms.NewCommsModule(config, registration); err != nil {
+		return fmt.Errorf("start communication module: %w", err)
 	}
+	return nil
 }
 
 func registerRoutes(

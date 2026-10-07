@@ -96,9 +96,12 @@ make shell
 Key environment variables (see `docs/environment-variables.md` for complete list):
 - `TODOAPI_DBPATH`: SQLite database file path
 - `TODOAPI_NATSURL`: NATS server URL (e.g., `nats:4222`)
+- `TODOAPI_PUBLICBASEURL`: Public HTTP(S) base URL used in registration verification links
+- `TODOAPI_SENDGRIDENABLED`: Enables SendGrid delivery (default: `false`)
 - `TODOAPI_SENDGRIDKEY`: SendGrid API key
 - `TODOAPI_SENDGRIDFROMNAME`: SendGrid sender name
 - `TODOAPI_SENDGRIDFROMEMAIL`: SendGrid sender email
+- `TODOAPI_SENDGRIDVERIFICATIONTEMPLATEID`: SendGrid registration verification template ID
 
 ## Testing Domain Events
 

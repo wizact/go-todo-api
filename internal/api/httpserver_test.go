@@ -10,6 +10,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	userportmocks "github.com/wizact/go-todo-api/internal/user/ports/mocks"
+	"github.com/wizact/go-todo-api/pkg/communication"
 )
 
 func TestRegisterRoutes_UsesProvidedUserServices(t *testing.T) {
@@ -33,5 +34,16 @@ func TestRegisterRoutes_UsesProvidedUserServices(t *testing.T) {
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
+	}
+}
+
+func TestRegisterBackgroundServices_InvalidConfigReturnsError(t *testing.T) {
+	controller := gomock.NewController(t)
+	registration := userportmocks.NewMockRegistration(controller)
+
+	err := registerBackgroundServices(registration, communication.Config{SendGridEnabled: true})
+
+	if err == nil {
+		t.Fatal("registerBackgroundServices() error = nil, want configuration error")
 	}
 }
