@@ -39,7 +39,7 @@ sequenceDiagram
     Listener->>Email: send verification link
 ```
 
-The raw token exists only in application memory and the outgoing verification message. SQLite stores the bcrypt digest with a 24-hour expiry. Issuing another credential for the same user replaces the previous row.
+The raw token exists only in application memory and the outgoing verification message. SQLite stores the bcrypt digest with a 24-hour expiry. Issuing another credential for the same user replaces the previous row. The public link base comes from `TODOAPI_PUBLICBASEURL`; the SendGrid template comes from `TODOAPI_SENDGRIDVERIFICATIONTEMPLATEID` when provider delivery is enabled.
 
 ## Completing verification
 
@@ -88,5 +88,6 @@ Do not introduce a separately injectable registration-verification repository th
 - SQL lookups and deletes use parameterized queries.
 - HTTP responses expose sanitized errors rather than storage details.
 - SQLite and memory adapters enforce equivalent one-time behavior.
+- Startup rejects malformed public URLs and partial SendGrid configurations before constructing infrastructure adapters.
 
 The end-to-end regression is in `internal/user/application/services/registrationintegration_test.go`.

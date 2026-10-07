@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"flag"
+	"fmt"
 )
 
 // StartServerCommand is struct for info required to start an http server
@@ -50,11 +51,13 @@ func (fc *StartServerCommand) HelpString() string {
 
 // Run the start server command
 func (fc *StartServerCommand) Run(ctx context.Context, args []string) error {
+	config, err := LoadConfig()
+	if err != nil {
+		return fmt.Errorf("load server configuration: %w", err)
+	}
 	if fc.Address() == "localhost" {
 		fc.address = ""
 	}
 
-	StartServer(fc.Address(), fc.Port(), fc.Tls())
-
-	return nil
+	return StartServer(fc.Address(), fc.Port(), fc.Tls(), config)
 }

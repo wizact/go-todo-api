@@ -32,11 +32,11 @@ type userRepository interface {
 }
 
 // New UserModule is the factory method for the UserModule container
-func NewUserModule(useDatabase bool) *UserModule {
+func NewUserModule(useDatabase bool, registrationConfig app_svc.RegistrationConfig) *UserModule {
 	userRepo := instantiateUserRepository(useDatabase)
 	userEventPublisher := instantiateUserEventPublisher()
 	userAccountUseCase := instantiateUserAccountUseCase(userRepo, userEventPublisher)
-	appSvc := instantiateAppSvc(userAccountUseCase, userRepo)
+	appSvc := instantiateAppSvc(userAccountUseCase, userRepo, registrationConfig)
 	return &UserModule{
 		userRepository:     userRepo,
 		userEventPublisher: userEventPublisher,
@@ -76,8 +76,9 @@ func instantiateUserEventPublisher() event_port.UserEventPublisher {
 func instantiateAppSvc(
 	uc usecase_port.UserAccountUseCase,
 	repository repository_port.RegistrationRepository,
+	config app_svc.RegistrationConfig,
 ) app_svc_port.Registration {
-	return app_svc.NewRegistration(uc, repository, app_svc.DefaultRegistrationConfig())
+	return app_svc.NewRegistration(uc, repository, config)
 }
 
 func instantiateUserAccountUseCase(r repository_port.UserRepository, ev event_port.UserEventPublisher) usecase_port.UserAccountUseCase {
