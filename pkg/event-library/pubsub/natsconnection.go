@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -21,20 +22,19 @@ type PubSubOpt struct {
 type NatsConnection struct {
 	conn    *nats.Conn
 	options *PubSubOpt
+	connect func(string, ...nats.Option) (*nats.Conn, error)
 }
 
-// NewNatsConnection creates and returns a new nats connection with urls of the cluster and client name.
-// The connection is not established at this stage.
-// Urls are a string a instances of cluster seperated by space, or a single url.
-// If urls and client name are not provided, they will be resolved from env variables.
+// NewNatsConnection creates a NATS connection configuration for the supplied
+// cluster URLs and client name. The connection is established lazily.
 func NewNatsConnection(urls, clientName string) (*NatsConnection, error) {
-	nc, err := resolveConnectionOpts("", "")
+	nc, err := resolveConnectionOpts(urls, clientName)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &NatsConnection{options: nc}, nil
+	return &NatsConnection{options: nc, connect: nats.Connect}, nil
 }
 
 func resolveConnectionOpts(urls, clientName string) (*PubSubOpt, error) {
@@ -52,7 +52,7 @@ func resolveConnectionOpts(urls, clientName string) (*PubSubOpt, error) {
 	return &PubSubOpt{Urls: nu, ClientName: cn}, nil
 }
 
-// Connect returns an already established connection or establish a new connection and returns it.
+// Connect returns the active connection or establishes it on first use.
 func (psc *NatsConnection) Connect() (*nats.Conn, error) {
 	if psc.conn != nil && psc.conn.IsConnected() {
 		return psc.conn, nil
@@ -61,9 +61,9 @@ func (psc *NatsConnection) Connect() (*nats.Conn, error) {
 	opts := []nats.Option{nats.Name(psc.options.ClientName)}
 	opts = setupConnOptions(opts)
 
-	nc, err := nats.Connect(psc.options.Urls, opts...)
+	nc, err := psc.connect(psc.options.Urls, opts...)
 	if err != nil {
-		return nil, ErrFailedToConnectToNats
+		return nil, fmt.Errorf("%w: %w", ErrFailedToConnectToNats, err)
 	}
 
 	psc.conn = nc
