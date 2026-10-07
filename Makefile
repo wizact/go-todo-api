@@ -129,7 +129,8 @@ shell: | $(BUILD_DIRS)
 .PHONY: run-server
 run-server: # @HELP runs the http server on the localhost port of 9000
 run-server:
-	go run ./cmd/server/*.go start-server -address=localhost -port=9000 -tls=false
+	TODOAPI_PUBLICBASEURL=http://localhost:9000 \
+		go run ./cmd/server/*.go start-server -address=localhost -port=9000 -tls=false
 
 .PHONY: run-db-migration
 run-db-migration: # @HELP generates the new db resources and run the migration cmd
