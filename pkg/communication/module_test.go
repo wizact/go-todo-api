@@ -54,10 +54,10 @@ func (subscriber *moduleUserEventSubscriberStub) SubscribeToNewUserRegisteredEve
 
 type moduleEmailerStub struct{}
 
-func (moduleEmailerStub) Send(string, string, string, string, string) (int, error) {
-	return 200, nil
+func (moduleEmailerStub) Send(string, string, string, string, string) error {
+	return nil
 }
 
-func (moduleEmailerStub) SendUsingTemplate(string, string, string, string, map[string]string) (int, error) {
-	return 200, nil
+func (moduleEmailerStub) SendUsingTemplate(string, string, string, string, map[string]string) error {
+	return nil
 }
