@@ -2,6 +2,7 @@ package usereventlistener
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -88,6 +89,51 @@ func TestNewUserRegisteredEventListener_CancelledContextUnsubscribes(t *testing.
 	}
 }
 
+func TestNewUserRegisteredEventListener_RegistrationFailureSkipsEmail(t *testing.T) {
+	t.Parallel()
+
+	controller := gomock.NewController(t)
+	registration := user_app_svc_mocks.NewMockRegistration(controller)
+	subscriber := &userEventSubscriberStub{unsubscribed: make(chan struct{})}
+	emailer := &emailerSpy{calls: make(chan templateEmail, 1)}
+	registrationCalled := make(chan struct{})
+	listenerContext, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	userID := uuid.New()
+
+	registration.EXPECT().
+		GetRegistrationVerificationEmailData(listenerContext, userID).
+		DoAndReturn(func(context.Context, uuid.UUID) (map[string]string, error) {
+			close(registrationCalled)
+			return nil, errors.New("issue credential")
+		})
+
+	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer)
+	if err := listener.Listen(listenerContext); err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+	subscriber.events <- ude.UserDomainEvent{ID: userID, Email: "ada@example.com"}
+
+	select {
+	case <-registrationCalled:
+	case <-time.After(time.Second):
+		t.Fatal("registration service was not called")
+	}
+
+	select {
+	case email := <-emailer.calls:
+		t.Fatalf("unexpected verification email: %#v", email)
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	cancel()
+	select {
+	case <-subscriber.unsubscribed:
+	case <-time.After(time.Second):
+		t.Fatal("event subscription was not cancelled")
+	}
+}
+
 type listenerContextKey struct{}
 
 type userEventSubscriberStub struct {
@@ -114,16 +160,16 @@ type emailerSpy struct {
 	calls chan templateEmail
 }
 
-func (e *emailerSpy) Send(_, _, _, _, _ string) (int, error) {
-	return 200, nil
+func (e *emailerSpy) Send(_, _, _, _, _ string) error {
+	return nil
 }
 
-func (e *emailerSpy) SendUsingTemplate(to, email, subject, _ string, templateData map[string]string) (int, error) {
+func (e *emailerSpy) SendUsingTemplate(to, email, subject, _ string, templateData map[string]string) error {
 	e.calls <- templateEmail{
 		to:           to,
 		email:        email,
 		subject:      subject,
 		templateData: templateData,
 	}
-	return 200, nil
+	return nil
 }

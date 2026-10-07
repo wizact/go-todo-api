@@ -72,10 +72,13 @@ L:
 			ed, err := r.userRegAppSvc.GetRegistrationVerificationEmailData(ctx, ude.ID)
 			if err != nil {
 				log.Println("communication > new user registered event listener app service > send email confirmation: ", err)
+				continue
 			}
 
 			// Send the email
-			r.emailClientAppSvc.SendUsingTemplate(ude.ID.String(), ude.Email, "User Registration Verification", VERIFY_REGISTRATION_TEMPLATE_ID, ed)
+			if err := r.emailClientAppSvc.SendUsingTemplate(ude.ID.String(), ude.Email, "User Registration Verification", VERIFY_REGISTRATION_TEMPLATE_ID, ed); err != nil {
+				log.Println("communication > send registration verification email:", err)
+			}
 
 		case <-done:
 			log.Println("communication > unsubscribing NewUserRegisteredListener")
