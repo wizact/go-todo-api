@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,6 +18,7 @@ const registrationVerificationLifetime = 24 * time.Hour
 type Registration struct {
 	userAccountUseCase     usecase_port.UserAccountUseCase
 	registrationRepository repository_port.RegistrationRepository
+	config                 RegistrationConfig
 	now                    func() time.Time
 	done                   chan bool
 }
@@ -25,10 +27,12 @@ type Registration struct {
 func NewRegistration(
 	uc usecase_port.UserAccountUseCase,
 	repository repository_port.RegistrationRepository,
+	config RegistrationConfig,
 ) *Registration {
 	return &Registration{
 		userAccountUseCase:     uc,
 		registrationRepository: repository,
+		config:                 config,
 		now:                    time.Now,
 		done:                   make(chan bool),
 	}
@@ -63,7 +67,7 @@ func (r *Registration) GetRegistrationVerificationEmailData(ctx context.Context,
 	em["email"] = u.Email()
 	em["nick_name"] = ue.ConcatenatedName()
 	em["token"] = token
-	em["base_url"] = "http://localhost:8080" //TODO: get base url from env
+	em["base_url"] = strings.TrimRight(r.config.PublicBaseURL, "/")
 	em["verify_email_link"] = fmt.Sprintf("%s/users/verify-registration?uid=%s&token=%s", em["base_url"], uid.String(), token)
 
 	return em, nil
