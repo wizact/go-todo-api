@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type Publication[T any] struct {
@@ -16,7 +17,7 @@ func (p *Publication[T]) connect() error {
 	_, err := p.psc.Connect()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("connect publisher: %w", err)
 	}
 	return nil
 }

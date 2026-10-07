@@ -1,6 +1,8 @@
 package pubsub
 
 import (
+	"fmt"
+
 	"github.com/nats-io/nats.go"
 )
 
@@ -17,7 +19,7 @@ func (s *Subscription) connect() error {
 	_, err := s.psc.Connect()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("connect subscriber: %w", err)
 	}
 	return nil
 }
