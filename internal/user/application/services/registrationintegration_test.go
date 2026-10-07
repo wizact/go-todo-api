@@ -54,7 +54,7 @@ func TestRegistration_SqliteJourneyPersistsDigestAndConsumesCredential(t *testin
 	if _, err := userAccount.RegisterNewUser(context.Background(), user); err != nil {
 		t.Fatalf("RegisterNewUser() error = %v", err)
 	}
-	registration := NewRegistration(userAccount, repository)
+	registration := NewRegistration(userAccount, repository, DefaultRegistrationConfig())
 	registration.now = func() time.Time { return now }
 	emailData, err := registration.GetRegistrationVerificationEmailData(context.Background(), userID)
 	if err != nil {

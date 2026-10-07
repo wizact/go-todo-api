@@ -46,7 +46,7 @@ func TestRegistration_GetRegistrationVerificationEmailData_IssuesStoredCredentia
 	userAccount.EXPECT().
 		GetUserById(requestContext, userID).
 		Return(user, nil)
-	registration := NewRegistration(userAccount, repository)
+	registration := NewRegistration(userAccount, repository, DefaultRegistrationConfig())
 	registration.now = func() time.Time { return now }
 
 	emailData, err := registration.GetRegistrationVerificationEmailData(requestContext, userID)
@@ -80,6 +80,29 @@ func TestRegistration_GetRegistrationVerificationEmailData_IssuesStoredCredentia
 	}
 }
 
+func TestRegistration_GetRegistrationVerificationEmailData_UsesConfiguredPublicBaseURL(t *testing.T) {
+	controller := gomock.NewController(t)
+	userAccount := mocks.NewMockUserAccountUseCase(controller)
+	userID := uuid.New()
+	userAccount.EXPECT().
+		GetUserById(gomock.Any(), userID).
+		Return(registrationTestUser(userID), nil)
+	repository := repositoryadapter.NewUserMemoryRepository(nil)
+	registration := NewRegistration(userAccount, repository, RegistrationConfig{
+		PublicBaseURL: "https://todo.example.com/",
+	})
+
+	emailData, err := registration.GetRegistrationVerificationEmailData(context.Background(), userID)
+	if err != nil {
+		t.Fatalf("GetRegistrationVerificationEmailData() error = %v", err)
+	}
+
+	want := "https://todo.example.com/users/verify-registration?uid=" + userID.String() + "&token=" + emailData["token"]
+	if emailData["verify_email_link"] != want {
+		t.Fatalf("verification link = %q, want %q", emailData["verify_email_link"], want)
+	}
+}
+
 type registrationContextKey struct{}
 
 type registrationRepositoryContextSpy struct {
@@ -107,7 +130,7 @@ func TestRegistration_VerifyUserRegistration_ValidTokenCompletesRegistration(t *
 	userAccount.EXPECT().
 		GetUserById(gomock.Any(), userID).
 		Return(user, nil)
-	registration := NewRegistration(userAccount, repository)
+	registration := NewRegistration(userAccount, repository, DefaultRegistrationConfig())
 	registration.now = func() time.Time { return now }
 
 	err := registration.VerifyUserRegistration(context.Background(), userID, token)
@@ -144,7 +167,7 @@ func TestRegistration_VerifyUserRegistration_WrongTokenPreservesRegistration(t *
 	now := time.Date(2026, time.October, 3, 12, 0, 0, 0, time.UTC)
 	repository := repositoryadapter.NewUserMemoryRepository([]aggregate.User{user})
 	verification := storeRegistrationVerification(t, repository, userID, "valid-token", now.Add(time.Hour))
-	registration := NewRegistration(userAccount, repository)
+	registration := NewRegistration(userAccount, repository, DefaultRegistrationConfig())
 	registration.now = func() time.Time { return now }
 
 	err := registration.VerifyUserRegistration(context.Background(), userID, "wrong-token")
@@ -177,7 +200,7 @@ func TestRegistration_VerifyUserRegistration_ExpiredTokenPreservesRegistration(t
 	now := time.Date(2026, time.October, 3, 12, 0, 0, 0, time.UTC)
 	repository := repositoryadapter.NewUserMemoryRepository([]aggregate.User{user})
 	verification := storeRegistrationVerification(t, repository, userID, "expired-token", now)
-	registration := NewRegistration(userAccount, repository)
+	registration := NewRegistration(userAccount, repository, DefaultRegistrationConfig())
 	registration.now = func() time.Time { return now }
 
 	err := registration.VerifyUserRegistration(context.Background(), userID, "expired-token")
@@ -206,7 +229,7 @@ func TestRegistration_VerifyUserRegistration_MissingCredentialReturnsNotFound(t 
 	controller := gomock.NewController(t)
 	userAccount := mocks.NewMockUserAccountUseCase(controller)
 	repository := repositoryadapter.NewUserMemoryRepository(nil)
-	registration := NewRegistration(userAccount, repository)
+	registration := NewRegistration(userAccount, repository, DefaultRegistrationConfig())
 
 	err := registration.VerifyUserRegistration(context.Background(), uuid.New(), "missing-token")
 

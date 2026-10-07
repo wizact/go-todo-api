@@ -77,7 +77,7 @@ func instantiateAppSvc(
 	uc usecase_port.UserAccountUseCase,
 	repository repository_port.RegistrationRepository,
 ) app_svc_port.Registration {
-	return app_svc.NewRegistration(uc, repository)
+	return app_svc.NewRegistration(uc, repository, app_svc.DefaultRegistrationConfig())
 }
 
 func instantiateUserAccountUseCase(r repository_port.UserRepository, ev event_port.UserEventPublisher) usecase_port.UserAccountUseCase {
