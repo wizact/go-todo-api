@@ -2,7 +2,7 @@ package communication
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	applicationport "github.com/wizact/go-todo-api/internal/user/ports/applications"
 	user_domain_listener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
@@ -12,9 +12,6 @@ import (
 	pubsubinfra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
 	UserDomainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
 	user_event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
-
-	"github.com/kelseyhightower/envconfig"
-	"github.com/wizact/go-todo-api/pkg/version"
 )
 
 // A CommsModule is the dependency container for the communication module
@@ -29,17 +26,20 @@ type CommsModule struct {
 }
 
 // New CommsModule is the factory method for the comms container
-func NewCommsModule(useSendGrid bool, registration applicationport.Registration) *CommsModule {
+func NewCommsModule(config Config, registration applicationport.Registration) (*CommsModule, error) {
+	emailClientAppSvc, err := instantiateAppSvc(config)
+	if err != nil {
+		return nil, fmt.Errorf("configure communication module: %w", err)
+	}
 	userEventCli := instantiateUserEventClient()
-	emailClientAppSvc := instantiateAppSvc(useSendGrid)
 
-	udl := instantiateUserDomainListenersAndListen(userEventCli, registration, emailClientAppSvc)
+	udl := instantiateUserDomainListenersAndListen(userEventCli, registration, emailClientAppSvc, config.VerificationTemplateID)
 
 	return &CommsModule{
 		userEventClient:           userEventCli,
 		emailClientAppSvc:         emailClientAppSvc,
 		newUserRegisteredListener: udl,
-	}
+	}, nil
 }
 
 func instantiateUserEventClient() user_event_port.UserEventClientInput {
@@ -52,52 +52,33 @@ func instantiateUserEventClient() user_event_port.UserEventClientInput {
 	return uec
 }
 
-func instantiateAppSvc(useSendGrid bool) ports.Emailer {
-	if !useSendGrid {
-		return app_svc.NewMemoryEmailClient()
+func instantiateAppSvc(config Config) (ports.Emailer, error) {
+	if err := config.Validate(); err != nil {
+		return nil, err
+	}
+	if !config.SendGridEnabled {
+		return app_svc.NewMemoryEmailClient(), nil
 	}
 
-	sg := &SendGridConfig{}
-	err := sg.LoadConfig()
-	if err != nil {
-		panic(err)
-	}
-
-	return app_svc.NewSendGridEmailClient(sg.SendGridKey, sg.SendGridFromName, sg.SendGridFromEmail)
+	return app_svc.NewSendGridEmailClient(
+		config.SendGridKey,
+		config.SendGridFromName,
+		config.SendGridFromEmail,
+	), nil
 }
 
 func instantiateUserDomainListenersAndListen(
 	uec user_event_port.UserEventClientInput,
 	registration applicationport.Registration,
 	ecas ports.Emailer,
+	templateID string,
 ) *user_domain_listener.NewUserRegisteredEventListener {
-	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, registration, ecas)
+	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, registration, ecas, templateID)
 	err := nurel.Listen(context.Background())
 	if err != nil {
 		panic(err)
 	}
 	return nurel
-}
-
-// SendGridConfig holds the configuration for sendgrid
-type SendGridConfig struct {
-	SendGridKey       string
-	SendGridFromName  string
-	SendGridFromEmail string
-}
-
-// LoadConfig gets the configuration from env variables for sendgrid
-func (s *SendGridConfig) LoadConfig() error {
-	err := envconfig.Process(version.APPNAME, s)
-	if err != nil {
-		panic(err)
-	}
-
-	if s.SendGridKey == "" && s.SendGridFromEmail == "" && s.SendGridFromName == "" {
-		return errors.New("cannot resolve sendgrid configuration")
-	}
-
-	return nil
 }
 
 // Done cleans up all the underlying resources for a graceful shotdown

@@ -26,7 +26,7 @@ func TestInstantiateUserDomainListenersAndListen_UsesProvidedRegistration(t *tes
 		})
 
 	subscriber := &moduleUserEventSubscriberStub{}
-	listener := instantiateUserDomainListenersAndListen(subscriber, registration, moduleEmailerStub{})
+	listener := instantiateUserDomainListenersAndListen(subscriber, registration, moduleEmailerStub{}, "verification-template")
 	t.Cleanup(listener.Done)
 	subscriber.events <- userdomain.UserDomainEvent{
 		ID:    userID,
@@ -37,6 +37,16 @@ func TestInstantiateUserDomainListenersAndListen_UsesProvidedRegistration(t *tes
 	case <-registrationCalled:
 	case <-time.After(time.Second):
 		t.Fatal("provided registration service was not called")
+	}
+}
+
+func TestInstantiateAppSvc_InvalidSendGridConfigReturnsError(t *testing.T) {
+	t.Parallel()
+
+	_, err := instantiateAppSvc(Config{SendGridEnabled: true})
+
+	if err == nil {
+		t.Fatal("instantiateAppSvc() error = nil, want configuration error")
 	}
 }
 

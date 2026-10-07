@@ -34,7 +34,7 @@ func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 		GetRegistrationVerificationEmailData(listenerContext, userID).
 		Return(templateData, nil)
 
-	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer)
+	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer, "verification-template")
 	if err := listener.Listen(listenerContext); err != nil {
 		t.Fatalf("listen: %v", err)
 	}
@@ -51,6 +51,9 @@ func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 		}
 		if got.subject != "User Registration Verification" {
 			t.Errorf("email subject = %q", got.subject)
+		}
+		if got.templateID != "verification-template" {
+			t.Errorf("email template ID = %q, want %q", got.templateID, "verification-template")
 		}
 		if got.templateData["hash"] != templateData["hash"] {
 			t.Errorf("email template hash = %q, want %q", got.templateData["hash"], templateData["hash"])
@@ -75,7 +78,7 @@ func TestNewUserRegisteredEventListener_CancelledContextUnsubscribes(t *testing.
 	subscriber := &userEventSubscriberStub{unsubscribed: make(chan struct{})}
 	emailer := &emailerSpy{calls: make(chan templateEmail, 1)}
 	listenerContext, cancel := context.WithCancel(context.Background())
-	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer)
+	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer, "verification-template")
 	if err := listener.Listen(listenerContext); err != nil {
 		t.Fatalf("listen: %v", err)
 	}
@@ -108,7 +111,7 @@ func TestNewUserRegisteredEventListener_RegistrationFailureSkipsEmail(t *testing
 			return nil, errors.New("issue credential")
 		})
 
-	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer)
+	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer, "verification-template")
 	if err := listener.Listen(listenerContext); err != nil {
 		t.Fatalf("listen: %v", err)
 	}
@@ -153,6 +156,7 @@ type templateEmail struct {
 	to           string
 	email        string
 	subject      string
+	templateID   string
 	templateData map[string]string
 }
 
@@ -164,11 +168,12 @@ func (e *emailerSpy) Send(_, _, _, _, _ string) error {
 	return nil
 }
 
-func (e *emailerSpy) SendUsingTemplate(to, email, subject, _ string, templateData map[string]string) error {
+func (e *emailerSpy) SendUsingTemplate(to, email, subject, templateID string, templateData map[string]string) error {
 	e.calls <- templateEmail{
 		to:           to,
 		email:        email,
 		subject:      subject,
+		templateID:   templateID,
 		templateData: templateData,
 	}
 	return nil
