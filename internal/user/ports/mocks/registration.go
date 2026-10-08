@@ -53,19 +53,19 @@ func (mr *MockRegistrationMockRecorder) Done() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Done", reflect.TypeOf((*MockRegistration)(nil).Done))
 }
 
-// GetRegistrationVerificationEmailData mocks base method.
-func (m *MockRegistration) GetRegistrationVerificationEmailData(ctx context.Context, uid uuid.UUID) (map[string]string, error) {
+// FetchRegistrationVerificationEmailData mocks base method.
+func (m *MockRegistration) FetchRegistrationVerificationEmailData(ctx context.Context, uid uuid.UUID) (map[string]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRegistrationVerificationEmailData", ctx, uid)
+	ret := m.ctrl.Call(m, "FetchRegistrationVerificationEmailData", ctx, uid)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetRegistrationVerificationEmailData indicates an expected call of GetRegistrationVerificationEmailData.
-func (mr *MockRegistrationMockRecorder) GetRegistrationVerificationEmailData(ctx, uid any) *gomock.Call {
+// FetchRegistrationVerificationEmailData indicates an expected call of FetchRegistrationVerificationEmailData.
+func (mr *MockRegistrationMockRecorder) FetchRegistrationVerificationEmailData(ctx, uid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRegistrationVerificationEmailData", reflect.TypeOf((*MockRegistration)(nil).GetRegistrationVerificationEmailData), ctx, uid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchRegistrationVerificationEmailData", reflect.TypeOf((*MockRegistration)(nil).FetchRegistrationVerificationEmailData), ctx, uid)
 }
 
 // VerifyUserRegistration mocks base method.

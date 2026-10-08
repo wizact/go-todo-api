@@ -19,14 +19,14 @@ Each domain module (e.g., `user`) follows this structure:
 ```
 internal/user/
 ├── domain/
-│   ├── models/          # Entities and value objects
-│   ├── aggregates/      # Aggregate roots
-│   ├── services/        # Domain services (use cases)
+│   ├── model/          # Entities and value objects
+│   ├── aggregate/      # Aggregate roots
+│   ├── service/        # Domain services (use cases)
 ├── application/
-│   └── services/        # Application services
+│   └── service/        # Application services
 ├── adapters/
-│   ├── controllers/     # HTTP controllers and models
-│   └── repositories/    # Repository implementations
+│   ├── controller/     # HTTP controllers and models
+│   └── repository/    # Repository implementations
 ├── ports/               # Interface definitions
 │   ├── input/          # Use case interfaces
 │   └── output/         # Repository interfaces
@@ -48,7 +48,7 @@ make all-build
 
 # Build specific binary for current OS/ARCH
 make build-server
-make build-db-migration
+make build-dbmigration
 
 # Build for specific platform
 make build-server OS=linux ARCH=amd64
@@ -93,7 +93,7 @@ make shell
 
 ## Environment Variables
 
-Key environment variables (see `docs/environment-variables.md` for complete list):
+Key environment variables (see `docs/environmentvariables.md` for complete list):
 - `TODOAPI_DBPATH`: SQLite database file path
 - `TODOAPI_NATSURL`: NATS server URL (e.g., `nats:4222`)
 - `TODOAPI_PUBLICBASEURL`: Public HTTP(S) base URL used in registration verification links
@@ -113,7 +113,7 @@ nats subscribe "User.NewUserRegistered" -s nats:4222
 
 ## Module Structure
 
-The application uses a modular architecture where each domain has its own module with dependency injection. The `UserModule` in `internal/user/module.go` demonstrates the pattern:
+The application uses a modular architecture where each domain has its own module with dependency injection. The `Module` in `internal/user/module.go` demonstrates the pattern:
 
 - Repository implementations can be swapped between in-memory and database versions
 - Event clients are injected for domain event publishing
@@ -128,11 +128,11 @@ The application uses a modular architecture where each domain has its own module
 
 ## API Structure
 
-- HTTP server setup in `internal/api/http_server.go`
+- HTTP server setup in `internal/api/httpserver.go`
 - Route registration follows domain-based organization
 - Health check endpoint at `/__health-check`
 - User endpoints at `/users`
-- HTTP client examples in `http-client/` directory
+- HTTP client examples in `httpclient/` directory
 
 ## Build System
 

@@ -20,7 +20,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/cmd/db-migration",
+            "program": "${workspaceFolder}/cmd/dbmigration",
             "args": [],
             "env": { "TODOAPI_DBPATH":"/go/src/go-todo-api/db/todo.db" }
         }

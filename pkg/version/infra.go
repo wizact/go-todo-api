@@ -1,3 +1,3 @@
 package version
 
-const APPNAME = "TODOAPI"
+const AppName = "TODOAPI"

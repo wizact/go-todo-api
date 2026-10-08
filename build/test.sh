@@ -3,5 +3,5 @@ set -eu
 
 echo "Testing..."
 
-sh ./build/check-go-version.sh
+sh ./build/checkgoversion.sh
 go test ./...

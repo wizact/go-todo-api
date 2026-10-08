@@ -9,8 +9,8 @@ import (
 	"go.uber.org/mock/gomock"
 
 	userportmocks "github.com/wizact/go-todo-api/internal/user/ports/mocks"
-	eventinput "github.com/wizact/go-todo-api/pkg/event-library/ports/input/events"
-	userdomain "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
+	eventinput "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/input/event"
+	userdomain "github.com/wizact/go-todo-api/pkg/eventlibrary/user/domain"
 )
 
 func TestInstantiateUserDomainListenersAndListen_UsesProvidedRegistration(t *testing.T) {
@@ -19,7 +19,7 @@ func TestInstantiateUserDomainListenersAndListen_UsesProvidedRegistration(t *tes
 	userID := uuid.New()
 	registrationCalled := make(chan struct{})
 	registration.EXPECT().
-		GetRegistrationVerificationEmailData(gomock.Any(), userID).
+		FetchRegistrationVerificationEmailData(gomock.Any(), userID).
 		DoAndReturn(func(context.Context, uuid.UUID) (map[string]string, error) {
 			close(registrationCalled)
 			return map[string]string{"token": "verification-token"}, nil
@@ -43,7 +43,7 @@ func TestInstantiateUserDomainListenersAndListen_UsesProvidedRegistration(t *tes
 func TestInstantiateAppSvc_InvalidSendGridConfigReturnsError(t *testing.T) {
 	t.Parallel()
 
-	_, err := instantiateAppSvc(Config{SendGridEnabled: true})
+	_, err := instantiateApplicationService(Config{SendGridEnabled: true})
 
 	if err == nil {
 		t.Fatal("instantiateAppSvc() error = nil, want configuration error")
@@ -54,11 +54,11 @@ type moduleUserEventSubscriberStub struct {
 	events chan<- userdomain.UserDomainEvent
 }
 
-func (subscriber *moduleUserEventSubscriberStub) SubscribeToNewUserRegisteredEvent(
+func (s *moduleUserEventSubscriberStub) SubscribeToNewUserRegisteredEvent(
 	_ context.Context,
 	events chan<- userdomain.UserDomainEvent,
 ) (eventinput.Unsubscribe, error) {
-	subscriber.events = events
+	s.events = events
 	return func() error { return nil }, nil
 }
 
