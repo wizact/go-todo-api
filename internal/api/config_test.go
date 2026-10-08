@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	userservice "github.com/wizact/go-todo-api/internal/user/application/services"
+	userservice "github.com/wizact/go-todo-api/internal/user/application/service"
 	"github.com/wizact/go-todo-api/pkg/communication"
 )
 

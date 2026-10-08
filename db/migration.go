@@ -12,10 +12,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type DBMigration struct{}
+type Migration struct{}
 
 // Start initiates the migration process and close the db connection at the end of the process.
-func (dbm *DBMigration) Start(dbPath string) error {
+func (d *Migration) Start(dbPath string) error {
 	fmt.Println("starting database migration")
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {

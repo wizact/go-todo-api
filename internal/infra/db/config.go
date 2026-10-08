@@ -7,24 +7,24 @@ import (
 	"github.com/wizact/go-todo-api/pkg/version"
 )
 
-type DbConfig struct {
-	DbPath string
+type Config struct {
+	DBPath string
 }
 
-// GetDbPath gets the path to sqlite database from the env variable
-func (d *DbConfig) GetDbPath() (string, error) {
-	if d.DbPath != "" {
-		return d.DbPath, nil
+// ResolvePath gets the path to sqlite database from the env variable
+func (c *Config) ResolvePath() (string, error) {
+	if c.DBPath != "" {
+		return c.DBPath, nil
 	}
 
-	err := envconfig.Process(version.APPNAME, d)
+	err := envconfig.Process(version.AppName, c)
 	if err != nil {
 		panic(err)
 	}
 
-	if d.DbPath == "" {
+	if c.DBPath == "" {
 		return "", errors.New("cannot resolve database path")
 	}
 
-	return d.DbPath, nil
+	return c.DBPath, nil
 }

@@ -4,47 +4,47 @@ import (
 	"context"
 	"fmt"
 
-	applicationport "github.com/wizact/go-todo-api/internal/user/ports/applications"
-	user_domain_listener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
-	app_svc "github.com/wizact/go-todo-api/pkg/communication/application/services"
-	ports "github.com/wizact/go-todo-api/pkg/communication/ports/applications"
-	user_event_port "github.com/wizact/go-todo-api/pkg/event-library/ports/input/events"
-	pubsubinfra "github.com/wizact/go-todo-api/pkg/event-library/pubsub"
-	UserDomainEvent "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
-	user_event "github.com/wizact/go-todo-api/pkg/event-library/user/events"
+	applicationport "github.com/wizact/go-todo-api/internal/user/ports/service"
+	userDomainListener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
+	appService "github.com/wizact/go-todo-api/pkg/communication/application/service"
+	ports "github.com/wizact/go-todo-api/pkg/communication/ports/service"
+	userEventPort "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/input/event"
+	pubsubinfra "github.com/wizact/go-todo-api/pkg/eventlibrary/pubsub"
+	userDomainEvent "github.com/wizact/go-todo-api/pkg/eventlibrary/user/domain"
+	userEvent "github.com/wizact/go-todo-api/pkg/eventlibrary/user/event"
 )
 
-// A CommsModule is the dependency container for the communication module
+// A Module is the dependency container for the communication module
 // and if the use* flags are set to true, then it returns the concrete
 // implementation of the interface instead of the memory or fake implementation.
-type CommsModule struct {
-	emailClientAppSvc ports.Emailer
-	userEventClient   user_event_port.UserEventClientInput
+type Module struct {
+	emailClient     ports.Emailer
+	userEventClient userEventPort.UserSubscriber
 
 	// Listeners
-	newUserRegisteredListener *user_domain_listener.NewUserRegisteredEventListener
+	newUserRegisteredListener *userDomainListener.RegisteredEventListener
 }
 
-// New CommsModule is the factory method for the comms container
-func NewCommsModule(config Config, registration applicationport.Registration) (*CommsModule, error) {
-	emailClientAppSvc, err := instantiateAppSvc(config)
+// New Module is the factory method for the comms container
+func NewModule(config Config, registration applicationport.Registration) (*Module, error) {
+	emailClient, err := instantiateApplicationService(config)
 	if err != nil {
 		return nil, fmt.Errorf("configure communication module: %w", err)
 	}
 	userEventCli := instantiateUserEventClient()
 
-	udl := instantiateUserDomainListenersAndListen(userEventCli, registration, emailClientAppSvc, config.VerificationTemplateID)
+	udl := instantiateUserDomainListenersAndListen(userEventCli, registration, emailClient, config.VerificationTemplateID)
 
-	return &CommsModule{
+	return &Module{
 		userEventClient:           userEventCli,
-		emailClientAppSvc:         emailClientAppSvc,
+		emailClient:               emailClient,
 		newUserRegisteredListener: udl,
 	}, nil
 }
 
-func instantiateUserEventClient() user_event_port.UserEventClientInput {
-	nf := pubsubinfra.NatsClientFactory[user_event.UserEventClient, UserDomainEvent.UserDomainEvent, *user_event.UserEventClient]{}
-	uec, err := nf.Get()
+func instantiateUserEventClient() userEventPort.UserSubscriber {
+	nf := pubsubinfra.NATSClientFactory[userEvent.UserEventClient, userDomainEvent.UserDomainEvent, *userEvent.UserEventClient]{}
+	uec, err := nf.Create()
 	if err != nil {
 		panic(err)
 	}
@@ -52,15 +52,15 @@ func instantiateUserEventClient() user_event_port.UserEventClientInput {
 	return uec
 }
 
-func instantiateAppSvc(config Config) (ports.Emailer, error) {
+func instantiateApplicationService(config Config) (ports.Emailer, error) {
 	if err := config.Validate(); err != nil {
 		return nil, err
 	}
 	if !config.SendGridEnabled {
-		return app_svc.NewMemoryEmailClient(), nil
+		return appService.NewMemoryEmailClient(), nil
 	}
 
-	return app_svc.NewSendGridEmailClient(
+	return appService.NewSendGridEmailClient(
 		config.SendGridKey,
 		config.SendGridFromName,
 		config.SendGridFromEmail,
@@ -68,12 +68,12 @@ func instantiateAppSvc(config Config) (ports.Emailer, error) {
 }
 
 func instantiateUserDomainListenersAndListen(
-	uec user_event_port.UserEventClientInput,
+	uec userEventPort.UserSubscriber,
 	registration applicationport.Registration,
 	ecas ports.Emailer,
 	templateID string,
-) *user_domain_listener.NewUserRegisteredEventListener {
-	nurel := user_domain_listener.NewNewUserRegisteredEventListener(uec, registration, ecas, templateID)
+) *userDomainListener.RegisteredEventListener {
+	nurel := userDomainListener.NewRegisteredEventListener(uec, registration, ecas, templateID)
 	err := nurel.Listen(context.Background())
 	if err != nil {
 		panic(err)
@@ -82,6 +82,6 @@ func instantiateUserDomainListenersAndListen(
 }
 
 // Done cleans up all the underlying resources for a graceful shotdown
-func (cm *CommsModule) Done() {
-	cm.newUserRegisteredListener.Done()
+func (m *Module) Done() {
+	m.newUserRegisteredListener.Done()
 }

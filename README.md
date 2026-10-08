@@ -15,12 +15,12 @@ The project uses Go 1.27 with the `go1.27.1` toolchain.
 
 ## Architecture and design
 
-- [Application architecture](./docs/application-architecture.md)
-- [Application structure](./docs/application-structure.md)
+- [Application architecture](./docs/applicationarchitecture.md)
+- [Application structure](./docs/applicationstructure.md)
 - [Registration verification flow](./docs/registrationverification.md)
 
 ## Development
 
 - [Development environment](./docs/dev.md)
-- [Database migrations](./docs/database-migration.md)
-- [Environment variables](./docs/environment-variables.md)
+- [Database migrations](./docs/databasemigration.md)
+- [Environment variables](./docs/environmentvariables.md)

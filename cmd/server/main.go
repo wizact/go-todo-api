@@ -15,7 +15,7 @@ func main() {
 
 	app := yacli.NewApplication()
 
-	app.Name = version.APPNAME
+	app.Name = version.AppName
 	app.Description = "Go DDD & Clean Architecture API Example"
 
 	app.AddCommand(&api.StartServerCommand{})

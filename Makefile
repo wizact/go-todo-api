@@ -16,7 +16,7 @@ BUILDTAGS :=
 DBG ?=
 
 # build configuration in the format of <bin>_<config> = <value>
-db_migration_cgo = 1
+dbmigration_cgo = 1
 server_cgo = 1
 
 ALL_PLATFORMS ?= linux/amd64
@@ -44,7 +44,7 @@ REGISTRY := "docker.pkg.github.com/wizact/go-todo-api/"
 VERSION ?= $(shell git describe --tags --always --dirty)
 
 # The binaries to build (just the basenames)
-BINS ?= server db-migration
+BINS ?= server dbmigration
 
 BIN_EXTENSION :=
 ifeq ($(OS), windows)
@@ -136,7 +136,7 @@ run-server:
 run-db-migration: # @HELP generates the new db resources and run the migration cmd
 run-db-migration: gen-db-resource
 	TODOAPI_DBPATH=${PREFIX}/db/todo.db && \
-		go run ./cmd/db-migration/*.go
+		go run ./cmd/dbmigration/*.go
 
 .PHONY: gen-db-resource
 gen-db-resource: # @HELP creates a resourcefile and embeds migration scripts in the go file
@@ -184,3 +184,7 @@ help:
 			BEGIN {FS = ": *# *@HELP"};		\
 			{ printf "  %-30s %s\n", $$1, $$2 };	\
 		'
+
+# Compatibility alias for the renamed migration command directory.
+.PHONY: build-db-migration
+build-db-migration: build-dbmigration

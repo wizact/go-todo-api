@@ -15,10 +15,10 @@ type sqliteConnectionErrorState struct {
 	HasDriverCause      bool
 }
 
-func TestSqliteConnection_Open_PreservesDriverCause(t *testing.T) {
+func TestSQLiteSetConnection_Open_PreservesDriverCause(t *testing.T) {
 	t.Parallel()
 
-	connection, err := NewSqliteConnection(filepath.Join(t.TempDir(), "missing", "users.db"))
+	connection, err := NewSQLiteConnection(filepath.Join(t.TempDir(), "missing", "users.db"))
 	if err != nil {
 		t.Fatalf("NewSqliteConnection() error = %v", err)
 	}
@@ -26,7 +26,7 @@ func TestSqliteConnection_Open_PreservesDriverCause(t *testing.T) {
 	_, err = connection.Open(gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	var driverError sqlite3.Error
 	got := sqliteConnectionErrorState{
-		IsConnectionFailure: errors.Is(err, ErrFailedToConnectToDb),
+		IsConnectionFailure: errors.Is(err, ErrConnectDB),
 		HasDriverCause:      errors.As(err, &driverError),
 	}
 	want := sqliteConnectionErrorState{IsConnectionFailure: true, HasDriverCause: true}

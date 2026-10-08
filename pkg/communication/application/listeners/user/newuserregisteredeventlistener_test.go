@@ -1,4 +1,4 @@
-package usereventlistener
+package user
 
 import (
 	"context"
@@ -7,17 +7,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	user_app_svc_mocks "github.com/wizact/go-todo-api/internal/user/ports/mocks"
-	user_event_input "github.com/wizact/go-todo-api/pkg/event-library/ports/input/events"
-	ude "github.com/wizact/go-todo-api/pkg/event-library/user/domain"
+	userAppServiceMocks "github.com/wizact/go-todo-api/internal/user/ports/mocks"
+	userEventInput "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/input/event"
+	ude "github.com/wizact/go-todo-api/pkg/eventlibrary/user/domain"
 	"go.uber.org/mock/gomock"
 )
 
-func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
+func TestRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 	t.Parallel()
 
 	controller := gomock.NewController(t)
-	registration := user_app_svc_mocks.NewMockRegistration(controller)
+	registration := userAppServiceMocks.NewMockRegistration(controller)
 	subscriber := &userEventSubscriberStub{unsubscribed: make(chan struct{})}
 	emailer := &emailerSpy{calls: make(chan templateEmail, 1)}
 	userID := uuid.New()
@@ -31,10 +31,10 @@ func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 	templateData := map[string]string{"hash": "verification-hash"}
 
 	registration.EXPECT().
-		GetRegistrationVerificationEmailData(listenerContext, userID).
+		FetchRegistrationVerificationEmailData(listenerContext, userID).
 		Return(templateData, nil)
 
-	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer, "verification-template")
+	listener := NewRegisteredEventListener(subscriber, registration, emailer, "verification-template")
 	if err := listener.Listen(listenerContext); err != nil {
 		t.Fatalf("listen: %v", err)
 	}
@@ -70,15 +70,15 @@ func TestNewUserRegisteredEventListenerSendsVerificationEmail(t *testing.T) {
 	}
 }
 
-func TestNewUserRegisteredEventListener_CancelledContextUnsubscribes(t *testing.T) {
+func TestRegisteredEventListener_CancelledContextUnsubscribes(t *testing.T) {
 	t.Parallel()
 
 	controller := gomock.NewController(t)
-	registration := user_app_svc_mocks.NewMockRegistration(controller)
+	registration := userAppServiceMocks.NewMockRegistration(controller)
 	subscriber := &userEventSubscriberStub{unsubscribed: make(chan struct{})}
 	emailer := &emailerSpy{calls: make(chan templateEmail, 1)}
 	listenerContext, cancel := context.WithCancel(context.Background())
-	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer, "verification-template")
+	listener := NewRegisteredEventListener(subscriber, registration, emailer, "verification-template")
 	if err := listener.Listen(listenerContext); err != nil {
 		t.Fatalf("listen: %v", err)
 	}
@@ -92,11 +92,11 @@ func TestNewUserRegisteredEventListener_CancelledContextUnsubscribes(t *testing.
 	}
 }
 
-func TestNewUserRegisteredEventListener_RegistrationFailureSkipsEmail(t *testing.T) {
+func TestRegisteredEventListener_RegistrationFailureSkipsEmail(t *testing.T) {
 	t.Parallel()
 
 	controller := gomock.NewController(t)
-	registration := user_app_svc_mocks.NewMockRegistration(controller)
+	registration := userAppServiceMocks.NewMockRegistration(controller)
 	subscriber := &userEventSubscriberStub{unsubscribed: make(chan struct{})}
 	emailer := &emailerSpy{calls: make(chan templateEmail, 1)}
 	registrationCalled := make(chan struct{})
@@ -105,13 +105,13 @@ func TestNewUserRegisteredEventListener_RegistrationFailureSkipsEmail(t *testing
 	userID := uuid.New()
 
 	registration.EXPECT().
-		GetRegistrationVerificationEmailData(listenerContext, userID).
+		FetchRegistrationVerificationEmailData(listenerContext, userID).
 		DoAndReturn(func(context.Context, uuid.UUID) (map[string]string, error) {
 			close(registrationCalled)
 			return nil, errors.New("issue credential")
 		})
 
-	listener := NewNewUserRegisteredEventListener(subscriber, registration, emailer, "verification-template")
+	listener := NewRegisteredEventListener(subscriber, registration, emailer, "verification-template")
 	if err := listener.Listen(listenerContext); err != nil {
 		t.Fatalf("listen: %v", err)
 	}
@@ -144,7 +144,7 @@ type userEventSubscriberStub struct {
 	unsubscribed chan struct{}
 }
 
-func (s *userEventSubscriberStub) SubscribeToNewUserRegisteredEvent(_ context.Context, events chan<- ude.UserDomainEvent) (user_event_input.Unsubscribe, error) {
+func (s *userEventSubscriberStub) SubscribeToNewUserRegisteredEvent(_ context.Context, events chan<- ude.UserDomainEvent) (userEventInput.Unsubscribe, error) {
 	s.events = events
 	return func() error {
 		close(s.unsubscribed)

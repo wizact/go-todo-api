@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/kelseyhightower/envconfig"
-	userservice "github.com/wizact/go-todo-api/internal/user/application/services"
+	userservice "github.com/wizact/go-todo-api/internal/user/application/service"
 	"github.com/wizact/go-todo-api/pkg/communication"
 	"github.com/wizact/go-todo-api/pkg/version"
 )
@@ -25,7 +25,7 @@ type Config struct {
 // LoadConfig reads application configuration from the environment.
 func LoadConfig() (Config, error) {
 	config := Config{}
-	if err := envconfig.Process(version.APPNAME, &config); err != nil {
+	if err := envconfig.Process(version.AppName, &config); err != nil {
 		return Config{}, fmt.Errorf("load application configuration: %w", err)
 	}
 	config.PublicBaseURL = strings.TrimSpace(config.PublicBaseURL)

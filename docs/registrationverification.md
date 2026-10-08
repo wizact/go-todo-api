@@ -8,18 +8,18 @@ The user aggregate owns the resulting business state: whether the account is act
 
 | Data or behavior | Owner | Reason |
 | --- | --- | --- |
-| User activation and verified-email state | `domain/aggregates.User` | Durable business state and invariant |
+| User activation and verified-email state | `domain/aggregate.User` | Durable business state and invariant |
 | Credential digest and expiry | `application/registration.Verification` | Temporary application workflow state |
-| Token generation, hashing, and comparison | `application/services.Registration` | Orchestration concern, not domain behavior |
-| Persistence contract | `ports/output/repositories.RegistrationRepository` | Inner-layer boundary for storage operations |
-| SQLite and memory behavior | `adapters/repositories` | Concrete outer implementations |
+| Token generation, hashing, and comparison | `application/service.Registration` | Orchestration concern, not domain behavior |
+| Persistence contract | `ports/output/repository.RegistrationRepository` | Inner-layer boundary for storage operations |
+| SQLite and memory behavior | `adapters/repository` | Concrete outer implementations |
 | Raw token delivery | `pkg/communication` | External communication concern |
 
 ## Issuing a credential
 
 ```mermaid
 sequenceDiagram
-    participant Account as UserAccountService
+    participant Account as UserAccount
     participant UserRepo as UserRepository port
     participant Events as UserEventPublisher port
     participant Listener as Communication listener
@@ -32,7 +32,7 @@ sequenceDiagram
     Account->>Events: Publish UserRegisteredEvent
     Note over Events: No token or digest
     Events-->>Listener: UserRegisteredEvent
-    Listener->>Registration: GetRegistrationVerificationEmailData(userID)
+    Listener->>Registration: FetchRegistrationVerificationEmailData(userID)
     Registration->>Registration: generate raw token and bcrypt digest
     Registration->>RegistrationRepo: SaveRegistrationVerification(digest, expiry)
     Registration-->>Listener: email data with raw token
@@ -53,12 +53,12 @@ The information crosses the layers in this order:
 
 | Step | File | Method | Table and columns |
 | --- | --- | --- | --- |
-| Validate request | `internal/api/handlers/users_route.go` | `VerifyRegistration` | None |
-| Translate application error | `internal/user/adapters/controllers/user_controller.go` | `VerifyUserRegistration` | None |
-| Load credential | `internal/user/application/services/registration.go` | `VerifyUserRegistration` | `user_registration_verifications.user_id`, `secret_digest`, `expires_at` |
-| Compare secret | `internal/user/application/services/registrationverification.go` | `matchesRegistrationVerification` | No write; bcrypt compares raw token with digest |
-| Apply domain transition | `internal/user/domain/aggregates/user.go` | `VerifyRegistration` | In-memory aggregate only |
-| Commit atomically | `internal/user/adapters/repositories/registrationverification.go` | `CompleteRegistration` | Update `users_aggregate.value_data`; update `users_email_view.has_verified_email`; delete matching `user_registration_verifications` row |
+| Validate request | `internal/api/handlers/usersroute.go` | `VerifyRegistration` | None |
+| Translate application error | `internal/user/adapters/controller/usercontroller.go` | `VerifyUserRegistration` | None |
+| Load credential | `internal/user/application/service/registration.go` | `VerifyUserRegistration` | `user_registration_verifications.user_id`, `secret_digest`, `expires_at` |
+| Compare secret | `internal/user/application/service/registrationverification.go` | `matchesRegistrationVerification` | No write; bcrypt compares raw token with digest |
+| Apply domain transition | `internal/user/domain/aggregate/user.go` | `VerifyRegistration` | In-memory aggregate only |
+| Commit atomically | `internal/user/adapters/repository/registrationverification.go` | `CompleteRegistration` | Update `users_aggregate.value_data`; update `users_email_view.has_verified_email`; delete matching `user_registration_verifications` row |
 
 `CompleteRegistration` deletes the credential using both `user_id` and `secret_digest`. Exactly one row must be consumed. If the credential is missing or has been replaced, the transaction returns `ErrRegistrationVerificationNotFound` and rolls back the aggregate and projection updates.
 
@@ -90,4 +90,4 @@ Do not introduce a separately injectable registration-verification repository th
 - SQLite and memory adapters enforce equivalent one-time behavior.
 - Startup rejects malformed public URLs and partial SendGrid configurations before constructing infrastructure adapters.
 
-The end-to-end regression is in `internal/user/application/services/registrationintegration_test.go`.
+The end-to-end regression is in `internal/user/application/service/registrationintegration_test.go`.
