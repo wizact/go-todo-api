@@ -13,6 +13,19 @@ import (
 	svc "github.com/wizact/go-todo-api/internal/user/domain/service"
 )
 
+func TestUserAccount_RegisterNewUser_EmptyMemoryRepository_Succeeds(t *testing.T) {
+	t.Parallel()
+
+	user := initUsers(t)[0]
+	service := svc.NewUserAccount(repository.NewMemoryUserRepository(nil), userEventPublisherStub{})
+
+	_, err := service.RegisterNewUser(context.Background(), user)
+
+	if err != nil {
+		t.Fatalf("RegisterNewUser() error = %v, want nil for first registration", err)
+	}
+}
+
 func TestUserAccount_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t *testing.T) {
 	seedUserList := initUsers(t)
 	u := seedUserList[0]

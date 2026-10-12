@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/application/registration"
+	"github.com/wizact/go-todo-api/internal/user/domain"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
 	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
 )
@@ -44,7 +45,7 @@ func (r *MemoryUserRepository) FindByID(ctx context.Context, id uuid.UUID) (ua.U
 	if user, ok := r.Users[id]; ok {
 		return user, nil
 	}
-	return ua.User{}, ErrUserNotFound
+	return ua.User{}, fmt.Errorf("%w: %w", domain.ErrUserIDNotFound, ErrUserNotFound)
 }
 
 func (r *MemoryUserRepository) FindByEmail(ctx context.Context, email string) (ua.User, error) {
@@ -57,7 +58,7 @@ func (r *MemoryUserRepository) FindByEmail(ctx context.Context, email string) (u
 		}
 	}
 
-	return ua.User{}, ErrUserNotFound
+	return ua.User{}, fmt.Errorf("%w: %w", domain.ErrUserEmailNotFound, ErrUserNotFound)
 }
 
 func (r *MemoryUserRepository) Create(ctx context.Context, user ua.User) (ua.User, error) {
@@ -86,7 +87,7 @@ func (r *MemoryUserRepository) Update(ctx context.Context, user ua.User) (ua.Use
 	}
 
 	if _, ok := r.Users[user.ID()]; !ok {
-		return ua.User{}, fmt.Errorf("user does not exist: %w", ErrFailedToUpdateUser)
+		return ua.User{}, fmt.Errorf("%w: %w", domain.ErrUserIDNotFound, ErrFailedToUpdateUser)
 	}
 
 	r.Users[user.ID()] = user
