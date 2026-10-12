@@ -13,9 +13,12 @@ var ErrRegistrationVerificationNotFound = errors.New("registration verification 
 
 // UserRepository provides persistence for the user aggregate.
 type UserRepository interface {
+	// FindByID returns an error matching domain.ErrUserIDNotFound when the user is missing.
 	FindByID(ctx context.Context, id uuid.UUID) (ua.User, error)
+	// FindByEmail returns an error matching domain.ErrUserEmailNotFound when the email is missing.
 	FindByEmail(ctx context.Context, email string) (ua.User, error)
 	Create(ctx context.Context, user ua.User) (ua.User, error)
+	// Update returns an error matching domain.ErrUserIDNotFound when the user is missing.
 	Update(ctx context.Context, user ua.User) (ua.User, error)
 }
 

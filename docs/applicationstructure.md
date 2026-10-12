@@ -80,6 +80,8 @@ Controllers validate and translate external requests before invoking an input or
 
 Repositories map between domain/application types and storage models. Both SQLite and memory adapters implement equivalent behavior. The SQLite adapter owns the transaction that keeps aggregate state, projections, and registration credential consumption consistent.
 
+The user repository's missing-user errors are part of its port contract. Both adapters return errors matching `domain.ErrUserIDNotFound` for a missing ID during lookup or update, and `domain.ErrUserEmailNotFound` for a missing email during lookup. Consumers use `errors.Is` rather than comparing message strings. The memory adapter also preserves matching its existing adapter-specific errors. A missing email is an ordinary first-registration lookup result, not a persistence failure.
+
 ## API and infrastructure
 
 `internal/api` and `cmd` are the outermost application layers. They assemble HTTP routes, middleware, and process lifecycle behavior. `internal/infra` and reusable `pkg` packages integrate databases, messaging, and communication providers.
