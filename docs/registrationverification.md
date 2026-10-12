@@ -80,6 +80,10 @@ A successfully consumed token is one-time. Replaying it follows the missing-cred
 
 Do not introduce a separately injectable registration-verification repository that can update or consume the credential independently of aggregate completion. Such a path could leave `users_aggregate`, `users_email_view`, and the credential out of sync.
 
+## Service lifecycle
+
+The registration service handles requests synchronously and owns no background worker or resource lifecycle. Its existing `Done()` method remains a compatibility no-op and returns on repeated or concurrent calls. `Module.Done()` can delegate to it without waiting for a worker. The communication listener retains ownership of its subscription and worker cleanup.
+
 ## Security properties
 
 - Raw verification secrets are not persisted in aggregate JSON, projections, credential rows, or domain events.
