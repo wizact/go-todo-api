@@ -20,7 +20,6 @@ type Registration struct {
 	registrationRepository repositoryPort.RegistrationRepository
 	config                 RegistrationConfig
 	now                    func() time.Time
-	done                   chan bool
 }
 
 // NewRegistration returns a new registration application service.
@@ -34,13 +33,12 @@ func NewRegistration(
 		registrationRepository: repository,
 		config:                 config,
 		now:                    time.Now,
-		done:                   make(chan bool),
 	}
 }
 
-func (r *Registration) Done() {
-	r.done <- true
-}
+// Done is a compatibility no-op: registration owns no background worker or resources.
+// It is safe to call repeatedly or concurrently.
+func (r *Registration) Done() {}
 
 // FetchRegistrationVerificationEmailData returns the data required to send a registration verification email
 func (r *Registration) FetchRegistrationVerificationEmailData(ctx context.Context, uid uuid.UUID) (map[string]string, error) {
