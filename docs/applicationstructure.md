@@ -96,6 +96,27 @@ Use the smallest structure that preserves the dependency rule:
 2. Define consumer-owned ports for external interactions.
 3. Implement use cases or application workflows against those ports.
 4. Add thin adapters for HTTP, persistence, messaging, or other drivers.
-5. Wire concrete adapters only in the module composition root.
+5. Select concrete adapters at application bootstrap; assemble module services from explicit dependencies.
 
 Avoid creating layers, interfaces, or projections that the module does not yet need.
+
+### Module dependencies and configuration
+
+The user module exposes `NewModuleWithDependencies(Dependencies, ...Option)`.
+Required collaborators are explicit: one repository implements both user and
+registration persistence, and an event publisher publishes registration events.
+Using the same repository preserves atomic registration completion.
+
+Optional settings use module-local functional options. `WithPublicBaseURL` changes
+registration email URLs. Defaults apply first, options apply in order (last wins),
+and the final configuration is validated before service assembly. Nil options,
+missing dependencies, and invalid URLs return errors. Empty URLs do not restore
+defaults. Options configure values only; they perform no I/O.
+
+`internal/api/bootstrap.go` selects SQLite and NATS adapters and returns factory
+errors. The injected constructor reads no environment and starts no workers.
+`NewModule` remains a deprecated compatibility wrapper with panic-based errors;
+its adapter factories are isolated in `internal/user/legacy.go`.
+
+Future scaffolds can reproduce dependency/configuration/constructor conventions.
+Each module still defines its own ports, options, services, and domain behavior.

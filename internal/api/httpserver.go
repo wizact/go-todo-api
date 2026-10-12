@@ -6,7 +6,6 @@ import (
 
 	"github.com/gorilla/mux"
 	hndl "github.com/wizact/go-todo-api/internal/api/handlers"
-	usermodule "github.com/wizact/go-todo-api/internal/user"
 	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
 	applicationport "github.com/wizact/go-todo-api/internal/user/ports/service"
 	comms "github.com/wizact/go-todo-api/pkg/communication"
@@ -25,7 +24,11 @@ func StartServer(address, port string, tls bool, config Config) error {
 
 	router := mux.NewRouter()
 	// router.Use(commonMiddleware)
-	userModule := usermodule.NewModule(true, config.registrationConfig())
+	userModule, err := newUserModule(config)
+	if err != nil {
+		return fmt.Errorf("assemble user module: %w", err)
+	}
+	defer userModule.Done()
 	userAccount := userModule.UserAccountUseCase()
 	registration := userModule.UserRegistrationAppService()
 
