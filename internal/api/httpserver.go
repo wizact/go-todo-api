@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	hndl "github.com/wizact/go-todo-api/internal/api/handlers"
+	userhttp "github.com/wizact/go-todo-api/internal/user/adapters/http"
 	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
 	applicationport "github.com/wizact/go-todo-api/internal/user/ports/service"
 	comms "github.com/wizact/go-todo-api/pkg/communication"
@@ -72,7 +73,7 @@ func registerRoutes(
 	hcr.SetupRoutes(HealthCheckRoute, router)
 
 	// User route setup
-	ur := hndl.UserRouteFactory{
+	ur := userhttp.UserRouteFactory{
 		UserAccountUseCase: userAccount,
 		Registration:       registration,
 	}.CreateUserRoute()

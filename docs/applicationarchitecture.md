@@ -17,8 +17,8 @@ Inner layers do not import concrete outer-layer implementations. Outer layers ma
 | Domain | `internal/user/domain` | Entities, value objects, aggregates, domain events, and domain services |
 | Application | `internal/user/application` | Workflow state and services that coordinate domain behavior |
 | Ports | `internal/user/ports` | Narrow input, application, repository, and event contracts |
-| Adapters | `internal/user/adapters` | HTTP model mapping, controllers, SQLite, and memory implementations |
-| Frameworks and drivers | `internal/api`, `internal/infra`, `cmd`, `pkg` | Routing, process startup, databases, messaging, and communication clients |
+| Adapters | `internal/user/adapters` | Module HTTP routes, model mapping, controllers, SQLite, and memory implementations |
+| Frameworks and drivers | `internal/api`, `internal/infra`, `cmd`, `pkg` | Route mounting, shared HTTP middleware, process startup, databases, messaging, and communication clients |
 
 Ports belong at the inner boundary they protect. An inner service references a port, while a concrete outer adapter implements it. The port may expose domain or application types because those types are farther inward; the inner layer never imports the adapter.
 
