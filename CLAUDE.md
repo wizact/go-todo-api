@@ -26,6 +26,7 @@ internal/user/
 │   └── service/        # Application services
 ├── adapters/
 │   ├── controller/     # HTTP controllers and models
+│   ├── http/           # Module HTTP routes, tests, and fixtures
 │   └── repository/    # Repository implementations
 ├── ports/               # Interface definitions
 │   ├── input/          # Use case interfaces
@@ -129,7 +130,8 @@ The application uses a modular architecture where each domain has its own module
 ## API Structure
 
 - HTTP server setup in `internal/api/httpserver.go`
-- Route registration follows domain-based organization
+- User HTTP routes live in `internal/user/adapters/http`; server bootstrap mounts them
+- Shared HTTP middleware lives in `internal/infra/httpmiddleware`
 - Health check endpoint at `/__health-check`
 - User endpoints at `/users`
 - HTTP client examples in `httpclient/` directory

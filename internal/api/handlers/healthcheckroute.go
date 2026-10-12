@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	mw "github.com/wizact/go-todo-api/internal/api/middleware"
+	mw "github.com/wizact/go-todo-api/internal/infra/httpmiddleware"
 	hsm "github.com/wizact/go-todo-api/pkg/httpservermodel"
 )
 

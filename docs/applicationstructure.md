@@ -10,13 +10,14 @@ db/
   migrations/                     ordered SQLite migrations
 internal/
   api/
-    handlers/                     HTTP routing and boundary validation
-    middleware/                   HTTP cross-cutting behavior
+    handlers/                     process-level health check route
   infra/
     db/                           database connection infrastructure
+    httpmiddleware/               shared HTTP response and authorization behavior
   user/
     adapters/
       controller/                 HTTP-to-application mapping
+      http/                       user routes, HTTP parsing, and route tests
       repository/                 SQLite and memory adapters
     application/
       registration/               application-owned verification state
@@ -76,7 +77,9 @@ Keep ports small and consumer-oriented. Multiple narrow port interfaces may be i
 
 ## Adapters
 
-Controllers validate and translate external requests before invoking an input or application port. They do not contain business rules.
+User HTTP handlers live in `internal/user/adapters/http`, alongside their route tests and request fixtures. They parse HTTP requests and register routes against Gorilla Mux. Controllers validate and translate those requests before invoking an input or application port. Neither adapter contains business rules.
+
+`internal/api` mounts module routes and owns server startup and health checks. Shared HTTP response and authorization behavior lives in `internal/infra/httpmiddleware`, so module adapters do not depend on the application bootstrap package. The current authorization placeholder is unchanged by this separation.
 
 Repositories map between domain/application types and storage models. Both SQLite and memory adapters implement equivalent behavior. The SQLite adapter owns the transaction that keeps aggregate state, projections, and registration credential consumption consistent.
 

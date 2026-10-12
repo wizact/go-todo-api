@@ -1,7 +1,8 @@
-package handlers_test
+package httpadapter_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,8 +13,8 @@ import (
 	"github.com/gorilla/mux"
 	"go.uber.org/mock/gomock"
 
-	"github.com/wizact/go-todo-api/internal/api/handlers"
 	controller "github.com/wizact/go-todo-api/internal/user/adapters/controller"
+	handlers "github.com/wizact/go-todo-api/internal/user/adapters/http"
 	applicationregistration "github.com/wizact/go-todo-api/internal/user/application/registration"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
@@ -216,4 +217,56 @@ func registeredUser() aggregate.User {
 	result.SetUser(user)
 	result.SetLocation(location)
 	return result
+}
+
+func TestUserRoute_FetchUserByID_Status(t *testing.T) {
+	validID := uuid.MustParse(registeredUserID)
+	for _, tc := range []struct {
+		name, id, authorization string
+		want                    int
+		setup                   func(routeMocks)
+	}{
+		{"requires authorization", registeredUserID, "", http.StatusUnauthorized, func(routeMocks) {}},
+		{"rejects invalid ID", "invalid", "'Bearer bearer token'", http.StatusBadRequest, func(routeMocks) {}},
+		{"returns user", registeredUserID, "'Bearer bearer token'", http.StatusOK, func(m routeMocks) {
+			m.userAccount.EXPECT().FetchUserByID(gomock.Any(), validID).Return(registeredUser(), nil)
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			router := newUserRouter(t, tc.setup)
+			request := httptest.NewRequest(http.MethodGet, "/users/"+tc.id, nil)
+			request.Header.Set("Authorization", tc.authorization)
+			response := httptest.NewRecorder()
+			router.ServeHTTP(response, request)
+			if response.Code != tc.want {
+				t.Fatalf("status = %d, want %d", response.Code, tc.want)
+			}
+		})
+	}
+}
+
+func TestUserRoute_RegisterUser_Location(t *testing.T) {
+	router := newUserRouter(t, func(m routeMocks) {
+		m.userAccount.EXPECT().RegisterNewUser(gomock.Any(), gomock.Any()).Return(registeredUser(), nil)
+	})
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/users", loadFixture(t, "registeruser.json")))
+	if got := response.Header().Get("Location"); got != "/users/"+registeredUserID {
+		t.Fatalf("Location = %q", got)
+	}
+}
+
+func TestUserRoute_RegisterUser_Response(t *testing.T) {
+	router := newUserRouter(t, func(m routeMocks) {
+		m.userAccount.EXPECT().RegisterNewUser(gomock.Any(), gomock.Any()).Return(registeredUser(), nil)
+	})
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/users", loadFixture(t, "registeruser.json")))
+	var body map[string]any
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body["user_id"] != registeredUserID {
+		t.Fatalf("response user_id = %v", body["user_id"])
+	}
 }

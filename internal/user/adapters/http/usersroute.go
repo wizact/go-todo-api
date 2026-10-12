@@ -1,4 +1,4 @@
-package handlers
+package httpadapter
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/wizact/go-todo-api/internal/api/middleware"
+	middleware "github.com/wizact/go-todo-api/internal/infra/httpmiddleware"
 	controller "github.com/wizact/go-todo-api/internal/user/adapters/controller"
 	httpModel "github.com/wizact/go-todo-api/internal/user/adapters/controller/model"
 	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
