@@ -1,9 +1,7 @@
 package api
 
 import (
-	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/kelseyhightower/envconfig"
@@ -38,15 +36,8 @@ func LoadConfig() (Config, error) {
 
 // Validate checks runtime configuration before constructing application modules.
 func (c Config) Validate() error {
-	publicBaseURL, err := url.Parse(strings.TrimSpace(c.PublicBaseURL))
-	if err != nil {
-		return fmt.Errorf("parse public base URL: %w", err)
-	}
-	if publicBaseURL.Host == "" || (publicBaseURL.Scheme != "http" && publicBaseURL.Scheme != "https") {
-		return errors.New("public base URL must be an absolute HTTP or HTTPS URL")
-	}
-	if publicBaseURL.RawQuery != "" || publicBaseURL.ForceQuery || strings.Contains(c.PublicBaseURL, "#") {
-		return errors.New("public base URL must not contain a query or fragment")
+	if err := c.registrationConfig().Validate(); err != nil {
+		return err
 	}
 	if err := c.communicationConfig().Validate(); err != nil {
 		return fmt.Errorf("validate communication configuration: %w", err)
