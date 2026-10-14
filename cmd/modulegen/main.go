@@ -5,11 +5,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/wizact/go-todo-api/internal/scaffolding"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/wizact/go-todo-api/internal/scaffolding"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	flags.SetOutput(stderr)
 	name := flags.String("name", "", "lowercase module name")
 	root := flags.String("root", ".", "repository root containing go.mod and internal/")
-	templates := flags.String("templates", "", "trusted template directory (required until bundled templates are added)")
+	templates := flags.String("templates", "", "optional trusted template directory; defaults to bundled architecture templates")
 	dryRun := flags.Bool("dry-run", false, "preview paths without writing files")
 	if err := flags.Parse(args); err != nil {
 		return err
@@ -32,8 +33,8 @@ func run(args []string, stdout, stderr io.Writer) error {
 	if flags.NArg() != 0 {
 		return errors.New("unexpected positional arguments")
 	}
-	if *name == "" || *templates == "" {
-		return errors.New("-name and -templates are required")
+	if *name == "" {
+		return errors.New("-name is required")
 	}
 	// Let the Go tool resolve the module directive instead of parsing go.mod here.
 	command := exec.Command("go", "list", "-m", "-f", "{{.Path}}")
@@ -42,12 +43,16 @@ func run(args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("resolve repository import path: %w", err)
 	}
-	templateRoot, err := os.OpenRoot(*templates)
-	if err != nil {
-		return fmt.Errorf("open templates: %w", err)
+	templateFS := scaffolding.BundledTemplates()
+	if *templates != "" {
+		templateRoot, err := os.OpenRoot(*templates)
+		if err != nil {
+			return fmt.Errorf("open templates: %w", err)
+		}
+		defer templateRoot.Close()
+		templateFS = templateRoot.FS()
 	}
-	defer templateRoot.Close()
-	config := scaffolding.Config{Root: *root, ModuleName: *name, ImportPath: strings.TrimSpace(string(importPath)), Templates: templateRoot.FS()}
+	config := scaffolding.Config{Root: *root, ModuleName: *name, ImportPath: strings.TrimSpace(string(importPath)), Templates: templateFS}
 	plan, err := scaffolding.BuildPlan(config)
 	if err != nil {
 		return err

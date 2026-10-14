@@ -67,7 +67,8 @@ func openInternal(c Config) (*os.Root, error) {
 	return internal, nil
 }
 
-// BuildPlan renders .tmpl files in lexical order and formats Go output.
+// BuildPlan renders .tmpl files and named outputs in .bundle.tmpl files,
+// sorts output paths, and formats Go output.
 func BuildPlan(c Config) (Plan, error) {
 	if err := validateConfig(c); err != nil {
 		return Plan{}, err
@@ -97,10 +98,6 @@ func BuildPlan(c Config) (Plan, error) {
 		if !entry.Type().IsRegular() {
 			return fmt.Errorf("template %q must be a regular file", name)
 		}
-		destination := strings.TrimSuffix(name, ".tmpl")
-		if !fs.ValidPath(destination) || strings.Contains(destination, "\\") || path.Clean(destination) != destination {
-			return fmt.Errorf("invalid template path %q", name)
-		}
 		source, err := fs.ReadFile(c.Templates, name)
 		if err != nil {
 			return fmt.Errorf("read template %s: %w", name, err)
@@ -109,18 +106,38 @@ func BuildPlan(c Config) (Plan, error) {
 		if err != nil {
 			return fmt.Errorf("parse template %s: %w", name, err)
 		}
-		var output bytes.Buffer
-		if err := tmpl.Execute(&output, TemplateData{c.ModuleName, c.ImportPath}); err != nil {
-			return fmt.Errorf("render template %s: %w", name, err)
-		}
-		content := output.Bytes()
-		if strings.HasSuffix(destination, ".go") {
-			content, err = format.Source(content)
-			if err != nil {
-				return fmt.Errorf("format %s: %w", destination, err)
+		outputs := map[string]string{strings.TrimSuffix(name, ".tmpl"): name}
+		if strings.HasSuffix(name, ".bundle.tmpl") {
+			outputs = make(map[string]string)
+			for _, defined := range tmpl.Templates() {
+				if defined.Name() != name {
+					outputs[defined.Name()] = defined.Name()
+				}
 			}
 		}
-		plan.Files = append(plan.Files, File{destination, content})
+		destinations := make([]string, 0, len(outputs))
+		for destination := range outputs {
+			destinations = append(destinations, destination)
+		}
+		sort.Strings(destinations)
+		for _, destination := range destinations {
+			templateName := outputs[destination]
+			if destination == "." || !fs.ValidPath(destination) || strings.Contains(destination, "\\") || path.Clean(destination) != destination {
+				return fmt.Errorf("invalid output path %q in template %s", destination, name)
+			}
+			var output bytes.Buffer
+			if err := tmpl.ExecuteTemplate(&output, templateName, TemplateData{c.ModuleName, c.ImportPath}); err != nil {
+				return fmt.Errorf("render template %s: %w", templateName, err)
+			}
+			content := output.Bytes()
+			if strings.HasSuffix(destination, ".go") {
+				content, err = format.Source(content)
+				if err != nil {
+					return fmt.Errorf("format %s: %w", destination, err)
+				}
+			}
+			plan.Files = append(plan.Files, File{destination, content})
+		}
 		return nil
 	})
 	if err != nil {
@@ -130,5 +147,10 @@ func BuildPlan(c Config) (Plan, error) {
 		return Plan{}, errors.New("no .tmpl files found")
 	}
 	sort.Slice(plan.Files, func(i, j int) bool { return plan.Files[i].Path < plan.Files[j].Path })
+	for i := 1; i < len(plan.Files); i++ {
+		if plan.Files[i-1].Path == plan.Files[i].Path {
+			return Plan{}, fmt.Errorf("duplicate output path %q", plan.Files[i].Path)
+		}
+	}
 	return plan, nil
 }
