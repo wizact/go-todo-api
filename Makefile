@@ -138,6 +138,15 @@ run-db-migration: gen-db-resource
 	TODOAPI_DBPATH=${PREFIX}/db/todo.db && \
 		go run ./cmd/dbmigration/*.go
 
+# Module generation is explicit and uses the local Go toolchain.
+export MODULE_NAME
+.PHONY: gen-module preview-module
+gen-module: # @HELP scaffolds a module. usage: make gen-module MODULE_NAME=todo
+	$(GO) generate -run modulegen .
+
+preview-module: # @HELP previews module files. usage: make preview-module MODULE_NAME=todo
+	$(GO) run ./cmd/modulegen -name "$$MODULE_NAME" -dry-run
+
 .PHONY: gen-db-resource
 gen-db-resource: # @HELP creates a resourcefile and embeds migration scripts in the go file
 gen-db-resource:

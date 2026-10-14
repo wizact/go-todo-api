@@ -1,0 +1,132 @@
+{{define "module.go"}}
+// Package {{.ModuleName}} assembles the module's services from explicit dependencies.
+package {{.ModuleName}}
+
+import "fmt"
+
+// Dependencies contains collaborators required by this module.
+// Add consumer-owned port fields; keep adapter selection in application bootstrap.
+type Dependencies struct {}
+
+func (deps Dependencies) validate() error {
+ // Validate required collaborators after adding dependency fields.
+ return nil
+}
+
+// moduleConfig contains optional module settings.
+type moduleConfig struct {}
+
+func defaultModuleConfig() moduleConfig { return moduleConfig{} }
+
+func (config moduleConfig) validate() error {
+ // Validate the final configuration after adding optional settings.
+ return nil
+}
+
+// Option changes optional configuration. Add module-specific With... functions.
+// Options must only configure values, without I/O or starting workers.
+type Option func(*moduleConfig)
+
+// Module exposes services assembled for this module.
+type Module struct {
+ dependencies Dependencies
+ config moduleConfig
+ // Add services and their consumer-facing accessors as workflows are implemented.
+}
+
+// NewModuleWithDependencies applies defaults and ordered options, validates,
+// and assembles services. No domain behavior is supplied by this scaffold.
+func NewModuleWithDependencies(deps Dependencies, options ...Option) (*Module, error) {
+ config := defaultModuleConfig()
+ for i, option := range options {
+  if option == nil { return nil, fmt.Errorf("nil option at index %d", i) }
+  option(&config)
+ }
+ if err := deps.validate(); err != nil { return nil, fmt.Errorf("validate dependencies: %w", err) }
+ if err := config.validate(); err != nil { return nil, fmt.Errorf("validate configuration: %w", err) }
+ // Assemble domain and application services here using the supplied dependencies.
+ return &Module{dependencies: deps, config: config}, nil
+}
+{{end}}
+
+{{define "domain/model/doc.go"}}
+// Package model contains {{.ModuleName}} entities, value objects, and their invariants.
+package model
+{{end}}
+{{define "domain/aggregate/doc.go"}}
+// Package aggregate defines {{.ModuleName}} consistency boundaries and state transitions.
+package aggregate
+{{end}}
+{{define "domain/service/doc.go"}}
+// Package service implements {{.ModuleName}} use cases against consumer-owned ports.
+package service
+{{end}}
+{{define "application/service/doc.go"}}
+// Package service coordinates {{.ModuleName}} application workflows.
+package service
+{{end}}
+{{define "ports/input/usecase/doc.go"}}
+// Package usecase declares driving contracts consumed by {{.ModuleName}} adapters.
+package usecase
+{{end}}
+{{define "ports/output/repository/doc.go"}}
+// Package repository declares persistence contracts required by {{.ModuleName}} services.
+package repository
+{{end}}
+{{define "ports/output/event/doc.go"}}
+// Package event declares publication contracts required by {{.ModuleName}} services.
+package event
+{{end}}
+{{define "ports/service/doc.go"}}
+// Package service declares application-service contracts for {{.ModuleName}} consumers.
+package service
+{{end}}
+{{define "adapters/controller/doc.go"}}
+// Package controller translates external {{.ModuleName}} requests into use-case calls.
+package controller
+{{end}}
+{{define "adapters/controller/model/doc.go"}}
+// Package model defines external {{.ModuleName}} request and response representations.
+package model
+{{end}}
+{{define "adapters/http/doc.go"}}
+// Package httpadapter owns {{.ModuleName}} HTTP routes, parsing, and boundary validation.
+package httpadapter
+{{end}}
+{{define "adapters/repository/doc.go"}}
+// Package repository implements the {{.ModuleName}} persistence ports.
+package repository
+{{end}}
+
+{{define "README.md"}}
+# {{.ModuleName}} module
+
+This is an editable architecture scaffold. It supplies package roles and a
+constructor convention; it does not implement domain behavior or register routes.
+Do not regenerate this module after editing: generation rejects existing modules.
+
+Start with the smallest domain behavior needed, then define consumer-owned ports,
+implement services, and add thin adapters. Remove unused package shells as the
+module's actual scope becomes clear.
+
+## Common structure
+
+- `domain`: models, aggregates, and use cases; no concrete adapter imports.
+- `application/service`: application workflow orchestration.
+- `ports`: driving, persistence, event, and application-service contracts.
+- `adapters`: controller mapping, HTTP boundaries, and repository implementations.
+- `module.go`: explicit dependencies and defaults → options → validation → assembly.
+
+## Module-specific work
+
+Define models and invariants, required dependency fields, configuration defaults
+and `With...` options, validation, service assembly, and service accessors.
+No dependency fields or domain workflows are fabricated by this scaffold.
+
+Implement adapters against the ports and select concrete implementations at
+application bootstrap. Import this module as `{{.ImportPath}}/internal/{{.ModuleName}}`
+and call `NewModuleWithDependencies` with its actual collaborators. Mount its HTTP
+routes in `internal/api`; keep shared HTTP behavior in `internal/infra/httpmiddleware`.
+Bootstrap registration, events, database migrations, and business tests remain
+handwritten. Generation does not modify `go.mod` or other modules.
+{{end}}

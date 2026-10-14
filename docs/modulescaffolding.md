@@ -1,27 +1,44 @@
 # Module scaffolding engine
 
-Phase 4 provides the generation engine and CLI. Bundled architecture templates
-and the repository's `go generate` entry point are added in Phase 5. The engine
+The generator provides bundled architecture templates, a CLI, and an explicit
+`go generate` entry point. The engine
 creates architecture and wiring shells; domain models, business rules, ports,
 service graphs, and HTTP contracts remain module-specific.
 
-## Current CLI
+## Usage
 
-Run from the repository root with a trusted template directory:
+Run from the repository root:
 
 ```sh
-go run ./cmd/modulegen -name todo -templates /path/to/templates -dry-run
-go run ./cmd/modulegen -name todo -templates /path/to/templates
+# Makefile entry points:
+make preview-module MODULE_NAME=todo
+make gen-module MODULE_NAME=todo
+
+# Direct CLI:
+go run ./cmd/modulegen -name todo -dry-run
+go run ./cmd/modulegen -name todo
+
+# Equivalent creation through the repository generation directive:
+MODULE_NAME=todo go generate -run modulegen .
 ```
 
 `-root` defaults to the current directory. The root must contain the Go module
 and an existing `internal` directory. The CLI obtains the repository import path
 using `go list -m`; it does not parse or modify `go.mod`.
 
-This phase does not bundle a production scaffold. A template directory contains
-`.tmpl` files whose relative paths become module-relative output paths. For
+Bundled templates are embedded in the generator and do not depend on the
+working directory. They create an editable module constructor, role-specific
+package documentation, and a module README. No domain entities, CRUD, endpoints,
+repository methods, event types, or deployment adapters are invented.
+
+Use `-templates /path/to/templates` to replace the bundle with trusted custom
+templates. A template directory contains `.tmpl` files whose relative paths
+become module-relative output paths. For
 example, `module.go.tmpl` becomes `internal/todo/module.go`. Other files are
-ignored. Symlink template files are rejected. Templates are trusted input.
+ignored. Files ending in `.bundle.tmpl` use Go named template definitions: each
+definition name is its module-relative output path. Bundle top-level content is
+not an output file. Duplicate output paths are rejected. Symlink template files
+are rejected. Templates are trusted input.
 
 Templates receive `ModuleName` and `ImportPath`. Rendering uses `text/template`
 with missing keys rejected; Go output is formatted with `go/format`. No timestamp
@@ -49,3 +66,35 @@ created. Bootstrap files, migrations, and `go.mod` are not modified.
 Tests cover deterministic rendering, formatting and template failures, invalid
 names and paths, missing configuration, dry-run behavior, repeat generation,
 existing content preservation, escaping symlinks, and partial-write cleanup.
+
+## Generated structure and ownership
+
+```text
+internal/todo/
+  module.go
+  README.md
+  domain/{model,aggregate,service}/doc.go
+  application/service/doc.go
+  ports/input/usecase/doc.go
+  ports/output/{repository,event}/doc.go
+  ports/service/doc.go
+  adapters/controller/doc.go
+  adapters/controller/model/doc.go
+  adapters/http/doc.go
+  adapters/repository/doc.go
+```
+
+`module.go` supplies explicit `Dependencies`, private configuration, an `Option`
+type, and defaults → ordered options → validation → assembly. Dependency fields,
+optional settings and setters, validation rules, service graphs, and accessors
+remain developer-owned insertion points. The initial validation methods accept
+empty structs because no collaborators or settings have been invented.
+
+Generated files are editable source, not files to regenerate after domain work.
+Remove unused package shells when a module does not need those capabilities.
+The generator never changes application bootstrap, migrations, or other modules.
+
+`MODULE_NAME` is required for the generation directive. To preview file paths,
+use the CLI's `-dry-run`; `go generate -n` prints the command without running it.
+Running `go generate ./...` also selects this directive and therefore requires
+`MODULE_NAME`; use `-run modulegen .` to avoid unrelated generation directives.

@@ -104,3 +104,30 @@ func TestBuildPlanRejectsSymlinkDestination(t *testing.T) {
 		t.Fatal("accepted existing symlink")
 	}
 }
+
+func TestBuildPlanRendersNamedTemplateBundle(t *testing.T) {
+	c := fixtureConfig(t)
+	c.Templates = fstest.MapFS{"architecture.bundle.tmpl": &fstest.MapFile{Data: []byte(`{{define "module.go"}}package {{.ModuleName}}{{end}}{{define "domain/model/doc.go"}}package model{{end}}`)}}
+	plan, err := BuildPlan(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(plan.Files) != 2 || plan.Files[0].Path != "domain/model/doc.go" || plan.Files[1].Path != "module.go" {
+		t.Fatalf("unexpected files: %v", plan.Files)
+	}
+}
+
+func TestBuildPlanRejectsUnsafeOrDuplicateBundleOutputs(t *testing.T) {
+	for _, source := range []string{`{{define "../escape.go"}}package escape{{end}}`, `{{define "."}}empty{{end}}`} {
+		c := fixtureConfig(t)
+		c.Templates = fstest.MapFS{"bad.bundle.tmpl": &fstest.MapFile{Data: []byte(source)}}
+		if _, err := BuildPlan(c); err == nil {
+			t.Fatal("accepted unsafe bundle output")
+		}
+	}
+	c := fixtureConfig(t)
+	c.Templates = fstest.MapFS{"a.bundle.tmpl": &fstest.MapFile{Data: []byte(`{{define "module.go"}}package todo{{end}}`)}, "module.go.tmpl": &fstest.MapFile{Data: []byte("package todo")}}
+	if _, err := BuildPlan(c); err == nil {
+		t.Fatal("accepted duplicate output")
+	}
+}
