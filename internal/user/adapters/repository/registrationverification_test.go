@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/application/registration"
-	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/repository"
 )
 
 type registrationCompletionState struct {

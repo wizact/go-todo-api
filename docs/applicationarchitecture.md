@@ -14,9 +14,9 @@ Inner layers do not import concrete outer-layer implementations. Outer layers ma
 
 | Layer | User module examples | Responsibility |
 | --- | --- | --- |
-| Domain | `internal/user/domain` | Entities, value objects, aggregates, domain events, and domain services |
+| Domain | `internal/user/domain` | Entities, value objects, aggregates, domain events, and domain use cases |
 | Application | `internal/user/application` | Workflow state and services that coordinate domain behavior |
-| Ports | `internal/user/ports` | Narrow input, application, repository, and event contracts |
+| Ports | `internal/user/ports` | Use-case, application-service, repository, and event contracts |
 | Adapters | `internal/user/adapters` | Module HTTP routes, model mapping, controllers, SQLite, and memory implementations |
 | Frameworks and drivers | `internal/api`, `internal/infra`, `cmd`, `pkg` | Route mounting, shared HTTP middleware, process startup, databases, messaging, and communication clients |
 
@@ -25,17 +25,17 @@ Ports belong at the inner boundary they protect. An inner service references a p
 ```mermaid
 flowchart LR
     HTTP[HTTP and process drivers] --> Controller[Controller adapter]
-    Controller --> Input[Input or application port]
-    Input --> Service[Domain or application service]
-    Service --> Aggregate[Domain aggregate]
-    Service --> Output[Output port]
-    Repository[Repository adapter] -. implements .-> Output
+    Controller --> Contract[Use-case or application-service port]
+    Contract --> Behavior[Domain use case or application service]
+    Behavior --> Aggregate[Domain aggregate]
+    Behavior --> Collaborator[Repository or event port]
+    Repository[Repository adapter] -. implements .-> Collaborator
     Repository --> SQLite[(SQLite)]
-    Publisher[Event adapter] -. implements .-> Output
+    Publisher[Event adapter] -. implements .-> Collaborator
     Publisher --> NATS[(NATS)]
 ```
 
-`internal/user/module.go` is the composition root for the user module. It chooses concrete adapters and injects them through port interfaces. Wiring belongs there rather than in domain or application packages.
+`internal/user/module.go` assembles user services from explicit dependencies through port interfaces. `internal/api/bootstrap.go` selects the production adapters. Domain use cases and application services depend on ports rather than those adapter implementations.
 
 ## Aggregate and repository boundary
 

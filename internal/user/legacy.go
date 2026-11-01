@@ -6,7 +6,7 @@ import (
 	appService "github.com/wizact/go-todo-api/internal/user/application/service"
 	userDomain "github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	eventPort "github.com/wizact/go-todo-api/internal/user/ports/output/event"
+	eventPort "github.com/wizact/go-todo-api/internal/user/ports/event"
 	pubsubinfra "github.com/wizact/go-todo-api/pkg/eventlibrary/pubsub"
 	event "github.com/wizact/go-todo-api/pkg/eventlibrary/user/event"
 )

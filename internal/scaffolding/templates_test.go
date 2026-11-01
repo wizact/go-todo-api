@@ -19,7 +19,7 @@ func TestBundledTemplatesCreateCompilableArchitecture(t *testing.T) {
 	for _, file := range plan.Files {
 		paths = append(paths, file.Path)
 	}
-	want := []string{"README.md", "adapters/controller/doc.go", "adapters/controller/model/doc.go", "adapters/http/doc.go", "adapters/repository/doc.go", "application/service/doc.go", "domain/aggregate/doc.go", "domain/model/doc.go", "domain/service/doc.go", "module.go", "ports/input/usecase/doc.go", "ports/output/event/doc.go", "ports/output/repository/doc.go", "ports/service/doc.go"}
+	want := []string{"README.md", "adapters/controller/doc.go", "adapters/controller/model/doc.go", "adapters/http/doc.go", "adapters/repository/doc.go", "application/service/doc.go", "domain/aggregate/doc.go", "domain/model/doc.go", "domain/usecase/doc.go", "module.go", "ports/event/doc.go", "ports/repository/doc.go", "ports/service/doc.go", "ports/usecase/doc.go"}
 	if !reflect.DeepEqual(paths, want) {
 		t.Fatalf("architecture paths = %v", paths)
 	}

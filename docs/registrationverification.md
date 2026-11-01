@@ -11,7 +11,7 @@ The user aggregate owns the resulting business state: whether the account is act
 | User activation and verified-email state | `domain/aggregate.User` | Durable business state and invariant |
 | Credential digest and expiry | `application/registration.Verification` | Temporary application workflow state |
 | Token generation, hashing, and comparison | `application/service.Registration` | Orchestration concern, not domain behavior |
-| Persistence contract | `ports/output/repository.RegistrationRepository` | Inner-layer boundary for storage operations |
+| Persistence contract | `ports/repository.RegistrationRepository` | Inner-layer boundary for storage operations |
 | SQLite and memory behavior | `adapters/repository` | Concrete outer implementations |
 | Raw token delivery | `pkg/communication` | External communication concern |
 

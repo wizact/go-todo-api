@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	appService "github.com/wizact/go-todo-api/internal/user/application/service"
-	usecase "github.com/wizact/go-todo-api/internal/user/domain/service"
-	usecasePort "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
-	eventPort "github.com/wizact/go-todo-api/internal/user/ports/output/event"
-	repositoryPort "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	usecase "github.com/wizact/go-todo-api/internal/user/domain/usecase"
+	eventPort "github.com/wizact/go-todo-api/internal/user/ports/event"
+	repositoryPort "github.com/wizact/go-todo-api/internal/user/ports/repository"
 	appServicePort "github.com/wizact/go-todo-api/internal/user/ports/service"
+	usecasePort "github.com/wizact/go-todo-api/internal/user/ports/usecase"
 )
 
 // Module exposes the assembled user services.

@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	event "github.com/wizact/go-todo-api/internal/user/ports/output/event"
-	repository "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	event "github.com/wizact/go-todo-api/internal/user/ports/event"
+	repository "github.com/wizact/go-todo-api/internal/user/ports/repository"
 )
 
 type UserAccount struct {

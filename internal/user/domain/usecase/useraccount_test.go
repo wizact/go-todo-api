@@ -1,4 +1,4 @@
-package service_test
+package usecase_test
 
 import (
 	"context"
@@ -10,14 +10,14 @@ import (
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
 	model "github.com/wizact/go-todo-api/internal/user/domain/model"
-	svc "github.com/wizact/go-todo-api/internal/user/domain/service"
+	usecase "github.com/wizact/go-todo-api/internal/user/domain/usecase"
 )
 
 func TestUserAccount_RegisterNewUser_EmptyMemoryRepository_Succeeds(t *testing.T) {
 	t.Parallel()
 
 	user := initUsers(t)[0]
-	service := svc.NewUserAccount(repository.NewMemoryUserRepository(nil), userEventPublisherStub{})
+	service := usecase.NewUserAccount(repository.NewMemoryUserRepository(nil), userEventPublisherStub{})
 
 	_, err := service.RegisterNewUser(context.Background(), user)
 
@@ -33,7 +33,7 @@ func TestUserAccount_RegisterNewUser_DuplicateEmail_ReturnsDomainError(t *testin
 	ur := repository.NewMemoryUserRepository(seedUserList)
 	publisher := userEventPublisherStub{}
 
-	uas := svc.NewUserAccount(ur, publisher)
+	uas := usecase.NewUserAccount(ur, publisher)
 
 	_, err := uas.RegisterNewUser(context.Background(), u)
 
@@ -47,7 +47,7 @@ func TestUserAccount_UpdateUser_RepositoryFailureReturnsPersistenceError(t *test
 
 	user := initUsers(t)[0]
 	repository := repository.NewMemoryUserRepository(nil)
-	service := svc.NewUserAccount(repository, userEventPublisherStub{})
+	service := usecase.NewUserAccount(repository, userEventPublisherStub{})
 
 	_, err := service.UpdateUser(context.Background(), user)
 

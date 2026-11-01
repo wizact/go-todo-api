@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	userAppServiceMocks "github.com/wizact/go-todo-api/internal/user/ports/mocks"
-	userEventInput "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/input/event"
+	userEventPort "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/event"
 	ude "github.com/wizact/go-todo-api/pkg/eventlibrary/user/domain"
 	"go.uber.org/mock/gomock"
 )
@@ -144,7 +144,7 @@ type userEventSubscriberStub struct {
 	unsubscribed chan struct{}
 }
 
-func (s *userEventSubscriberStub) SubscribeToNewUserRegisteredEvent(_ context.Context, events chan<- ude.UserDomainEvent) (userEventInput.Unsubscribe, error) {
+func (s *userEventSubscriberStub) SubscribeToNewUserRegisteredEvent(_ context.Context, events chan<- ude.UserDomainEvent) (userEventPort.Unsubscribe, error) {
 	s.events = events
 	return func() error {
 		close(s.unsubscribed)

@@ -57,23 +57,23 @@ package model
 // Package aggregate defines {{.ModuleName}} consistency boundaries and state transitions.
 package aggregate
 {{end}}
-{{define "domain/service/doc.go"}}
-// Package service implements {{.ModuleName}} use cases against consumer-owned ports.
-package service
+{{define "domain/usecase/doc.go"}}
+// Package usecase implements {{.ModuleName}} use cases against consumer-owned ports.
+package usecase
 {{end}}
 {{define "application/service/doc.go"}}
 // Package service coordinates {{.ModuleName}} application workflows.
 package service
 {{end}}
-{{define "ports/input/usecase/doc.go"}}
+{{define "ports/usecase/doc.go"}}
 // Package usecase declares driving contracts consumed by {{.ModuleName}} adapters.
 package usecase
 {{end}}
-{{define "ports/output/repository/doc.go"}}
+{{define "ports/repository/doc.go"}}
 // Package repository declares persistence contracts required by {{.ModuleName}} services.
 package repository
 {{end}}
-{{define "ports/output/event/doc.go"}}
+{{define "ports/event/doc.go"}}
 // Package event declares publication contracts required by {{.ModuleName}} services.
 package event
 {{end}}

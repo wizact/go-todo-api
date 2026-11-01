@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	httpmodel "github.com/wizact/go-todo-api/internal/user/adapters/controller/model"
 	"github.com/wizact/go-todo-api/internal/user/domain"
-	usecase "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
 	userAppSvc "github.com/wizact/go-todo-api/internal/user/ports/service"
+	usecase "github.com/wizact/go-todo-api/internal/user/ports/usecase"
 	hsm "github.com/wizact/go-todo-api/pkg/httpservermodel"
 )
 

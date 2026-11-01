@@ -10,7 +10,7 @@ This is a Go TODO API implementing Domain-Driven Design (DDD) and Clean Architec
 
 The application follows Clean Architecture with these layers:
 - **Enterprise Business Rules**: Domain models, entities, value objects, aggregates
-- **Application Business Rules**: Domain services, repository interfaces, use cases
+- **Application Business Rules**: Domain use cases, repository interfaces, application services
 - **Interface Adapters**: Controllers, presenters, adapters between layers
 - **Infrastructure**: Database implementations, external service adapters
 - **Frameworks & Drivers**: HTTP handlers, middleware
@@ -21,7 +21,7 @@ internal/user/
 ├── domain/
 │   ├── model/          # Entities and value objects
 │   ├── aggregate/      # Aggregate roots
-│   ├── service/        # Domain services (use cases)
+│   ├── usecase/        # Domain use cases
 ├── application/
 │   └── service/        # Application services
 ├── adapters/
@@ -29,8 +29,10 @@ internal/user/
 │   ├── http/           # Module HTTP routes, tests, and fixtures
 │   └── repository/    # Repository implementations
 ├── ports/               # Interface definitions
-│   ├── input/          # Use case interfaces
-│   └── output/         # Repository interfaces
+│   ├── usecase/        # Use case interfaces
+│   ├── event/          # Event publication interfaces
+│   ├── repository/     # Persistence interfaces
+│   └── service/        # Application service interfaces
 └── module.go           # Dependency injection container
 ```
 

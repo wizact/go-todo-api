@@ -10,7 +10,7 @@ import (
 	"github.com/wizact/go-todo-api/internal/user/application/registration"
 	"github.com/wizact/go-todo-api/internal/user/domain"
 	ua "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/repository"
 )
 
 var (
