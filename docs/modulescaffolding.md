@@ -40,7 +40,10 @@ definition name is its module-relative output path. Bundle top-level content is
 not an output file. Duplicate output paths are rejected. Symlink template files
 are rejected. Templates are trusted input.
 
-Templates receive `ModuleName` and `ImportPath`. Rendering uses `text/template`
+Templates receive `ModuleName`, `ModuleTypeName` (the name with its first letter
+capitalized), and `ImportPath`. Output paths also support Go template expressions
+such as `ports/event/{{.ModuleName}}eventpublisher.go` and are validated after
+rendering. Rendering uses `text/template`
 with missing keys rejected; Go output is formatted with `go/format`. No timestamp
 or random value is introduced. Output paths are sorted for deterministic plans.
 
@@ -99,7 +102,8 @@ internal/todo/
   domain/{model,aggregate,usecase}/doc.go
   application/service/doc.go
   ports/usecase/doc.go
-  ports/{repository,event}/doc.go
+  ports/event/todoeventpublisher.go
+  ports/repository/doc.go
   ports/service/doc.go
   adapters/controller/doc.go
   adapters/controller/model/doc.go
@@ -121,3 +125,21 @@ The generator never changes application bootstrap, migrations, or other modules.
 use the CLI's `-dry-run`; `go generate -n` prints the command without running it.
 Running `go generate ./...` also selects this directive and therefore requires
 `MODULE_NAME`; use `-run modulegen .` to avoid unrelated generation directives.
+
+### Event publisher port
+
+The event package's documentation-only stub is replaced by
+`ports/event/<modulename>eventpublisher.go`. For `todo`, the editable port is:
+
+```go
+package event
+
+type TodoEventPublisher interface {
+    // PublishEvent(ctx context.Context, event domain.ExampleDomainEvent) error
+}
+```
+
+The example method stays commented, so there are no unused imports and no
+invented domain event. Define the module's event and publication method, then add
+`context` and domain imports when implementing that contract. The scaffold does
+not inject a publisher into `Dependencies` or create a publishing adapter yet.

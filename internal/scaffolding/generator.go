@@ -35,8 +35,9 @@ type Plan struct{ Files []File }
 
 // TemplateData contains values available to both text and Go templates.
 type TemplateData struct {
-	ModuleName string
-	ImportPath string
+	ModuleName     string
+	ModuleTypeName string
+	ImportPath     string
 }
 
 var moduleNamePattern = regexp.MustCompile(`^[a-z][a-z0-9]*$`)
@@ -87,6 +88,7 @@ func BuildPlan(c Config) (Plan, error) {
 		}
 		return Plan{}, fmt.Errorf("module %q already exists", c.ModuleName)
 	}
+	data := TemplateData{ModuleName: c.ModuleName, ModuleTypeName: strings.ToUpper(c.ModuleName[:1]) + c.ModuleName[1:], ImportPath: c.ImportPath}
 	plan := Plan{}
 	err = fs.WalkDir(c.Templates, ".", func(name string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -122,11 +124,20 @@ func BuildPlan(c Config) (Plan, error) {
 		sort.Strings(destinations)
 		for _, destination := range destinations {
 			templateName := outputs[destination]
+			pathTemplate, err := template.New("output path").Option("missingkey=error").Parse(destination)
+			if err != nil {
+				return fmt.Errorf("parse output path %q: %w", destination, err)
+			}
+			var renderedPath bytes.Buffer
+			if err := pathTemplate.Execute(&renderedPath, data); err != nil {
+				return fmt.Errorf("render output path %q: %w", destination, err)
+			}
+			destination = renderedPath.String()
 			if destination == "." || !fs.ValidPath(destination) || strings.Contains(destination, "\\") || path.Clean(destination) != destination {
 				return fmt.Errorf("invalid output path %q in template %s", destination, name)
 			}
 			var output bytes.Buffer
-			if err := tmpl.ExecuteTemplate(&output, templateName, TemplateData{c.ModuleName, c.ImportPath}); err != nil {
+			if err := tmpl.ExecuteTemplate(&output, templateName, data); err != nil {
 				return fmt.Errorf("render template %s: %w", templateName, err)
 			}
 			content := output.Bytes()

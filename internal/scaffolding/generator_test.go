@@ -131,3 +131,33 @@ func TestBuildPlanRejectsUnsafeOrDuplicateBundleOutputs(t *testing.T) {
 		t.Fatal("accepted duplicate output")
 	}
 }
+
+func TestBuildPlanRendersOutputPaths(t *testing.T) {
+	c := fixtureConfig(t)
+	c.Templates = fstest.MapFS{"publisher.bundle.tmpl": &fstest.MapFile{Data: []byte(`{{define "ports/event/{{.ModuleName}}eventpublisher.go"}}package event
+ type {{.ModuleTypeName}}EventPublisher interface {}{{end}}`)}}
+	plan, err := BuildPlan(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(plan.Files) != 1 || plan.Files[0].Path != "ports/event/todoeventpublisher.go" {
+		t.Fatalf("unexpected files %v", plan.Files)
+	}
+}
+
+func TestBuildPlanValidatesRenderedPaths(t *testing.T) {
+	for _, tc := range []struct{ name, source string }{
+		{"traversal", `{{define "{{.ImportPath}}/file.go"}}package event{{end}}`},
+		{"missing value", `{{define "{{.Missing}}/file.go"}}package event{{end}}`},
+		{"duplicate", `{{define "{{.ModuleName}}.go"}}package todo{{end}}{{define "todo.go"}}package todo{{end}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := fixtureConfig(t)
+			c.ImportPath = "../outside"
+			c.Templates = fstest.MapFS{"outputs.bundle.tmpl": &fstest.MapFile{Data: []byte(tc.source)}}
+			if _, err := BuildPlan(c); err == nil {
+				t.Fatal("accepted invalid rendered output path")
+			}
+		})
+	}
+}

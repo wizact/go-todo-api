@@ -12,9 +12,9 @@ import (
 
 func TestAcceptanceCLIWorkflow(t *testing.T) {
 	binary := buildAcceptanceCLI(t)
-	for _, tc := range []struct{ name, importPath string }{
-		{"todo", "example.com/acme/project"},
-		{"inventory2", "example.org/team/service/v2"},
+	for _, tc := range []struct{ name, importPath, publisherType string }{
+		{"todo", "example.com/acme/project", "TodoEventPublisher"},
+		{"inventory2", "example.org/team/service/v2", "Inventory2EventPublisher"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := acceptanceRepository(t, tc.importPath)
@@ -48,6 +48,13 @@ func TestAcceptanceCLIWorkflow(t *testing.T) {
 			}
 			if !strings.Contains(string(generated["README.md"]), tc.importPath+"/internal/"+tc.name) {
 				t.Fatal("README has wrong module import path")
+			}
+			publisher := string(generated["ports/event/"+tc.name+"eventpublisher.go"])
+			if !strings.Contains(publisher, "type "+tc.publisherType+" interface {") {
+				t.Fatalf("missing expected event publisher interface %s", tc.publisherType)
+			}
+			if !strings.Contains(publisher, "// PublishEvent(ctx context.Context, event domain.ExampleDomainEvent) error") {
+				t.Fatal("missing commented event publication example")
 			}
 			acceptanceCommand(t, root, "go", "test", "./internal/"+tc.name+"/...")
 			writeAcceptanceFile(t, root, "internal/"+tc.name+"/module.go", append(generated["module.go"], []byte("\n// Developer-owned edit.\n")...))

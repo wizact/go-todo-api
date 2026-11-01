@@ -19,7 +19,7 @@ func TestBundledTemplatesCreateCompilableArchitecture(t *testing.T) {
 	for _, file := range plan.Files {
 		paths = append(paths, file.Path)
 	}
-	want := []string{"README.md", "adapters/controller/doc.go", "adapters/controller/model/doc.go", "adapters/http/doc.go", "adapters/repository/doc.go", "application/service/doc.go", "domain/aggregate/doc.go", "domain/model/doc.go", "domain/usecase/doc.go", "module.go", "ports/event/doc.go", "ports/repository/doc.go", "ports/service/doc.go", "ports/usecase/doc.go"}
+	want := []string{"README.md", "adapters/controller/doc.go", "adapters/controller/model/doc.go", "adapters/http/doc.go", "adapters/repository/doc.go", "application/service/doc.go", "domain/aggregate/doc.go", "domain/model/doc.go", "domain/usecase/doc.go", "module.go", "ports/event/todoeventpublisher.go", "ports/repository/doc.go", "ports/service/doc.go", "ports/usecase/doc.go"}
 	if !reflect.DeepEqual(paths, want) {
 		t.Fatalf("architecture paths = %v", paths)
 	}
@@ -34,7 +34,9 @@ func TestBundledTemplatesCreateCompilableArchitecture(t *testing.T) {
 import (
  "testing"
  todo "example.com/project/internal/todo"
+ event "example.com/project/internal/todo/ports/event"
 )
+var _ event.TodoEventPublisher = struct{}{}
 func TestConstruction(t *testing.T) {
  module, err := todo.NewModuleWithDependencies(todo.Dependencies{})
  if err != nil || module == nil { t.Fatalf("module=%v error=%v", module, err) }

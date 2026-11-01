@@ -73,9 +73,14 @@ package usecase
 // Package repository declares persistence contracts required by {{.ModuleName}} services.
 package repository
 {{end}}
-{{define "ports/event/doc.go"}}
+{{define "ports/event/{{.ModuleName}}eventpublisher.go"}}
 // Package event declares publication contracts required by {{.ModuleName}} services.
 package event
+
+// {{.ModuleTypeName}}EventPublisher declares the module's event publication contract.
+type {{.ModuleTypeName}}EventPublisher interface {
+ // PublishEvent(ctx context.Context, event domain.ExampleDomainEvent) error
+}
 {{end}}
 {{define "ports/service/doc.go"}}
 // Package service declares application-service contracts for {{.ModuleName}} consumers.
