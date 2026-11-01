@@ -71,7 +71,7 @@ func TestRunUsesBundledTemplatesByDefault(t *testing.T) {
 	if err := run([]string{"-root", root, "-name", "todo", "-dry-run"}, &output, &output); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"module.go", "domain/model/doc.go", "adapters/http/doc.go", "ports/output/repository/doc.go"} {
+	for _, name := range []string{"module.go", "domain/model/doc.go", "adapters/http/doc.go", "ports/repository/doc.go"} {
 		if !strings.Contains(output.String(), "internal/todo/"+name) {
 			t.Fatalf("missing %s", name)
 		}

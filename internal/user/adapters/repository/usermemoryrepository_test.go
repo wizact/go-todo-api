@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/application/registration"
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
-	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/repository"
 )
 
 func TestMemoryUserRepository_FindRegistrationVerification_Missing_ReturnsNotFound(t *testing.T) {

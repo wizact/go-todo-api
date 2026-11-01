@@ -6,14 +6,14 @@ import (
 
 	userAppServicePort "github.com/wizact/go-todo-api/internal/user/ports/service"
 	communicationPort "github.com/wizact/go-todo-api/pkg/communication/ports/service"
-	eventInput "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/input/event"
+	eventPort "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/event"
 	de "github.com/wizact/go-todo-api/pkg/eventlibrary/user/domain"
 )
 
 // RegisteredEventListener application service responsible for managing the lifecycle of a user registration
 type RegisteredEventListener struct {
 	emailClient         communicationPort.Emailer
-	userEventClient     eventInput.UserSubscriber
+	userEventClient     eventPort.UserSubscriber
 	registrationService userAppServicePort.Registration
 	templateID          string
 	done                chan bool
@@ -21,7 +21,7 @@ type RegisteredEventListener struct {
 
 // NewNewUserRegisteredEventListene returns a new instance of RegisteredEventListener application service
 func NewRegisteredEventListener(
-	uec eventInput.UserSubscriber,
+	uec eventPort.UserSubscriber,
 	registrationService userAppServicePort.Registration,
 	emailClient communicationPort.Emailer,
 	templateID string,
@@ -58,7 +58,7 @@ func (r *RegisteredEventListener) sendUserEmailVerificationMessage(
 	ctx context.Context,
 	nuc <-chan de.UserDomainEvent,
 	done chan bool,
-	unsubcb eventInput.Unsubscribe,
+	unsubcb eventPort.Unsubscribe,
 ) error {
 L:
 	for {

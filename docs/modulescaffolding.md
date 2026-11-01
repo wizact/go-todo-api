@@ -96,10 +96,10 @@ invalid names, symlink containment, and partial-write cleanup.
 internal/todo/
   module.go
   README.md
-  domain/{model,aggregate,service}/doc.go
+  domain/{model,aggregate,usecase}/doc.go
   application/service/doc.go
-  ports/input/usecase/doc.go
-  ports/output/{repository,event}/doc.go
+  ports/usecase/doc.go
+  ports/{repository,event}/doc.go
   ports/service/doc.go
   adapters/controller/doc.go
   adapters/controller/model/doc.go

@@ -5,8 +5,8 @@ Go TODO API is a reference implementation of a modular monolith using Clean Arch
 The user module demonstrates the core patterns:
 
 - domain entities, value objects, and aggregates own business state and invariants;
-- application and domain services coordinate use cases;
-- input and output ports define the contracts at architectural boundaries;
+- domain use cases and application services coordinate workflows;
+- use-case, event, repository, and application-service ports define architectural contracts;
 - HTTP, SQLite, NATS, and email integrations remain outer adapters;
 - one concrete repository owns each aggregate write boundary; and
 - read projections may be separate, but aggregate and projection writes that represent one business operation are atomic.

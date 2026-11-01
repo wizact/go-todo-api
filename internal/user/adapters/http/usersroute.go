@@ -10,8 +10,8 @@ import (
 	middleware "github.com/wizact/go-todo-api/internal/infra/httpmiddleware"
 	controller "github.com/wizact/go-todo-api/internal/user/adapters/controller"
 	httpModel "github.com/wizact/go-todo-api/internal/user/adapters/controller/model"
-	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
 	applicationport "github.com/wizact/go-todo-api/internal/user/ports/service"
+	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/usecase"
 	hsm "github.com/wizact/go-todo-api/pkg/httpservermodel"
 )
 

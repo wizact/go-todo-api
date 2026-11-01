@@ -8,7 +8,7 @@ import (
 	userDomainListener "github.com/wizact/go-todo-api/pkg/communication/application/listeners/user"
 	appService "github.com/wizact/go-todo-api/pkg/communication/application/service"
 	ports "github.com/wizact/go-todo-api/pkg/communication/ports/service"
-	userEventPort "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/input/event"
+	userEventPort "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/event"
 	pubsubinfra "github.com/wizact/go-todo-api/pkg/eventlibrary/pubsub"
 	userDomainEvent "github.com/wizact/go-todo-api/pkg/eventlibrary/user/domain"
 	userEvent "github.com/wizact/go-todo-api/pkg/eventlibrary/user/event"

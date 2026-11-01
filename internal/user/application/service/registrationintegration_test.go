@@ -13,8 +13,8 @@ import (
 	dbinfra "github.com/wizact/go-todo-api/internal/infra/db"
 	repositoryadapter "github.com/wizact/go-todo-api/internal/user/adapters/repository"
 	"github.com/wizact/go-todo-api/internal/user/domain"
-	domainservice "github.com/wizact/go-todo-api/internal/user/domain/service"
-	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	domainusecase "github.com/wizact/go-todo-api/internal/user/domain/usecase"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/repository"
 	"gorm.io/gorm"
 )
 
@@ -49,7 +49,7 @@ func TestRegistration_SqliteJourneyPersistsDigestAndConsumesCredential(t *testin
 	now := time.Date(2026, time.October, 4, 12, 0, 0, 0, time.UTC)
 	repository, database := newRegistrationIntegrationRepository(t)
 	publisher := &recordingUserEventPublisher{}
-	userAccount := domainservice.NewUserAccount(repository, publisher)
+	userAccount := domainusecase.NewUserAccount(repository, publisher)
 
 	if _, err := userAccount.RegisterNewUser(context.Background(), user); err != nil {
 		t.Fatalf("RegisterNewUser() error = %v", err)

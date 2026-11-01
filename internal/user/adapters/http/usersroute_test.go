@@ -20,7 +20,7 @@ import (
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
 	model "github.com/wizact/go-todo-api/internal/user/domain/model"
 	"github.com/wizact/go-todo-api/internal/user/ports/mocks"
-	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/repository"
 )
 
 const registeredUserID = "50dff1d7-957c-4498-b286-a3f6c8f517a2"

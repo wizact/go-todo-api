@@ -26,12 +26,12 @@ internal/
       aggregate/                  user aggregate root
       factories/                  aggregate construction
       model/                      entities and value objects
-      service/                    user account use cases
+      usecase/                    user account use cases
     ports/
       service/                    application-service contracts
-      input/usecase/              driving use-case contracts
-      output/event/               event-publisher contracts
-      output/repository/          persistence contracts
+      usecase/                    driving use-case contracts
+      event/                      event-publisher contracts
+      repository/                 persistence contracts
     module.go                     module composition root
 pkg/
   communication/                  email and event-listener module
@@ -52,9 +52,9 @@ The domain contains business concepts that remain meaningful without HTTP, SQLit
 
 The aggregate does not own registration tokens, token hashing, expiration, or delivery. Those are application workflow concerns.
 
-### Domain services
+### Domain use cases
 
-`domain/service` implements use cases that coordinate domain behavior. `UserAccount` depends on repository and event ports rather than concrete adapters.
+`domain/usecase` implements use cases that coordinate domain behavior. `UserAccount` depends on repository and event ports rather than concrete adapters.
 
 ## Application
 
@@ -66,10 +66,12 @@ Application code coordinates workflows that are required by this application but
 
 Ports are interfaces at architectural boundaries:
 
-- input ports describe use cases invoked by controllers;
-- application ports expose application services to listeners or controllers;
-- repository ports describe persistence required by inner services; and
-- event ports describe event publication required by the domain service.
+- `ports/usecase` describes use cases invoked by controllers;
+- `ports/service` exposes application services to listeners or controllers;
+- `ports/repository` describes persistence required by inner services; and
+- `ports/event` describes event publication required by domain use cases.
+
+Ports are grouped by role directly under `ports`; there are no input/output directory tiers. The shared event library follows the same layout under `pkg/eventlibrary/ports/event`.
 
 Ports may reference types from the domain or application layer. Concrete adapters depend on and implement ports; inner layers do not import adapter packages.
 
@@ -77,7 +79,7 @@ Keep ports small and consumer-oriented. Multiple narrow port interfaces may be i
 
 ## Adapters
 
-User HTTP handlers live in `internal/user/adapters/http`, alongside their route tests and request fixtures. They parse HTTP requests and register routes against Gorilla Mux. Controllers validate and translate those requests before invoking an input or application port. Neither adapter contains business rules.
+User HTTP handlers live in `internal/user/adapters/http`, alongside their route tests and request fixtures. They parse HTTP requests and register routes against Gorilla Mux. Controllers validate and translate those requests before invoking a use-case or application-service port. Neither adapter contains business rules.
 
 `internal/api` mounts module routes and owns server startup and health checks. Shared HTTP response and authorization behavior lives in `internal/infra/httpmiddleware`, so module adapters do not depend on the application bootstrap package. The current authorization placeholder is unchanged by this separation.
 

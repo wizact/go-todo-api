@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/mux"
 	hndl "github.com/wizact/go-todo-api/internal/api/handlers"
 	userhttp "github.com/wizact/go-todo-api/internal/user/adapters/http"
-	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
 	applicationport "github.com/wizact/go-todo-api/internal/user/ports/service"
+	usecaseport "github.com/wizact/go-todo-api/internal/user/ports/usecase"
 	comms "github.com/wizact/go-todo-api/pkg/communication"
 )
 

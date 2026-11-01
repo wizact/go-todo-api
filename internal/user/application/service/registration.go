@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	applicationregistration "github.com/wizact/go-todo-api/internal/user/application/registration"
-	usecasePort "github.com/wizact/go-todo-api/internal/user/ports/input/usecase"
-	repositoryPort "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	repositoryPort "github.com/wizact/go-todo-api/internal/user/ports/repository"
+	usecasePort "github.com/wizact/go-todo-api/internal/user/ports/usecase"
 )
 
 const registrationVerificationLifetime = 24 * time.Hour

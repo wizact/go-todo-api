@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wizact/go-todo-api/internal/user/domain"
-	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/repository"
 )
 
 func TestUserRepository_MissingUser_ReturnsDomainError(t *testing.T) {

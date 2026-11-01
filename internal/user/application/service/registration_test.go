@@ -14,7 +14,7 @@ import (
 	aggregate "github.com/wizact/go-todo-api/internal/user/domain/aggregate"
 	model "github.com/wizact/go-todo-api/internal/user/domain/model"
 	"github.com/wizact/go-todo-api/internal/user/ports/mocks"
-	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/output/repository"
+	repositoryport "github.com/wizact/go-todo-api/internal/user/ports/repository"
 )
 
 type registrationIssuanceState struct {

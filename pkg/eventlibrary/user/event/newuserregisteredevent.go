@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/nats-io/nats.go"
-	eventInput "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/input/event"
+	eventPort "github.com/wizact/go-todo-api/pkg/eventlibrary/ports/event"
 	pubsubInfra "github.com/wizact/go-todo-api/pkg/eventlibrary/pubsub"
 	ude "github.com/wizact/go-todo-api/pkg/eventlibrary/user/domain"
 )
@@ -25,7 +25,7 @@ func (ue *UserEventClient) PublishNewUserRegisteredEvent(ctx context.Context, us
 	return pb.Publish(ue.NewUserRegisteredEventFQN(), j)
 }
 
-func (ue *UserEventClient) SubscribeToNewUserRegisteredEvent(ctx context.Context, events chan<- ude.UserDomainEvent) (eventInput.Unsubscribe, error) {
+func (ue *UserEventClient) SubscribeToNewUserRegisteredEvent(ctx context.Context, events chan<- ude.UserDomainEvent) (eventPort.Unsubscribe, error) {
 	sub := pubsubInfra.NewSubscription(ue.natsConnection)
 	err := sub.Subscribe(ue.NewUserRegisteredEventFQN(), func(message *nats.Msg) {
 		if err := ue.forwardNewUserRegisteredEvent(ctx, events, message); err != nil {
@@ -36,7 +36,7 @@ func (ue *UserEventClient) SubscribeToNewUserRegisteredEvent(ctx context.Context
 		return nil, err
 	}
 
-	return eventInput.Unsubscribe(sub.UnsubscribeFunc()), nil
+	return eventPort.Unsubscribe(sub.UnsubscribeFunc()), nil
 }
 
 func (ue *UserEventClient) forwardNewUserRegisteredEvent(ctx context.Context, events chan<- ude.UserDomainEvent, message *nats.Msg) error {
