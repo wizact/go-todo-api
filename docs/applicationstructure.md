@@ -123,3 +123,22 @@ its adapter factories are isolated in `internal/user/legacy.go`.
 
 Future scaffolds can reproduce dependency/configuration/constructor conventions.
 Each module still defines its own ports, options, services, and domain behavior.
+
+### Scaffolded conventions versus module-owned behavior
+
+Use `make preview-module MODULE_NAME=todo` and `make gen-module MODULE_NAME=todo`
+for the reference architecture shell. See [module scaffolding](./modulescaffolding.md)
+for usage and verification.
+
+| Scaffolded convention | Developer-owned implementation |
+| --- | --- |
+| Domain, application, port, and adapter package roles | Entities, invariants, consistency boundaries, and workflows |
+| Explicit dependency struct and service container | Dependency fields, service graph, and accessors |
+| Defaults, ordered options, and validation sequence | Settings, defaults, option setters, and validation rules |
+| HTTP and repository adapter locations | Routes, boundary contracts, storage, and event publication |
+| Module documentation and editable package shells | Bootstrap integration, migrations, and business tests |
+
+The generated constructor initially assembles an empty shell. It is not a
+ready-to-use service or a generic CRUD module. Add only the capabilities the new
+module requires; remove unused package shells. Shared middleware remains outside
+individual modules, while domain-specific adapters remain inside their module.

@@ -67,6 +67,29 @@ Tests cover deterministic rendering, formatting and template failures, invalid
 names and paths, missing configuration, dry-run behavior, repeat generation,
 existing content preservation, escaping symlinks, and partial-write cleanup.
 
+### Repeatable acceptance checks
+
+```sh
+go test ./cmd/modulegen -run TestAcceptance -v
+go test ./...
+go vet ./...
+go test -race ./cmd/modulegen ./internal/scaffolding
+```
+
+Acceptance tests build the real CLI, preview twice, generate, compile every
+new package, edit a generated file, and verify repeat generation preserves it.
+They exercise `todo` and `inventory2` under different Go module paths and compare
+all pre-existing files, including application bootstrap, the user module,
+`go.mod`, and a migration. Separate isolated fixtures exercise the repository's
+actual `go generate` directive and both Makefile targets. These checks require
+Go and Make; they need no database, NATS server, Docker, or provider credentials.
+
+Fixtures live only in temporary directories and copy generator sources through
+an explicit allowlist. Running these tests does not scaffold into the checkout.
+Command subprocesses use bounded timeouts and disable workspace discovery for
+fixture isolation. Existing unit tests cover malformed templates, unsafe paths,
+invalid names, symlink containment, and partial-write cleanup.
+
 ## Generated structure and ownership
 
 ```text
